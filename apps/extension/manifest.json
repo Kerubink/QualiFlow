@@ -1,0 +1,62 @@
+{
+    "manifest_version": 3,
+    "name": "QualiFlow",
+    "version": "3.0.2",
+    "description": "Extensão para gerar e avaliar casos de teste BDD diretamente no Azure DevOps.",
+    "permissions": [
+        "storage",
+        "activeTab",
+        "scripting",
+        "tabs",
+        "alarms"
+    ],
+    "host_permissions": [
+        "*://dev.azure.com/*",
+        "*://*.visualstudio.com/*",
+        "*://*.atlassian.net/*",
+        "<all_urls>"
+    ],
+    "background": {
+        "service_worker": "src/services/background.js",
+        "type": "module"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://dev.azure.com/*",
+                "*://*.visualstudio.com/*",
+                "*://*.atlassian.net/*"
+            ],
+            "css": [
+                "src/styles/content.css"
+            ],
+            "js": [
+                "src/content/bridge.js",
+                "src/content/state.js",
+                "src/content/utils.js",
+                "src/content/ui.js",
+                "src/content/analyticsCharts.js",
+                "src/content/dashboard.js",
+                "src/content/scenarios.js",
+                "src/content/main.js"
+            ]
+        },
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "css": [
+                "src/styles/content.css"
+            ],
+            "js": [
+                "src/content/bridge.js",
+                "src/content/runner.js"
+            ]
+        }
+    ],
+    "options_page": "src/pages/options/options.html",
+    "action": {
+        "default_title": "QualiFlow Configurações",
+        "default_popup": "src/pages/options/options.html"
+    }
+}

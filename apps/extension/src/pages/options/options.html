@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QualiFlow Configurações Avançadas</title>
+  <link rel="stylesheet" href="../../styles/options.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="icon">🚀</span>
+        <h2>QualiFlow Setup</h2>
+      </div>
+      <ul class="nav">
+        <li class="nav-item active" data-target="geral">Geral</li>
+        <li class="nav-item" data-target="board">Integração Board</li>
+        <li class="nav-item" data-target="ai">Inteligência Artificial</li>
+        <li class="nav-item" data-target="runner">Test Runner (URLs)</li>
+      </ul>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content">
+      <form id="settings-form">
+
+        <!-- ======================= -->
+        <!-- TAB 1: GERAL            -->
+        <!-- ======================= -->
+        <section id="geral" class="tab-content active">
+          <div class="section-header">
+            <h3>Configurações Gerais</h3>
+            <p>Preferências globais de identificação do testador.</p>
+          </div>
+
+          <div class="form-group">
+            <label for="qa-email">Seu Email de QA</label>
+            <input type="email" id="qa-email" placeholder="nome.sobrenome@empresa.com">
+            <div class="description">Utilizado para atribuir testes automaticamente no seu nome.</div>
+          </div>
+
+          <div class="form-group">
+            <label for="qa-tag">Tag de Identificação (QA Tag)</label>
+            <input type="text" id="qa-tag" placeholder="Ex: QA-Kerubyn">
+            <div class="description">Tag utilizada para filtrar os cards que aparecerão no dashboard.</div>
+          </div>
+
+          <div class="form-group">
+            <label for="support-webhook-url">Webhook de Notificações (Teams/Power Automate)</label>
+            <input type="url" id="support-webhook-url" placeholder="https://.../triggers/manual/paths/invoke?...">
+            <div class="description">URL usada para enviar notificações automáticas quando um suporte muda de status.</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="form-group">
+            <label>Backend QualiFlow</label>
+            <div class="qf-toggle-row">
+              <label class="qf-toggle">
+                <input type="checkbox" id="dev-mode-toggle">
+                <span class="qf-toggle-slider"></span>
+              </label>
+              <span class="qf-toggle-label">Modo Desenvolvedor (usar backend local)</span>
+            </div>
+            <input type="url" id="copilot-backend-url" placeholder="http://localhost:3000">
+            <div class="description">Usado por todos os provedores de IA e por Azure DevOps/Jira. Ative o Modo Desenvolvedor para apontar automaticamente para <code>http://localhost:3000</code> sem depender do backend hospedado no Render.</div>
+          </div>
+        </section>
+
+        <!-- ======================= -->
+        <!-- TAB 2: BOARD            -->
+        <!-- ======================= -->
+        <section id="board" class="tab-content">
+          <div class="section-header">
+            <h3>Plataforma de Gestão</h3>
+            <p>Selecione aonde as histórias de usuário e testes estão armazenados.</p>
+          </div>
+
+          <div class="form-group highlight-select">
+            <label for="board-select">Provedor do Board</label>
+            <select id="board-select">
+              <option value="azure">Azure DevOps</option>
+              <option value="jira">Jira Software</option>
+              <option value="asana">Asana (Em Breve)</option>
+            </select>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- AZURE DEVOPS -->
+          <div id="board-azure" class="dynamic-group active-group">
+            <div class="form-group">
+              <label>Autenticacao Microsoft</label>
+              <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                <button type="button" id="azure-login-btn" class="btn-secondary" style="white-space:nowrap;">Entrar com Microsoft</button>
+                <span id="azure-auth-status" class="description" style="margin:0;">Nao autenticado.</span>
+              </div>
+              <div class="description">Login substitui o PAT: o backend usa OAuth Microsoft Entra ID para acessar o Azure DevOps em seu nome.</div>
+            </div>
+            <div class="form-group">
+              <label for="azure-org">Azure Organization URL</label>
+              <input type="url" id="azure-org" placeholder="https://dev.azure.com/SuaOrg/">
+            </div>
+            <div class="form-group">
+              <label for="azure-project">Azure Project Name</label>
+              <input type="text" id="azure-project" placeholder="NomeDoProjeto">
+              <div class="description">Nome do projeto exato onde os Casos de Teste serão criados.</div>
+            </div>
+          </div>
+
+          <div id="board-jira" class="dynamic-group hidden-group">
+            <div class="form-group">
+              <label>Autenticacao Atlassian</label>
+              <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                <button type="button" id="jira-login-btn" class="btn-secondary" style="white-space:nowrap;">Entrar com Atlassian</button>
+                <span id="jira-auth-status" class="description" style="margin:0;">Nao autenticado.</span>
+              </div>
+              <div class="description">Login substitui email + API Token: o backend usa OAuth Atlassian para acessar o Jira em seu nome.</div>
+            </div>
+            <div class="form-group">
+              <label for="jira-domain">Jira Domain</label>
+              <input type="text" id="jira-domain" placeholder="Ex: minhaempresa ou minhaempresa.atlassian.net">
+            </div>
+            <div class="form-group">
+              <label for="jira-project">Jira Project Key</label>
+              <input type="text" id="jira-project" placeholder="Ex: QA">
+            </div>
+            <div class="form-group">
+              <label for="jira-test-issue-type">Issue Type para Teste</label>
+              <input type="text" id="jira-test-issue-type" placeholder="Ex: Task">
+            </div>
+            <div class="form-group">
+              <label for="jira-link-type">Tipo de Link</label>
+              <input type="text" id="jira-link-type" placeholder="Ex: Relates">
+            </div>
+            <div class="form-group">
+              <label for="jira-ac-field">Campo de Critérios (opcional)</label>
+              <input type="text" id="jira-ac-field" placeholder="Ex: customfield_10015">
+            </div>
+          </div>
+
+          <div id="board-asana" class="dynamic-group hidden-group">
+            <div class="form-group">
+              <label for="asana-pat">Asana PAT</label>
+              <input type="password" id="asana-pat" placeholder="Token Pessoal Asana" disabled>
+            </div>
+            <div class="form-group">
+              <label for="asana-workspace">Workspace ID</label>
+              <input type="text" id="asana-workspace" placeholder="ID do Workspace" disabled>
+            </div>
+            <div class="form-group">
+              <label for="asana-project">Project ID</label>
+              <input type="text" id="asana-project" placeholder="ID do Projeto" disabled>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ======================= -->
+        <!-- TAB 3: AI ENGINE        -->
+        <!-- ======================= -->
+        <section id="ai" class="tab-content">
+          <div class="section-header">
+            <h3>Motor de Inteligência Artificial</h3>
+            <p>Selecione a LLM que irá gerar e avaliar os seus Casos de Teste.</p>
+          </div>
+
+          <div class="form-group highlight-select">
+            <label for="ai-select">Provedor IA</label>
+            <select id="ai-select">
+              <option value="gemini">Google Gemini</option>
+              <option value="copilot">GitHub Copilot</option>
+              <option value="groq">Groq Cloud</option>
+            </select>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- GEMINI -->
+          <div id="ai-gemini" class="dynamic-group active-group">
+            <div class="form-group">
+              <label for="gemini-key">Gemini API Key</label>
+              <input type="password" id="gemini-key" placeholder="AIzaSy...">
+            </div>
+            <div class="form-group">
+              <label for="gemini-model">Modelo Gemini</label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <select id="gemini-model" style="flex:1;">
+                  <option value="gemini-2.5-flash">gemini-2.5-flash (padrão)</option>
+                  <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+                  <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                </select>
+                <button type="button" id="load-gemini-models-btn" class="btn-secondary" style="white-space:nowrap;">🔄
+                  Carregar Modelos</button>
+              </div>
+              <div class="description" id="gemini-models-status">Modelo que será usado. Padrão recomendado:
+                gemini-2.5-flash.</div>
+            </div>
+          </div>
+
+          <!-- COPILOT -->
+          <div id="ai-copilot" class="dynamic-group hidden-group">
+            <div class="form-group">
+              <label>Autenticacao GitHub</label>
+              <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                <button type="button" id="copilot-login-btn" class="btn-secondary" style="white-space:nowrap;">Entrar com GitHub</button>
+                <span id="copilot-auth-status" class="description" style="margin:0;">Nao autenticado.</span>
+              </div>
+              <div class="description">A URL do backend usado no login e configurada na aba "Geral".</div>
+            </div>
+            <div class="form-group">
+              <label for="copilot-model">Modelo Copilot</label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <select id="copilot-model" style="flex:1;">
+                  <option value="claude-sonnet-4.5">claude-sonnet-4.5 (padrão)</option>
+                  <option value="gpt-5-mini">gpt-5-mini</option>
+                  <option value="claude-opus-4.5">claude-opus-4.5</option>
+                </select>
+                <button type="button" id="load-copilot-models-btn" class="btn-secondary" style="white-space:nowrap;">🔄
+                  Carregar Modelos</button>
+              </div>
+              <div class="description" id="copilot-models-status">Modelo que sera usado no backend Copilot.
+              </div>
+            </div>
+          </div>
+
+          <!-- GROQ -->
+          <div id="ai-groq" class="dynamic-group hidden-group">
+            <div class="form-group">
+              <label for="groq-key">Groq API Key</label>
+              <input type="password" id="groq-key" placeholder="gsk_...">
+              <div class="description">Chave de API do Groq Cloud. Obtenha em <a href="https://console.groq.com/"
+                  target="_blank">console.groq.com</a>.</div>
+            </div>
+            <div class="form-group">
+              <label for="groq-model">Modelo Groq</label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <select id="groq-model" style="flex:1;">
+                  <option value="llama3-70b-8192">llama3-70b-8192 (padrão)</option>
+                  <option value="mixtral-8x7b-32768">mixtral-8x7b-32768</option>
+                  <option value="gemma2-9b-it">gemma2-9b-it</option>
+                </select>
+                <button type="button" id="load-groq-models-btn" class="btn-secondary" style="white-space:nowrap;">🔄
+                  Carregar Modelos</button>
+              </div>
+              <div class="description" id="groq-models-status"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================= -->
+        <!-- TAB 4: RUNNER           -->
+        <!-- ======================= -->
+        <section id="runner" class="tab-content">
+          <div class="section-header">
+            <h3>Test Runner & Projetos Alvo</h3>
+            <p>Gerencie os projetos e URLs onde os testes manuais serão executados.</p>
+          </div>
+
+          <div
+            style="background: rgba(255,255,255,0.02); padding: 16px; border: 1px solid #334155; border-radius: 8px; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 12px 0; font-size: 0.95rem; color: #f8fafc;">Adicionar Novo Projeto</h4>
+            <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+              <div style="flex: 1;">
+                <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom:4px;">Nome do
+                  Projeto</label>
+                <input type="text" id="runner-new-name" placeholder="Ex: Portal Web"
+                  style="width: 100%; border-radius: 6px; padding: 8px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; font-family: inherit;">
+              </div>
+              <div style="flex: 2;">
+                <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom:4px;">URL Alvo</label>
+                <input type="url" id="runner-new-url" placeholder="Ex: http://localhost:3000"
+                  style="width: 100%; border-radius: 6px; padding: 8px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; font-family: inherit;">
+              </div>
+            </div>
+            <button type="button" id="btn-add-runner-project"
+              style="background: #3b82f6; color: white; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.85rem;">+
+              Adicionar</button>
+          </div>
+
+          <div class="section-header" style="margin-top: 24px; margin-bottom: 12px;">
+            <h4 style="font-size: 0.95rem; color: #f8fafc;">Projetos Configurados</h4>
+          </div>
+          <ul id="runner-projects-list" style="list-style: none; padding: 0; margin: 0;">
+            <!-- Projetos serão renderizados aqui via JS -->
+          </ul>
+        </section>
+
+        <!-- Fixed Footer Actions -->
+        <div class="footer-actions">
+          <div class="status-message" id="status-message"></div>
+          <button type="submit" class="btn-save">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" class="icon-save">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Salvar Configurações
+          </button>
+        </div>
+      </form>
+    </main>
+  </div>
+  <script type="module" src="options.js"></script>
+</body>
+
+</html>

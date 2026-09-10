@@ -1,0 +1,2269 @@
+/* content.css */
+
+#qualiflow-fab-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 60px;
+    height: 60px;
+    z-index: 2147483647;
+}
+
+#qualiflow-fab-container::before {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    right: -10px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    transition: 0.3s;
+    z-index: 98;
+}
+
+#qualiflow-fab-container:hover::before {
+    width: 140px;
+    height: 220px;
+    background: transparent;
+}
+
+#qualiflow-fab-main {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    border-radius: 50%;
+    transition: 0.2s;
+    z-index: 100;
+    color: white;
+    cursor: pointer;
+}
+
+#qualiflow-fab-container:hover #qualiflow-fab-main {
+
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.6);
+
+    transform: scale(1.05);
+
+}
+
+
+
+.qualiflow-fab-sub {
+
+    position: absolute;
+
+    bottom: 6px;
+
+    right: 6px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 44px;
+
+    height: 44px;
+
+    border-radius: 50%;
+
+    background: #1e293b;
+
+    border: 1px solid #334155;
+
+    color: #f8fafc;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+    transition: 0.3s;
+
+    cursor: pointer;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    z-index: 99;
+
+}
+
+
+
+.qualiflow-fab-sub:hover {
+
+    background: #334155;
+
+}
+
+
+
+#qualiflow-fab-container:hover .qualiflow-fab-sub {
+
+    opacity: 1;
+
+    pointer-events: auto;
+
+}
+
+
+
+#qualiflow-fab-container:hover #qualiflow-fab-gen {
+
+    translate: 0px -110px;
+
+}
+
+
+
+#qualiflow-fab-container:hover #qualiflow-fab-dash {
+
+    translate: 0px -60px;
+
+}
+
+#qualiflow-fab-container:hover #qualiflow-fab-run {
+
+    translate: 0px -160px;
+
+}
+
+#qualiflow-fab-container:hover #qualiflow-fab-settings {
+
+    translate: -60px 0px;
+
+}
+
+
+
+#qualiflow-modal-overlay {
+
+    position: fixed;
+
+    top: 0;
+
+    left: 0;
+
+    width: 100vw;
+
+    height: 100vh;
+
+    background-color: transparent;
+
+    pointer-events: none;
+
+    z-index: 2147483646;
+
+}
+
+
+
+#qualiflow-modal-overlay.qualiflow-hidden {
+
+    display: none !important;
+
+}
+
+
+
+.qualiflow-hidden {
+
+    display: none !important;
+
+}
+
+
+
+#qualiflow-modal {
+
+    position: absolute;
+
+    left: 0;
+
+    top: 0;
+
+    height: 100vh;
+
+    width: fit-content;
+
+    max-width: 95vw;
+
+    background-color: #1e293b;
+
+    border-right: 1px solid #334155;
+
+    display: flex;
+
+    flex-direction: column;
+
+    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.5);
+
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+    color: #f8fafc;
+
+    pointer-events: auto;
+
+    transform: translateX(-100%);
+
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+}
+
+
+
+#qualiflow-modal-overlay.qualiflow-open #qualiflow-modal {
+
+    transform: translateX(0);
+
+}
+
+
+
+.qualiflow-header {
+
+    padding: 16px 20px;
+
+    border-bottom: 1px solid #334155;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    background-color: #0f172a;
+
+}
+
+
+
+.qualiflow-header h2 {
+
+    margin: 0;
+
+    font-size: 1.1rem;
+
+    font-weight: 600;
+
+    background: linear-gradient(to right, #60a5fa, #c084fc);
+
+    -webkit-background-clip: text;
+
+    background-clip: text;
+
+    color: transparent;
+
+}
+
+
+
+.qualiflow-close {
+
+    cursor: pointer;
+
+    font-size: 1.5rem;
+
+    color: #94a3b8;
+
+    line-height: 1;
+
+}
+
+
+
+.qualiflow-close:hover {
+
+    color: #f8fafc;
+
+}
+
+.qualiflow-generation-layout {
+    position: relative;
+}
+
+.qualiflow-generation-layout.qualiflow-loading-active > .qualiflow-step-col {
+    filter: blur(1.8px) saturate(0.88);
+    transition: filter 0.25s ease;
+}
+
+.qualiflow-gen-progress-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: radial-gradient(circle at 30% 20%, rgba(15, 23, 42, 0.45), rgba(2, 6, 23, 0.8));
+    backdrop-filter: blur(5px);
+}
+
+.qualiflow-gen-progress-shell {
+    width: min(560px, 92%);
+    border: 1px solid rgba(100, 116, 139, 0.45);
+    border-radius: 14px;
+    background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.96));
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(148, 163, 184, 0.08);
+    padding: 16px;
+}
+
+.qualiflow-gen-progress-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: #e2e8f0;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.qualiflow-gen-spinner {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #60a5fa;
+    box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.7);
+    animation: qualiflowPulse 1.2s infinite;
+}
+
+.qualiflow-gen-steps {
+    display: grid;
+    gap: 6px;
+}
+
+.qualiflow-gen-step {
+    position: relative;
+    font-size: 0.78rem;
+    color: #94a3b8;
+    padding-left: 18px;
+    transition: color 0.25s ease;
+}
+
+.qualiflow-gen-step::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #475569;
+    transform: translateY(-50%);
+}
+
+.qualiflow-gen-step.is-active {
+    color: #f8fafc;
+}
+
+.qualiflow-gen-step.is-active::before {
+    background: #38bdf8;
+    box-shadow: 0 0 0 5px rgba(56, 189, 248, 0.15);
+    animation: qualiflowPulseSmall 1s infinite;
+}
+
+.qualiflow-gen-step.is-done {
+    color: #86efac;
+}
+
+.qualiflow-gen-step.is-done::before {
+    background: #22c55e;
+}
+
+.qualiflow-gen-batch-label {
+    margin-top: 8px;
+    font-size: 0.72rem;
+    color: #93c5fd;
+}
+
+.qualiflow-gen-progress-overlay.qualiflow-hidden {
+    display: none !important;
+}
+
+@keyframes qualiflowPulse {
+    0% { box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(96, 165, 250, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(96, 165, 250, 0); }
+}
+
+@keyframes qualiflowPulseSmall {
+    0% { transform: translateY(-50%) scale(1); }
+    50% { transform: translateY(-50%) scale(1.22); }
+    100% { transform: translateY(-50%) scale(1); }
+}
+
+
+
+.qualiflow-generation-layout {
+
+    display: flex;
+
+    flex-direction: row;
+
+    height: 100%;
+
+    overflow: hidden;
+
+}
+
+
+
+.qualiflow-step-col {
+
+    display: flex;
+
+    flex-direction: column;
+
+    height: 100%;
+
+    padding: 20px;
+
+    border-right: 1px solid #334155;
+
+    overflow-y: auto;
+
+    resize: horizontal;
+
+    min-width: 300px;
+
+    max-width: 50vw;
+
+}
+
+
+
+.qualiflow-col-context {
+
+    width: 340px;
+
+    background-color: #0f172a;
+
+}
+
+
+
+.qualiflow-col-rtm {
+
+    width: 500px;
+
+    background-color: #1e293b;
+
+}
+
+
+
+.qualiflow-col-scenarios {
+
+    width: 550px;
+
+    background-color: #0f172a;
+
+    border-right: none;
+
+}
+
+
+
+.qualiflow-azure-html {
+
+    font-size: 0.85rem;
+
+    line-height: 1.5;
+
+    background: #0f172a;
+
+    padding: 12px;
+
+    border-radius: 6px;
+
+    border: 1px solid #334155;
+
+    color: #cbd5e1;
+
+    margin-bottom: 12px;
+
+}
+
+
+
+.qualiflow-azure-html ul,
+
+.qualiflow-azure-html ol {
+
+    margin-left: 20px;
+
+    margin-bottom: 8px;
+
+}
+
+
+
+.qualiflow-azure-html p {
+
+    margin: 0 0 8px 0;
+
+}
+
+
+
+.qualiflow-scenarios-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 16px;
+
+    padding-bottom: 16px;
+
+    border-bottom: 1px solid #334155;
+
+}
+
+
+
+.qualiflow-scenarios-header h3 {
+
+    margin: 0;
+
+    font-size: 1.1rem;
+
+}
+
+
+
+.qualiflow-btn-inline {
+
+    padding: 8px 16px;
+
+    border-radius: 6px;
+
+    border: none;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    font-size: 0.85rem;
+
+}
+
+
+
+.qualiflow-info {
+
+    margin-bottom: 16px;
+
+    padding: 12px;
+
+    background-color: rgba(59, 130, 246, 0.1);
+
+    border-left: 4px solid #3b82f6;
+
+    border-radius: 4px;
+
+    font-size: 0.9rem;
+
+    color: #bfdbfe;
+
+}
+
+
+
+.qualiflow-error {
+
+    margin-bottom: 16px;
+
+    padding: 12px;
+
+    background-color: rgba(239, 68, 68, 0.1);
+
+    border-left: 4px solid #ef4444;
+
+    border-radius: 4px;
+
+    color: #fca5a5;
+
+    font-size: 0.9rem;
+
+}
+
+
+
+#qualiflow-wi-title {
+
+    font-size: 1.1rem;
+
+    margin: 0 0 4px 0;
+
+}
+
+
+
+.qualiflow-wi-meta {
+
+    font-size: 0.8rem;
+
+    color: #94a3b8;
+
+    margin: 0 0 16px 0;
+
+    padding-bottom: 16px;
+
+    border-bottom: 1px solid #334155;
+
+}
+
+
+
+.qualiflow-section-header h4 {
+
+    margin: 0 0 8px 0;
+
+    font-size: 0.9rem;
+
+    color: #e2e8f0;
+
+}
+
+
+
+#qualiflow-user-focus {
+
+    width: 100%;
+
+    height: 80px;
+
+    background-color: #0f172a;
+
+    border: 1px solid #475569;
+
+    border-radius: 6px;
+
+    color: #f8fafc;
+
+    padding: 8px;
+
+    font-size: 0.85rem;
+
+    resize: vertical;
+
+    margin-bottom: 16px;
+
+    font-family: inherit;
+
+    box-sizing: border-box;
+
+}
+
+
+
+#qualiflow-user-focus:focus,
+
+#qualiflow-technical-detail:focus,
+
+#qualiflow-acceptance-criteria:focus,
+
+.qualiflow-input-edit:focus,
+
+.qualiflow-textarea-edit:focus,
+
+.qualiflow-textarea-steps:focus {
+
+    outline: none;
+
+    border-color: #3b82f6;
+
+}
+
+
+
+.qualiflow-btn {
+
+    padding: 10px 16px;
+
+    border-radius: 6px;
+
+    font-weight: 600;
+
+    font-size: 0.9rem;
+
+    cursor: pointer;
+
+    border: none;
+
+    transition: all 0.2s;
+
+    width: 100%;
+
+    margin-bottom: 12px;
+
+}
+
+
+
+.qualiflow-btn:disabled {
+
+    opacity: 0.6;
+
+    cursor: not-allowed;
+
+}
+
+
+
+.qualiflow-btn-primary {
+
+    background-color: #3b82f6;
+
+    color: white;
+
+}
+
+
+
+.qualiflow-btn-primary:hover:not(:disabled) {
+
+    background-color: #2563eb;
+
+}
+
+
+
+.qualiflow-btn-secondary {
+
+    background-color: #475569;
+
+    color: white;
+
+}
+
+
+
+.qualiflow-btn-secondary:hover:not(:disabled) {
+
+    background-color: #334155;
+
+}
+
+
+
+.qualiflow-btn-success {
+
+    background-color: #10b981;
+
+    color: white;
+
+}
+
+
+
+.qualiflow-btn-success:hover:not(:disabled) {
+
+    background-color: #059669;
+
+}
+
+
+
+.qualiflow-eval-result {
+
+    background-color: #1e1e2f;
+
+    border: 1px solid #5b21b6;
+
+    padding: 12px;
+
+    border-radius: 6px;
+
+    margin-bottom: 16px;
+
+    font-size: 0.85rem;
+
+    line-height: 1.4;
+
+    color: #e2e8f0;
+
+}
+
+
+
+.qualiflow-eval-result.error {
+
+    border-color: #ef4444;
+
+}
+
+
+
+/* Accordion */
+
+#qualiflow-scenarios-area h3 {
+
+    margin: 24px 0 16px 0;
+
+    font-size: 1rem;
+
+    border-bottom: 1px solid #334155;
+
+    padding-bottom: 8px;
+
+}
+
+
+
+.qualiflow-acc-item {
+
+    background-color: #273549;
+
+    border: 1px solid #334155;
+
+    border-radius: 6px;
+
+    margin-bottom: 8px;
+
+}
+
+
+
+.qualiflow-acc-header {
+
+    display: flex;
+
+    align-items: center;
+
+    padding: 12px;
+
+    cursor: pointer;
+
+    user-select: none;
+
+}
+
+
+
+.qualiflow-chk {
+
+    appearance: none;
+
+    -webkit-appearance: none;
+
+    width: 18px;
+
+    height: 18px;
+
+    border: 2px solid #3b82f6;
+
+    border-radius: 4px;
+
+    background-color: transparent;
+
+    cursor: pointer;
+
+    position: relative;
+
+    margin-right: 12px;
+
+    flex-shrink: 0;
+
+}
+
+
+
+.qualiflow-chk:checked {
+
+    background-color: #3b82f6;
+
+}
+
+
+
+.qualiflow-chk:checked::after {
+
+    content: '';
+
+    position: absolute;
+
+    left: 4px;
+
+    top: 1px;
+
+    width: 4px;
+
+    height: 8px;
+
+    border: solid white;
+
+    border-width: 0 2px 2px 0;
+
+    transform: rotate(45deg);
+
+}
+
+
+
+.qualiflow-chk-large {
+
+    width: 22px;
+
+    height: 22px;
+
+}
+
+
+
+.qualiflow-chk-large:checked::after {
+
+    left: 6px;
+
+    top: 2px;
+
+    width: 5px;
+
+    height: 10px;
+
+}
+
+
+
+.qualiflow-select-all-header {
+
+    display: flex;
+
+    align-items: center;
+
+    background-color: #1e293b;
+
+    padding: 12px;
+
+    border-radius: 6px;
+
+    margin-bottom: 16px;
+
+    border-bottom: 2px solid #3b82f6;
+
+}
+
+
+
+.qualiflow-selection-count {
+
+    margin-left: auto;
+
+    font-size: 0.85rem;
+
+    background-color: #0f172a;
+
+    padding: 4px 8px;
+
+    border-radius: 12px;
+
+    color: #bfdbfe;
+
+}
+
+
+
+.qualiflow-view-title {
+
+    margin: 4px 0 12px 0;
+
+    font-size: 1.05rem;
+
+    color: #f8fafc;
+
+}
+
+
+
+.qualiflow-view-bdd {
+
+    font-size: 0.9rem;
+
+    color: #94a3b8;
+
+    background: #0f172a;
+
+    padding: 12px;
+
+    border-left: 3px solid #6366f1;
+
+    border-radius: 4px;
+
+    margin-bottom: 16px;
+
+    line-height: 1.5;
+
+}
+
+
+
+.qualiflow-modes-container {
+
+    position: relative;
+
+    width: 100%;
+
+}
+
+
+
+.qualiflow-edit-btn {
+
+    position: absolute;
+
+    top: 0;
+
+    right: 0;
+
+}
+
+
+
+.qualiflow-save-edit-btn {
+
+    margin-bottom: 16px;
+
+    width: auto;
+
+}
+
+
+
+.qualiflow-cobertura-section {
+
+    background-color: #0f172a;
+
+    padding: 16px;
+
+    border-radius: 8px;
+
+    margin-bottom: 24px;
+
+    border: 1px solid #38bdf8;
+
+}
+
+
+
+.qualiflow-cobertura-text {
+
+    font-size: 0.9rem;
+
+    color: #e2e8f0;
+
+    margin-bottom: 12px;
+
+}
+
+
+
+.qualiflow-rtm-table,
+
+.qualiflow-steps-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    font-size: 0.85rem;
+
+    margin-top: 8px;
+
+}
+
+
+
+.qualiflow-rtm-table th,
+
+.qualiflow-steps-table th {
+
+    background-color: #1e293b;
+
+    border: 1px solid #334155;
+
+    padding: 8px;
+
+    text-align: left;
+
+    color: #94a3b8;
+
+}
+
+
+
+.qualiflow-rtm-table td,
+
+.qualiflow-steps-table td {
+
+    border: 1px solid #334155;
+
+    padding: 8px;
+
+}
+
+
+
+.qualiflow-acc-title {
+
+    flex: 1;
+
+    font-size: 0.9rem;
+
+    font-weight: 500;
+
+}
+
+
+
+.qualiflow-caret {
+
+    font-size: 0.8rem;
+
+    color: #94a3b8;
+
+}
+
+
+
+.qualiflow-acc-body {
+
+    padding: 16px;
+
+    border-top: 1px solid #334155;
+
+    background-color: #1e293b;
+
+}
+
+
+
+.qualiflow-form-group {
+
+    margin-bottom: 12px;
+
+}
+
+
+
+.qualiflow-form-group label {
+
+    display: block;
+
+    font-size: 0.8rem;
+
+    color: #94a3b8;
+
+    margin-bottom: 4px;
+
+}
+
+
+
+.qualiflow-input-edit,
+
+.qualiflow-textarea-edit,
+
+.qualiflow-textarea-steps {
+
+    width: 100%;
+
+    background-color: #0f172a;
+
+    border: 1px solid #475569;
+
+    border-radius: 4px;
+
+    color: #e2e8f0;
+
+    padding: 8px;
+
+    font-size: 0.85rem;
+
+    font-family: inherit;
+
+    box-sizing: border-box;
+
+}
+
+
+
+.qualiflow-textarea-edit {
+
+    height: 100px;
+
+    resize: vertical;
+
+}
+
+
+
+.qualiflow-textarea-steps {
+
+    height: 180px;
+
+    resize: vertical;
+
+    white-space: pre-wrap;
+
+}
+
+
+
+/* Estilo para o campo de critérios de aceitação */
+
+#qualiflow-acceptance-criteria {
+
+    width: 100%;
+
+    height: 100px;
+
+    background-color: #0f172a;
+
+    border: 1px solid #475569;
+
+    border-radius: 4px;
+
+    color: #e2e8f0;
+
+    padding: 8px;
+
+    font-size: 0.85rem;
+
+    font-family: inherit;
+
+    box-sizing: border-box;
+
+    resize: vertical;
+
+}
+
+
+
+.qualiflow-actions-bottom {
+
+    margin-top: 24px;
+
+}
+
+
+
+/* Edit Modal */
+
+#qualiflow-edit-modal-overlay {
+
+    position: fixed;
+
+    top: 0;
+
+    left: 0;
+
+    width: 100vw;
+
+    height: 100vh;
+
+    background-color: rgba(15, 23, 42, 0.8);
+
+    backdrop-filter: blur(4px);
+
+    z-index: 2147483648;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+
+
+#qualiflow-edit-modal {
+
+    width: 800px;
+
+    max-width: 95vw;
+
+    height: 85vh;
+
+    max-height: 90vh;
+
+    background-color: #1e293b;
+
+    border-radius: 12px;
+
+    border: 1px solid #475569;
+
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+
+    display: flex;
+
+    flex-direction: column;
+
+    overflow: hidden;
+
+}
+
+
+
+.qualiflow-edit-modal-body {
+
+    padding: 20px;
+
+    overflow-y: auto;
+
+    flex: 1;
+
+}
+
+
+
+.qualiflow-edit-modal-footer {
+
+    padding: 16px 20px;
+
+    border-top: 1px solid #334155;
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 12px;
+
+    background-color: #0f172a;
+
+}
+
+
+
+.qualiflow-step-row {
+
+    display: flex;
+
+    gap: 8px;
+
+    margin-bottom: 8px;
+
+    align-items: flex-start;
+
+}
+
+
+
+.qualiflow-step-input {
+
+    flex: 1;
+
+    background-color: #0f172a;
+
+    border: 1px solid #475569;
+
+    border-radius: 4px;
+
+    color: #e2e8f0;
+
+    padding: 8px;
+
+    font-size: 0.85rem;
+
+    font-family: inherit;
+
+    resize: vertical;
+
+}
+
+
+
+.qualiflow-step-input:focus {
+
+    outline: none;
+
+    border-color: #3b82f6;
+
+}
+
+
+
+.qualiflow-evidence-toggle {
+
+    background: transparent;
+
+    border: 1px solid #475569;
+
+    color: #94a3b8;
+
+    border-radius: 4px;
+
+    padding: 8px;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+
+
+.qualiflow-evidence-toggle.active {
+
+    background: rgba(16, 185, 129, 0.1);
+
+    color: #10b981;
+
+    border-color: #10b981;
+
+}
+
+
+
+/* Novos estilos para Foco e @params */
+
+#qualiflow-technical-detail {
+
+    width: 100%;
+
+    height: 80px;
+
+    background-color: #0f172a;
+
+    border: 1px solid #475569;
+
+    border-radius: 6px;
+
+    color: #f8fafc;
+
+    padding: 8px;
+
+    font-size: 0.85rem;
+
+    resize: vertical;
+
+    margin-bottom: 12px;
+
+    font-family: inherit;
+
+    box-sizing: border-box;
+
+}
+
+
+
+.qualiflow-focus-container {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    margin-bottom: 12px;
+
+}
+
+
+
+.qualiflow-select-group {
+
+    display: flex;
+
+    flex-direction: column;
+
+    margin-bottom: 12px;
+
+}
+
+
+
+.qualiflow-select-group label {
+
+    font-size: 0.8rem;
+
+    color: #94a3b8;
+
+    margin-bottom: 4px;
+
+}
+
+
+
+.qualiflow-select-input {
+
+    width: 100%;
+
+    background-color: #0f172a;
+
+    border: 1px solid #475569;
+
+    border-radius: 6px;
+
+    color: #f8fafc;
+
+    padding: 8px;
+
+    font-size: 0.85rem;
+
+    cursor: pointer;
+
+    font-family: inherit;
+
+    box-sizing: border-box;
+
+}
+
+
+
+.qualiflow-select-input:focus {
+
+    outline: none;
+
+    border-color: #3b82f6;
+
+}
+
+
+
+.qualiflow-select-row {
+
+    display: flex;
+
+    gap: 12px;
+
+    margin-bottom: 4px;
+
+}
+
+
+
+.qualiflow-select-row .qualiflow-select-group {
+
+    flex: 1;
+
+}
+
+
+
+.qualiflow-param-indicator {
+
+    color: #f59e0b;
+
+    margin-left: 8px;
+
+    display: flex;
+
+    align-items: center;
+
+    font-size: 1.1rem;
+
+    font-weight: bold;
+
+}
+
+
+
+.qualiflow-params-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    margin-top: 8px;
+
+}
+
+
+
+.qualiflow-params-table th {
+
+    text-align: left;
+
+    font-size: 0.75rem;
+
+    color: #94a3b8;
+
+    padding: 4px 8px;
+
+    border-bottom: 1px solid #334155;
+
+}
+
+
+
+.qualiflow-params-table td {
+
+    padding: 4px;
+
+}
+
+
+
+.qualiflow-input-param {
+
+    width: 100%;
+
+    background-color: #0f172a;
+
+    border: 1px solid #475569;
+
+    border-radius: 4px;
+
+    color: #e2e8f0;
+
+    padding: 4px 8px;
+
+    font-size: 0.8rem;
+
+    font-family: inherit;
+
+    box-sizing: border-box;
+
+}
+
+
+
+.qualiflow-input-param:focus {
+
+    outline: none;
+
+    border-color: #3b82f6;
+
+}
+
+/* Drag-and-drop step reordering */
+.qualiflow-step-row.dragging {
+    opacity: 0.4;
+    border: 2px dashed #6366f1;
+}
+
+.qualiflow-step-row.drag-over {
+    border-top: 2px solid #6366f1;
+}
+
+/* ===================== */
+/* Floating Runner Window */
+/* ===================== */
+#qualiflow-runner-window {
+    position: fixed;
+    width: 480px;
+    height: 320px;
+    min-width: 280px;
+    min-height: 180px;
+    max-width: 90vw;
+    max-height: 80vh;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(99, 102, 241, 0.15);
+    z-index: 2147483647;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    resize: both;
+    font-family: 'Inter', -apple-system, sans-serif;
+    transition: box-shadow 0.2s ease;
+}
+
+#qualiflow-runner-window:hover {
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(99, 102, 241, 0.3);
+}
+
+#qualiflow-runner-bubble {
+    position: fixed;
+    right: 100px;
+    bottom: 100px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border: 1px solid #6366f1;
+    color: #c7d2fe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    z-index: 2147483647;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(99, 102, 241, 0.3);
+    user-select: none;
+}
+
+#qualiflow-runner-bubble:active {
+    cursor: grabbing;
+}
+
+/* FAB run button offset (sits above the settings button) */
+#qualiflow-container:hover #qualiflow-fab-run {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ===================== */
+/* Deploy Validation     */
+/* ===================== */
+#qualiflow-dashboard-container.qualiflow-dashboard-wide {
+    width: min(1100px, 95vw) !important;
+    max-width: 95vw !important;
+    min-width: min(900px, 95vw) !important;
+}
+
+#qualiflow-dashboard-container.qualiflow-dashboard-resizable {
+    width: min(1080px, 94vw);
+    min-width: 420px;
+    max-width: 96vw;
+    resize: horizontal;
+    border-right: 1px solid #334155;
+}
+
+.qualiflow-analytics-view {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.qualiflow-analytics-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 8px;
+    width: min(100%, 860px);
+}
+
+.qualiflow-multi-select {
+    position: relative;
+    min-width: 0;
+}
+
+.qualiflow-multi-select-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    text-align: left;
+}
+
+.qualiflow-multi-select-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.qualiflow-multi-select-arrow {
+    font-size: 0.72rem;
+    color: #93c5fd;
+    transition: transform 0.15s ease;
+}
+
+.qualiflow-multi-select.is-open .qualiflow-multi-select-arrow {
+    transform: rotate(180deg);
+}
+
+.qualiflow-multi-select-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 100%;
+    min-width: 220px;
+    max-height: 240px;
+    overflow: auto;
+    background: #0b1220;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.45);
+    padding: 6px;
+    z-index: 60;
+    display: none;
+}
+
+.qualiflow-multi-select.is-open .qualiflow-multi-select-panel {
+    display: block;
+}
+
+.qualiflow-multi-select-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    color: #e2e8f0;
+    font-size: 0.82rem;
+    cursor: pointer;
+}
+
+.qualiflow-multi-select-option:hover {
+    background: rgba(59, 130, 246, 0.14);
+}
+
+.qualiflow-multi-select-option input[type='checkbox'] {
+    accent-color: #3b82f6;
+    width: 14px;
+    height: 14px;
+    margin: 0;
+}
+
+.qualiflow-analytics-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.qualiflow-analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 12px;
+    align-items: stretch;
+}
+
+.qualiflow-analytics-grid-secondary {
+    margin-top: 12px;
+}
+
+.qualiflow-analytics-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 280px;
+    min-width: 0;
+    background: #0f172a !important;
+    border: 1px solid #334155 !important;
+}
+
+.qualiflow-analytics-plot {
+    flex: 1;
+    min-height: 220px;
+    overflow: auto;
+}
+
+.qualiflow-analytics-grid-secondary .qualiflow-analytics-card {
+    min-height: 220px;
+}
+
+.qualiflow-dashboard-chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.qualiflow-dashboard-chart-card {
+    padding: 12px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    min-height: 220px;
+    min-width: 0;
+}
+
+@media (min-width: 1280px) {
+    .qualiflow-analytics-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .qualiflow-analytics-card-wide {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 980px) {
+    .qualiflow-analytics-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    #qualiflow-dashboard-container.qualiflow-dashboard-resizable {
+        width: 96vw;
+        min-width: 96vw;
+        max-width: 96vw;
+        resize: none;
+    }
+
+    .qualiflow-analytics-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .qualiflow-analytics-grid,
+    .qualiflow-dashboard-chart-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .qualiflow-analytics-card,
+    .qualiflow-analytics-grid-secondary .qualiflow-analytics-card {
+        min-height: 240px;
+    }
+
+    .qualiflow-analytics-plot {
+        min-height: 180px;
+    }
+}
+
+.qualiflow-deploy-view {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+.qualiflow-deploy-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.qualiflow-deploy-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.qualiflow-deploy-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.qualiflow-deploy-chip {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+}
+
+.qualiflow-deploy-chip-total {
+    background: rgba(148, 163, 184, 0.15);
+    color: #cbd5e1;
+    border-color: rgba(148, 163, 184, 0.35);
+}
+
+.qualiflow-deploy-chip-yes {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+.qualiflow-deploy-chip-no {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.qualiflow-deploy-chip-pending {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.qualiflow-deploy-area-group {
+    margin-bottom: 18px;
+}
+
+.qualiflow-deploy-area-title {
+    margin: 0 0 8px 0;
+    font-size: 0.95rem;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.qualiflow-deploy-area-count {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #94a3b8;
+    background: rgba(148, 163, 184, 0.12);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    border-radius: 999px;
+    padding: 1px 8px;
+}
+
+.qualiflow-deploy-table-wrap {
+    overflow-x: auto;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    background: #0f172a;
+}
+
+.qualiflow-deploy-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    min-width: 820px;
+}
+
+.qualiflow-deploy-table th {
+    text-align: left;
+    padding: 8px 10px;
+    background: #1e293b;
+    color: #94a3b8;
+    font-weight: 600;
+    border-bottom: 1px solid #334155;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.qualiflow-deploy-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #1e293b;
+    color: #e2e8f0;
+    vertical-align: middle;
+}
+
+.qualiflow-deploy-row:hover td {
+    background: rgba(99, 102, 241, 0.06);
+}
+
+.qualiflow-deploy-row-problem td {
+    background: rgba(239, 68, 68, 0.06);
+}
+
+.qualiflow-deploy-row-ok td {
+    background: rgba(16, 185, 129, 0.04);
+}
+
+.qualiflow-deploy-row-child td {
+    color: #cbd5e1;
+    font-size: 0.74rem;
+}
+
+.qualiflow-deploy-child-indent {
+    color: #64748b;
+    margin-right: 2px;
+}
+
+.qualiflow-deploy-id {
+    color: #60a5fa;
+    text-decoration: none;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.qualiflow-deploy-id:hover {
+    text-decoration: underline;
+    color: #93c5fd;
+}
+
+.qualiflow-deploy-title {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.qualiflow-deploy-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.7rem;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.qualiflow-deploy-state {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.7rem;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.qualiflow-deploy-state-ok {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.35);
+}
+
+.qualiflow-deploy-state-wip {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.35);
+}
+
+.qualiflow-deploy-state-bad {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.35);
+}
+
+.qualiflow-deploy-state-default {
+    background: rgba(148, 163, 184, 0.12);
+    color: #cbd5e1;
+    border-color: rgba(148, 163, 184, 0.3);
+}
+
+.qualiflow-deploy-stack {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.7rem;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.qualiflow-deploy-stack-back {
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+    border-color: rgba(139, 92, 246, 0.35);
+}
+
+.qualiflow-deploy-stack-front {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border-color: rgba(59, 130, 246, 0.35);
+}
+
+.qualiflow-deploy-stack-both {
+    background: rgba(16, 185, 129, 0.12);
+    color: #6ee7b7;
+    border-color: rgba(16, 185, 129, 0.35);
+}
+
+.qualiflow-deploy-stack-none {
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.qualiflow-deploy-qa-cell {
+    white-space: nowrap;
+}
+
+.qualiflow-deploy-qa-chip {
+    display: inline-block;
+    margin: 1px 3px 1px 0;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    background: rgba(99, 102, 241, 0.18);
+    color: #a5b4fc;
+    border: 1px solid rgba(99, 102, 241, 0.4);
+}
+
+.qualiflow-deploy-qa-empty {
+    color: #64748b;
+}
+
+.qualiflow-deploy-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.7rem;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.qualiflow-deploy-yes {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+.qualiflow-deploy-no {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.qualiflow-deploy-pending {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.qualiflow-deploy-problem-text {
+    color: #fca5a5;
+    font-weight: 500;
+    cursor: help;
+}
+
+.qualiflow-deploy-pending-text {
+    color: #fcd34d;
+    font-weight: 500;
+}
+
+.qualiflow-deploy-ok-text {
+    color: #64748b;
+}
+
+/* Toggle switch (ex.: Modo Desenvolvedor) */
+.qualiflow-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.qualiflow-toggle {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.qualiflow-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.qualiflow-toggle-slider {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    background: #334155;
+    border-radius: 999px;
+    transition: background-color 0.2s ease;
+}
+
+.qualiflow-toggle-slider::before {
+    content: "";
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: #f8fafc;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.qualiflow-toggle input:checked + .qualiflow-toggle-slider {
+    background: #6366f1;
+}
+
+.qualiflow-toggle input:checked + .qualiflow-toggle-slider::before {
+    transform: translateX(18px);
+}
+
+.qualiflow-toggle-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+.qualiflow-deploy-body {
+    min-height: 80px;
+}
