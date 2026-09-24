@@ -2,6 +2,18 @@
 // Autenticacao via OAuth Microsoft Entra ID (sessao obtida em auth/board/session).
 import { callBoardBackend } from "./backendClient.js";
 
+// Auto-discovery: usadas apos o login Microsoft para listar organizacoes/projetos do usuario
+// em vez de exigir digitar a URL da organizacao e o nome do projeto manualmente.
+export async function azureListOrganizations(settings) {
+	const body = await callBoardBackend("azure", "/api/board/azure/organizations", {}, settings);
+	return body.data || [];
+}
+
+export async function azureListProjects(orgUrl, settings) {
+	const body = await callBoardBackend("azure", "/api/board/azure/projects", { orgUrl }, settings);
+	return body.data || [];
+}
+
 export async function azureGetWorkItem(id, settings) {
 	const body = await callBoardBackend(
 		"azure",

@@ -995,6 +995,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true;
     }
 
+    if (request.action === "GET_AZURE_ORGANIZATIONS") {
+        getSettings().then(settings => {
+            boards.azureListOrganizations(settings)
+                .then(organizations => sendResponse({ success: true, organizations }))
+                .catch(err => sendResponse({ success: false, error: err.message }));
+        });
+        return true;
+    }
+
+    if (request.action === "GET_AZURE_PROJECTS") {
+        getSettings().then(settings => {
+            boards.azureListProjects(request.orgUrl, settings)
+                .then(projects => sendResponse({ success: true, projects }))
+                .catch(err => sendResponse({ success: false, error: err.message }));
+        });
+        return true;
+    }
+
     if (request.action === "UPDATE_WORK_ITEMS_STATE") {
         getSettings().then(settings => {
             azureUpdateWorkItemsState(request.ids, request.newState, settings)

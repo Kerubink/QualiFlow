@@ -103,13 +103,26 @@
               <div class="description">Login substitui o PAT: o backend usa OAuth Microsoft Entra ID para acessar o Azure DevOps em seu nome.</div>
             </div>
             <div class="form-group">
-              <label for="azure-org">Azure Organization URL</label>
-              <input type="url" id="azure-org" placeholder="https://dev.azure.com/SuaOrg/">
+              <label for="azure-org">Organização do Azure DevOps</label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <select id="azure-org" style="flex:1;">
+                  <option value="">Faça login com Microsoft e clique em atualizar...</option>
+                </select>
+                <button type="button" id="refresh-azure-orgs-btn" class="btn-secondary" style="white-space:nowrap;">🔄</button>
+              </div>
+              <input type="text" id="azure-org-manual" placeholder="https://dev.azure.com/SuaOrg" style="display:none; margin-top:8px;">
+              <div class="description" id="azure-orgs-status">Buscada automaticamente apos o login com Microsoft. Se a sua organizacao nao aparecer na lista, escolha "Outro" para digitar a URL manualmente.</div>
             </div>
             <div class="form-group">
-              <label for="azure-project">Azure Project Name</label>
-              <input type="text" id="azure-project" placeholder="NomeDoProjeto">
-              <div class="description">Nome do projeto exato onde os Casos de Teste serão criados.</div>
+              <label for="azure-project">Projeto do Azure DevOps</label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <select id="azure-project" style="flex:1;">
+                  <option value="">Selecione uma organização primeiro...</option>
+                </select>
+                <button type="button" id="refresh-azure-projects-btn" class="btn-secondary" style="white-space:nowrap;">🔄</button>
+              </div>
+              <input type="text" id="azure-project-manual" placeholder="NomeDoProjeto" style="display:none; margin-top:8px;">
+              <div class="description" id="azure-projects-status">Projeto exato onde os Casos de Teste serão criados.</div>
             </div>
           </div>
 

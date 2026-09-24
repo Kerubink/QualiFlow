@@ -135,6 +135,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('copilot-login-btn')?.addEventListener('click', startCopilotOAuthLogin);
     document.getElementById('azure-login-btn')?.addEventListener('click', () => startBoardOAuthLogin('azure'));
     document.getElementById('jira-login-btn')?.addEventListener('click', () => startBoardOAuthLogin('jira'));
+    document.getElementById('refresh-azure-orgs-btn')?.addEventListener('click', () => loadAzureOrganizations());
+    document.getElementById('refresh-azure-projects-btn')?.addEventListener('click', () => loadAzureProjects(getAzureOrgValue()));
+    document.getElementById('azure-org')?.addEventListener('change', () => {
+        toggleAzureManualInput('org');
+        const orgUrl = getAzureOrgValue();
+        if (orgUrl) loadAzureProjects(orgUrl);
+    });
+    document.getElementById('azure-project')?.addEventListener('change', () => toggleAzureManualInput('project'));
 });
 document.getElementById('settings-form').addEventListener('submit', saveOptions);
 
@@ -148,6 +156,139 @@ function setupDevModeToggle() {
             urlInput.value = DEV_BACKEND_URL;
         } else if (urlInput.value.trim() === DEV_BACKEND_URL) {
             urlInput.value = '';
+        }
+    });
+}
+
+// =======================
+// AZURE DEVOPS: auto-discovery de organizacao/projeto (apos login Microsoft)
+// =======================
+const AZURE_MANUAL_VALUE = '__manual__';
+
+function toggleAzureManualInput(kind) {
+    const selectEl = document.getElementById(`azure-${kind}`);
+    const manualEl = document.getElementById(`azure-${kind}-manual`);
+    if (!selectEl || !manualEl) return;
+    manualEl.style.display = selectEl.value === AZURE_MANUAL_VALUE ? 'block' : 'none';
+}
+
+function getAzureOrgValue() {
+    const selectEl = document.getElementById('azure-org');
+    if (!selectEl) return '';
+    const raw = selectEl.value === AZURE_MANUAL_VALUE
+        ? (document.getElementById('azure-org-manual')?.value || '')
+        : selectEl.value;
+    return raw.trim().replace(/\/+$/, '');
+}
+
+function getAzureProjectValue() {
+    const selectEl = document.getElementById('azure-project');
+    if (!selectEl) return '';
+    if (selectEl.value === AZURE_MANUAL_VALUE) {
+        return (document.getElementById('azure-project-manual')?.value || '').trim();
+    }
+    return selectEl.value;
+}
+
+function populateAzureOrgSelect(organizations, savedValue) {
+    const selectEl = document.getElementById('azure-org');
+    if (!selectEl) return;
+
+    const options = organizations.map((org) => `<option value="${org.url}">${org.name}</option>`).join('');
+    selectEl.innerHTML = `<option value="">Selecione uma organização...</option>${options}<option value="${AZURE_MANUAL_VALUE}">Outro (digitar manualmente)</option>`;
+
+    const normalizedSaved = (savedValue || '').trim().replace(/\/+$/, '');
+    const matched = normalizedSaved && organizations.some((org) => org.url === normalizedSaved);
+
+    if (matched) {
+        selectEl.value = normalizedSaved;
+    } else if (normalizedSaved) {
+        // A organizacao salva nao apareceu na lista (ex.: escopo/permissao diferente) -- preserva
+        // o valor via modo manual em vez de descarta-lo silenciosamente.
+        selectEl.value = AZURE_MANUAL_VALUE;
+        const manualInput = document.getElementById('azure-org-manual');
+        if (manualInput) manualInput.value = normalizedSaved;
+    }
+    toggleAzureManualInput('org');
+}
+
+function populateAzureProjectSelect(projects, savedValue) {
+    const selectEl = document.getElementById('azure-project');
+    if (!selectEl) return;
+
+    const options = projects.map((project) => `<option value="${project.name}">${project.name}</option>`).join('');
+    selectEl.innerHTML = `<option value="">Selecione um projeto...</option>${options}<option value="${AZURE_MANUAL_VALUE}">Outro (digitar manualmente)</option>`;
+
+    const normalizedSaved = (savedValue || '').trim();
+    const matched = normalizedSaved && projects.some((project) => project.name === normalizedSaved);
+
+    if (matched) {
+        selectEl.value = normalizedSaved;
+    } else if (normalizedSaved) {
+        selectEl.value = AZURE_MANUAL_VALUE;
+        const manualInput = document.getElementById('azure-project-manual');
+        if (manualInput) manualInput.value = normalizedSaved;
+    }
+    toggleAzureManualInput('project');
+}
+
+function loadAzureOrganizations(savedOrgValue, savedProjectValue) {
+    const statusEl = document.getElementById('azure-orgs-status');
+    const btn = document.getElementById('refresh-azure-orgs-btn');
+    if (btn) btn.disabled = true;
+    if (statusEl) { statusEl.textContent = 'Carregando organizações...'; statusEl.style.color = '#94a3b8'; }
+
+    sendRuntimeMessage({ action: 'GET_AZURE_ORGANIZATIONS' }, (response) => {
+        if (btn) btn.disabled = false;
+
+        if (!response?.success) {
+            if (statusEl) { statusEl.textContent = `Erro: ${response?.error || 'falha ao carregar organizações'}`; statusEl.style.color = '#ef4444'; }
+            return;
+        }
+
+        const organizations = response.organizations || [];
+        populateAzureOrgSelect(organizations, savedOrgValue ?? getAzureOrgValue());
+
+        if (statusEl) {
+            statusEl.textContent = organizations.length
+                ? `${organizations.length} organização(ões) encontrada(s).`
+                : 'Nenhuma organização encontrada nesta conta Microsoft.';
+            statusEl.style.color = organizations.length ? '#10b981' : '#f59e0b';
+        }
+
+        const currentOrg = getAzureOrgValue();
+        if (currentOrg) loadAzureProjects(currentOrg, savedProjectValue);
+    });
+}
+
+function loadAzureProjects(orgUrl, savedProjectValue) {
+    const statusEl = document.getElementById('azure-projects-status');
+    const btn = document.getElementById('refresh-azure-projects-btn');
+
+    if (!orgUrl) {
+        if (statusEl) { statusEl.textContent = 'Selecione uma organização primeiro.'; statusEl.style.color = '#f59e0b'; }
+        return;
+    }
+
+    if (btn) btn.disabled = true;
+    if (statusEl) { statusEl.textContent = 'Carregando projetos...'; statusEl.style.color = '#94a3b8'; }
+
+    sendRuntimeMessage({ action: 'GET_AZURE_PROJECTS', orgUrl }, (response) => {
+        if (btn) btn.disabled = false;
+
+        if (!response?.success) {
+            if (statusEl) { statusEl.textContent = `Erro: ${response?.error || 'falha ao carregar projetos'}`; statusEl.style.color = '#ef4444'; }
+            return;
+        }
+
+        const projects = response.projects || [];
+        populateAzureProjectSelect(projects, savedProjectValue ?? getAzureProjectValue());
+
+        if (statusEl) {
+            statusEl.textContent = projects.length
+                ? `${projects.length} projeto(s) encontrado(s).`
+                : 'Nenhum projeto encontrado nesta organização.';
+            statusEl.style.color = projects.length ? '#10b981' : '#f59e0b';
         }
     });
 }
@@ -221,6 +362,11 @@ async function startBoardOAuthLogin(provider) {
                 const label = pollBody?.user?.displayName || pollBody?.user?.name || pollBody?.user?.email || pollBody?.user?.emailAddress;
                 setBoardAuthStatus(provider, label ? `Autenticado como ${label}` : 'Autenticado com sucesso.', 'success');
                 showStatus(`Login ${providerLabel} concluido. Sessao salva automaticamente.`, 'success');
+                if (provider === 'azure') {
+                    // Sessao acabou de ser salva pelo listener de storage do background; busca as
+                    // organizacoes/projetos automaticamente em vez de exigir digitar manualmente.
+                    loadAzureOrganizations();
+                }
                 return;
             }
         }
@@ -300,8 +446,8 @@ function saveOptions(e) {
     const selectedAi = document.getElementById('ai-select').value;
 
     // Azure Fields
-    const azureOrg = document.getElementById('azure-org').value.replace(/\/+$/, ""); // remove trailing slash
-    const azureProject = document.getElementById('azure-project').value;
+    const azureOrg = getAzureOrgValue();
+    const azureProject = getAzureProjectValue();
     const supportWebhookUrl = document.getElementById('support-webhook-url').value.trim();
 
     // Jira Fields
@@ -502,11 +648,15 @@ function restoreOptions() {
                 aiSelect.dispatchEvent(new Event('change'));
             }
 
-            // Azure
-            if (items.azureOrg) document.getElementById('azure-org').value = items.azureOrg;
-            if (items.azureProject) document.getElementById('azure-project').value = items.azureProject;
+            // Azure: mostra o valor salvo como placeholder ate a lista real ser buscada (ou ficar
+            // como esta, em modo manual, se nao houver sessao para atualizar).
+            populateAzureOrgSelect(items.azureOrg ? [{ url: items.azureOrg, name: items.azureOrg }] : [], items.azureOrg);
+            populateAzureProjectSelect(items.azureProject ? [{ id: items.azureProject, name: items.azureProject }] : [], items.azureProject);
             if (items.supportWebhookUrl) document.getElementById('support-webhook-url').value = items.supportWebhookUrl;
             setBoardAuthStatus('azure', items.azureSessionToken ? 'Sessao OAuth carregada.' : 'Nao autenticado.', items.azureSessionToken ? 'success' : 'info');
+            if (items.azureSessionToken) {
+                loadAzureOrganizations(items.azureOrg, items.azureProject);
+            }
 
             // Jira
             if (items.jiraDomain && document.getElementById('jira-domain')) document.getElementById('jira-domain').value = items.jiraDomain;
