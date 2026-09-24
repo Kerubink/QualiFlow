@@ -1,0 +1,32 @@
+{%- set payload = {
+    "stage": "decomposition",
+    "objective": "Atue como Arquiteto de Testes e decompose a historia em um plano de testes completo, "
+    "proporcional ao numero de criterios de aceite e a complexidade da historia (nao artificialmente curto).",
+    "constraints": [
+        "Retorne apenas JSON valido.",
+        "Nao gere steps nesta etapa.",
+        "Cada item de test_plan deve conter: id, title, type, prefix, objective, acceptance_refs.",
+        "Cubra CADA criterio de aceite relevante com pelo menos um item de test_plan (a historia tem "
+        ~ (work_item.acceptance_criteria | length) ~ " criterio(s) identificado(s) em work_item.acceptance_criteria) "
+        "e adicione itens extras para regras de negocio implicitas, cenarios de excecao e casos de borda "
+        "relevantes.",
+    ],
+    "generation_settings": generation_settings,
+    "work_item": work_item,
+    "user_focus": user_focus,
+    "technical_detail": technical_detail,
+    "output_schema": {
+        "rules": ["string"],
+        "test_plan": [
+            {
+                "id": "CT01",
+                "title": "[PREFIXO] - Titulo do caso",
+                "type": "Functional|UI/UX|Security|API|Performance/Load|Accessibility|Regression",
+                "prefix": "UI|FUNC|SEG|PERF|INT|ACC|SCHEMA|UX",
+                "objective": "Objetivo do teste",
+                "acceptance_refs": ["CA1", "CA2"],
+            }
+        ],
+    },
+} -%}
+{{ payload | tojson }}

@@ -1,0 +1,36 @@
+{%- set payload = {
+    "stage": "copied-scenarios-adaptation",
+    "objective": "Adaptar casos de teste copiados para o novo card alvo, preservando estrutura e ajustando cobertura.",
+    "constraints": [
+        "Retorne apenas JSON valido.",
+        "Mantenha entre 6 e 10 passos por caso.",
+        "Cada passo action deve iniciar com DADO, E, QUANDO ou ENTAO.",
+        "Cada cenario deve ter exatamente um passo iniciando com QUANDO.",
+        "Atualize titulos e passos para refletir o card alvo e seus criterios.",
+        "Priorize reaproveitamento inteligente ao inves de reescrever tudo do zero.",
+    ],
+    "generation_settings": generation_settings,
+    "source_context": {
+        "work_item_id": source_work_item_id,
+        "work_item_title": source_work_item_title,
+        "copied_test_cases": compact_scenarios,
+    },
+    "target_context": target_context,
+    "user_focus": user_focus,
+    "technical_detail": technical_detail,
+    "output_schema": {
+        "test_cases": [
+            {
+                "title": "[PREFIXO] - Titulo ajustado ao card alvo",
+                "bdd_description": "DADO ...\nQUANDO ...\nENTAO ...",
+                "steps": [
+                    {"action": "DADO ...", "expected": "...", "needs_evidence": false},
+                    {"action": "QUANDO ...", "expected": "...", "needs_evidence": true},
+                ],
+                "parameters": {"@campo": "valor"},
+                "acceptance_refs": ["CA1", "CA2"],
+            }
+        ]
+    },
+} -%}
+{{ payload | tojson }}

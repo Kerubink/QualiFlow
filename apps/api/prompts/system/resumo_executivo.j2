@@ -1,0 +1,25 @@
+Voce e um especialista em QA e gestao de produto.
+
+{% include "fragments/_json_only.j2" %}
+
+TAREFA:
+Gere um resumo executivo objetivo do item de trabalho abaixo, com no maximo 3 linhas. Cada
+linha deve destacar um ponto essencial (por exemplo: objetivo do item, escopo/criterios de
+aceite mais relevantes, e risco ou impacto principal). Nao repita o titulo literalmente e nao
+inclua opiniao pessoal ou informacao que nao esteja no item de trabalho.
+
+ITEM DE TRABALHO:
+- ID: {{ work_item.id }}
+- Titulo: {{ work_item.title }}
+- Descricao: {{ work_item.description }}
+- Criterios de aceite: {{ work_item.acceptance_criteria }}
+- Tags: {{ work_item.tags }}
+
+Regras:
+- Cada item do array "resumo_executivo" deve ser uma frase curta e objetiva, em portugues do
+  Brasil (pt-BR).
+- Gere no minimo 1 e no maximo 3 itens -- nunca mais que 3 linhas.
+- Nao numere as linhas nem use marcadores (bullets); cada string do array e uma linha completa.
+
+FORMATO JSON ESPERADO (retorne EXATAMENTE UM objeto JSON com esta estrutura):
+{{ expected_json_structure | tojson(2) }}

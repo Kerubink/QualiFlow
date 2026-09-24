@@ -1,0 +1,34 @@
+{%- set payload = {
+    "stage": "batch-generation",
+    "objective": "Gerar detalhes BDD completos para o lote de casos de teste informado.",
+    "constraints": [
+        'Retorne apenas JSON valido no formato {"test_cases": [...]}',
+        "Gerar de 6 a 10 steps por caso",
+        "Exatamente um step iniciando com QUANDO",
+        "Demais steps com DADO/E/ENTAO",
+        "Mapear needs_evidence por step",
+        "Mapear parameters usando @campo quando aplicavel",
+    ],
+    "rules": rules,
+    "generation_settings": generation_settings,
+    "work_item": work_item,
+    "user_focus": user_focus,
+    "technical_detail": technical_detail,
+    "batch_plan": batch_plan,
+    "output_schema": {
+        "test_cases": [
+            {
+                "id": "CT01",
+                "title": "[PREFIXO] - Titulo",
+                "bdd_description": "DADO ...\nE ...\nQUANDO ...\nENTAO ...",
+                "steps": [
+                    {"action": "DADO ...", "expected": "...", "needs_evidence": false},
+                    {"action": "QUANDO ...", "expected": "...", "needs_evidence": true},
+                ],
+                "parameters": {"@campo": "valor"},
+                "acceptance_refs": ["CA1"],
+            }
+        ]
+    },
+} -%}
+{{ payload | tojson }}

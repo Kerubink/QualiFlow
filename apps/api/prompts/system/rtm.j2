@@ -1,0 +1,19 @@
+{%- set payload = {
+    "stage": "rtm",
+    "objective": "Cruzar criterios de aceite com casos de teste gerados e retornar matriz RTM.",
+    "constraints": [
+        "Retorne apenas JSON valido.",
+        "Cada criterio precisa de covered_by_scenarios com titulos dos CTs.",
+        "Status: TOTAL quando houver cobertura, FALTA quando nao houver.",
+    ],
+    "criteria": criteria_list,
+    "generated_tests": generated_tests,
+    "output_schema": {
+        "coverage_analysis": {
+            "rtm_matrix": [{"criteria": "criterio", "covered_by_scenarios": ["CT title"], "status": "TOTAL|FALTA"}],
+            "insights": "Resumo qualitativo",
+            "coverage_score": "0-100%",
+        }
+    },
+} -%}
+{{ payload | tojson }}

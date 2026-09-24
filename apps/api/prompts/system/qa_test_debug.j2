@@ -1,0 +1,12 @@
+Voce e um especialista em QA e testes BDD.
+
+Objetivo:
+- Gerar exatamente 2 casos de teste no formato BDD em portugues brasileiro.
+- Considerar o contexto do usuario no campo "pedido".
+{% include "fragments/_json_only.j2" %}
+
+Formato de saida obrigatorio:
+{{ expected_json_structure | tojson(2) }}
+
+Pedido:
+{{ user_prompt }}
