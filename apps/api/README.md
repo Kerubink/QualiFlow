@@ -103,18 +103,28 @@ src/
   ai/                  # Geracao de cenarios e integracao com provedores de IA
     providers.py        # Chamadas HTTP diretas a Gemini e Groq
     copilot.py          # Chamada HTTP direta ao Copilot e envio de prompts
+    prompt_registry.py  # Renderiza prompts/*.j2 (Jinja2) e valida respostas contra prompts/schemas/*.json
     orchestration.py    # Prompts de decomposicao/lotes/RTM e pos-processamento
     routes.py           # Endpoints /api/scenarios/*, /api/coverage/evaluate, /api/*/models
   boards/              # Integracao com Azure DevOps e Jira
     azure.py            # Chamadas a API REST do Azure DevOps via Bearer token
     jira.py             # Chamadas a API REST do Jira Cloud via Bearer token
     routes.py           # Endpoints /api/board/*
-prompts/
-  qa-test-prompt.txt    # Template de prompt QA
+prompts/               # Conteudo dos prompts usados por src/ai/copilot.py e src/ai/orchestration.py,
+                       # carregado via prompt_registry
+  system/              # Um template Jinja2 por prompt (qa_generator, qa_evaluator, qa_test_debug,
+                       # decomposition, batch_generation, rtm, adaptation)
+  fragments/           # Blocos de instrucao reutilizados entre prompts (_json_only.j2, _gherkin_rules.j2, ...)
+  schemas/             # Um JSON Schema por formato de saida esperado (tambem usado para validar a resposta)
+tests/
+  test_prompt_registry.py      # Testes "golden" dos prompts de src/ai/copilot.py
+  test_orchestration_prompts.py  # Testes "golden" dos prompts de src/ai/orchestration.py
 ```
 
 - `render.yaml`: deploy para Render.
 - `.env.example`: variaveis de ambiente (sem segredos reais - preencha o seu `.env`).
+- Para editar o texto/regras de um prompt de `src/ai/copilot.py`, edite o `.j2` correspondente em
+  `prompts/` (nao o Python) e rode `pytest apps/api/tests/test_prompt_registry.py`.
 
 ## Pre-requisitos
 
@@ -172,6 +182,8 @@ GITHUB_OAUTH_CLIENT_ID=seu_client_id
 GITHUB_OAUTH_CLIENT_SECRET=seu_client_secret
 GITHUB_OAUTH_REDIRECT_URI=http://localhost:3000/auth/github/callback
 GITHUB_OAUTH_SCOPES=read:user user:email
+# Compartilhado pelos 3 logins OAuth (GitHub, Microsoft, Atlassian) -- sempre obrigatorio,
+# mesmo que voce so va usar o login Microsoft/Atlassian e nunca configure o GitHub.
 OAUTH_STATE_SECRET=uma-chave-forte-qualquer
 AUTH_STATE_TTL_MS=600000
 AUTH_SESSION_TTL_MS=28800000

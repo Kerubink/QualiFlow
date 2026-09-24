@@ -1,46 +1,42 @@
-# Gerador de Casos de Teste (Azure DevOps + Gemini)
+# QualiFlow
 
-Este script automatiza a criação de Casos de Teste no Azure DevOps a partir de Work Items (User Stories, PBIs, etc.), utilizando o poder do Gemini AI para sugerir os passos e resultados esperados.
+**Gerador de casos de teste com IA para Azure DevOps e Jira.**
 
-## Pré-requisitos
+QualiFlow é uma extensão de navegador que integra geração de cenários de teste com IA (Gemini, Groq, Copilot) direto na ferramenta de work tracking que sua equipe já usa. Crie, revise, parametrize e reutilize casos de teste sem sair do board.
 
-- Python 3.8+
-- Personal Access Token (PAT) do Azure DevOps com permissões de leitura/escrita em Work Items.
-- API Key do Google Gemini.
+## O que faz
 
-## Configuração
+- **Gera casos de teste BDD** a partir de histórias e critérios de aceite, usando IA
+- **Copia e adapta** casos entre cartões, mantendo o contexto atualizado
+- **Avalia cobertura** de testes automaticamente
+- **Mostra matriz de rastreabilidade** de requisitos vs. testes
+- **Funciona nativamente** dentro do Azure DevOps e Jira, sem ferramentas externas
 
-1. Clone ou baixe este repositório.
-2. Instale as dependências:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Crie um arquivo `.env` na raiz do projeto (use o `.env.example` como base) e preencha suas credenciais:
-   ```env
-   AZURE_PERSONAL_ACCESS_TOKEN=seu_pat_aqui
-   AZURE_ORG_URL=https://dev.azure.com/sua_organizacao
-   AZURE_PROJECT=seu_projeto
-   GEMINI_API_KEY=sua_chave_gemini_aqui
-   GEMINI_MODEL=gemini-1.5-pro
-   ```
+## Setup
 
-## Como usar
+Este é um monorepo com backend (Flask) e extensão (Chrome/Vite). Veja os READMEs específicos:
 
-Execute o script principal:
+- **[Backend](./apps/api/README.md)**: Python 3.11+, orquestra IA e OAuth
+  ```bash
+  cd apps/api
+  python3 -m venv .venv && source .venv/bin/activate
+  pip install -r requirements-dev.txt
+  python -m src.server  # http://localhost:3000
+  ```
 
-```bash
-python main.py
-```
+- **[Extensão](./apps/extension/README.md)**: Node.js, UI injetada no navegador
+  ```bash
+  cd apps/extension
+  npm install && npm run dev
+  npm run build  # Carregar em chrome://extensions
+  ```
 
-1. O script pedirá o **ID do Work Item** do Azure DevOps.
-2. Ele buscará o título, descrição e critérios de aceite.
-3. Enviará esses dados para o Gemini, que gerará sugestões de casos de teste em formato Markdown.
-4. Você poderá revisar os testes gerados diretamente no terminal.
-5. Se você confirmar com `y` (aprovar), o script criará automaticamente os Casos de Teste no Azure DevOps com os passos configurados.
+## Guia rápido para desenvolvedores
 
-## Estrutura do Projeto
+1. Leia [CLAUDE.md](./CLAUDE.md) para entender arquitetura, regras de escopo e padrões
+2. Leia o README do componente que vai alterar (`apps/api/` ou `apps/extension/`)
+3. Rode testes: `cd apps/api && pytest` ou `cd apps/extension && npm run build`
+4. Para mudar prompts/IA: edite `apps/api/prompts/` e valide contra schemas
+5. Para mudar UI/fluxo: teste manualmente no Chrome depois do build
 
-- `main.py`: Script principal e interface de linha de comando.
-- `azure_client.py`: Integração com a API do Azure DevOps.
-- `gemini_client.py`: Integração com a API do Google Gemini.
-- `requirements.txt`: Lista de dependências Python.
+Veja [docs/DOCUMENTACAO.md](./docs/DOCUMENTACAO.md) para o comportamento funcional completo.
