@@ -4,12 +4,11 @@ from flask import Blueprint, jsonify, redirect, request
 from .middleware import require_auth_session, resolve_session_token
 from .github_oauth import (
     build_github_login_url,
-    create_oauth_state,
     exchange_code_for_token,
     fetch_github_user,
     get_oauth_config,
-    verify_oauth_state,
 )
+from .oauth_state import create_oauth_state, verify_oauth_state
 from ..core.session_store import (
     cleanup_expired,
     complete_auth_request,
