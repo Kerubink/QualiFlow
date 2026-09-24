@@ -5,12 +5,18 @@ pos-processamento (normalizacao de steps/BDD, RTM heuristico).
 Portado do frontend (services/orchestration/testGeneration.js + postProcessor.js) para
 centralizar no backend toda a logica de prompt engineering e regras de negocio.
 """
-import json
 import re
 import unicodedata
 
 from .providers import gemini_json_prompt, gemini_text_prompt, groq_json_prompt, groq_text_prompt
-from .copilot import classify_copilot_error, send_prompt_to_copilot
+from .copilot import (
+    _now_iso,
+    build_qa_evaluation_prompt,
+    build_qa_generation_prompt,
+    classify_copilot_error,
+    send_prompt_to_copilot,
+)
+from . import prompt_registry
 from ..core.json_utils import parse_json_loosely
 
 PREFIX_BY_TYPE = {
@@ -125,83 +131,38 @@ def provider_text_prompt(selected_ai, ai_settings, prompt, temperature=0.3, gith
 
 def _build_decomposition_prompt(card_data, user_focus, technical_detail, generation_settings, criteria_list):
     card_data = card_data or {}
-    payload = {
-        "stage": "decomposition",
-        "objective": "Atue como Arquiteto de Testes e decompose a historia em plano de testes enxuto.",
-        "constraints": [
-            "Retorne apenas JSON valido.",
-            "Nao gere steps nesta etapa.",
-            "Cada item de test_plan deve conter: id, title, type, prefix, objective, acceptance_refs.",
-        ],
-        "generation_settings": generation_settings,
-        "work_item": {
+    return prompt_registry.render(
+        "system/decomposition.j2",
+        generation_settings=generation_settings,
+        work_item={
             "id": card_data.get("id"),
             "title": card_data.get("title"),
             "description": _strip_html(card_data.get("description") or ""),
             "acceptance_criteria": criteria_list,
             "tags": card_data.get("tags") or "",
         },
-        "user_focus": user_focus or "",
-        "technical_detail": technical_detail or "",
-        "output_schema": {
-            "rules": ["string"],
-            "test_plan": [
-                {
-                    "id": "CT01",
-                    "title": "[PREFIXO] - Titulo do caso",
-                    "type": "Functional|UI/UX|Security|API|Performance/Load|Accessibility|Regression",
-                    "prefix": "UI|FUNC|SEG|PERF|INT|ACC|SCHEMA|UX",
-                    "objective": "Objetivo do teste",
-                    "acceptance_refs": ["CA1", "CA2"],
-                }
-            ],
-        },
-    }
-    return json.dumps(payload, ensure_ascii=False)
+        user_focus=user_focus or "",
+        technical_detail=technical_detail or "",
+    )
 
 
 def _build_batch_prompt(card_data, criteria_list, rules, batch_plan, generation_settings, user_focus, technical_detail):
     card_data = card_data or {}
-    payload = {
-        "stage": "batch-generation",
-        "objective": "Gerar detalhes BDD completos para o lote de casos de teste informado.",
-        "constraints": [
-            'Retorne apenas JSON valido no formato {"test_cases": [...]}',
-            "Gerar de 6 a 10 steps por caso",
-            "Exatamente um step iniciando com QUANDO",
-            "Demais steps com DADO/E/ENTAO",
-            "Mapear needs_evidence por step",
-            "Mapear parameters usando @campo quando aplicavel",
-        ],
-        "rules": rules,
-        "generation_settings": generation_settings,
-        "work_item": {
+    return prompt_registry.render(
+        "system/batch_generation.j2",
+        rules=rules,
+        generation_settings=generation_settings,
+        work_item={
             "id": card_data.get("id"),
             "title": card_data.get("title"),
             "description": _strip_html(card_data.get("description") or ""),
             "acceptance_criteria": criteria_list,
             "tags": card_data.get("tags") or "",
         },
-        "user_focus": user_focus or "",
-        "technical_detail": technical_detail or "",
-        "batch_plan": batch_plan,
-        "output_schema": {
-            "test_cases": [
-                {
-                    "id": "CT01",
-                    "title": "[PREFIXO] - Titulo",
-                    "bdd_description": "DADO ...\\nE ...\\nQUANDO ...\\nENTAO ...",
-                    "steps": [
-                        {"action": "DADO ...", "expected": "...", "needs_evidence": False},
-                        {"action": "QUANDO ...", "expected": "...", "needs_evidence": True},
-                    ],
-                    "parameters": {"@campo": "valor"},
-                    "acceptance_refs": ["CA1"],
-                }
-            ]
-        },
-    }
-    return json.dumps(payload, ensure_ascii=False)
+        user_focus=user_focus or "",
+        technical_detail=technical_detail or "",
+        batch_plan=batch_plan,
+    )
 
 
 def _build_rtm_prompt(criteria_list, generated_tests):
@@ -219,25 +180,7 @@ def _build_rtm_prompt(criteria_list, generated_tests):
             }
         )
 
-    payload = {
-        "stage": "rtm",
-        "objective": "Cruzar criterios de aceite com casos de teste gerados e retornar matriz RTM.",
-        "constraints": [
-            "Retorne apenas JSON valido.",
-            "Cada criterio precisa de covered_by_scenarios com titulos dos CTs.",
-            "Status: TOTAL quando houver cobertura, FALTA quando nao houver.",
-        ],
-        "criteria": criteria_list,
-        "generated_tests": generated,
-        "output_schema": {
-            "coverage_analysis": {
-                "rtm_matrix": [{"criteria": "criterio", "covered_by_scenarios": ["CT title"], "status": "TOTAL|FALTA"}],
-                "insights": "Resumo qualitativo",
-                "coverage_score": "0-100%",
-            }
-        },
-    }
-    return json.dumps(payload, ensure_ascii=False)
+    return prompt_registry.render("system/rtm.j2", criteria_list=criteria_list, generated_tests=generated)
 
 
 def _build_adaptation_prompt(
@@ -265,48 +208,22 @@ def _build_adaptation_prompt(
             }
         )
 
-    payload = {
-        "stage": "copied-scenarios-adaptation",
-        "objective": "Adaptar casos de teste copiados para o novo card alvo, preservando estrutura e ajustando cobertura.",
-        "constraints": [
-            "Retorne apenas JSON valido.",
-            "Mantenha entre 6 e 10 passos por caso.",
-            "Cada passo action deve iniciar com DADO, E, QUANDO ou ENTAO.",
-            "Cada cenario deve ter exatamente um passo iniciando com QUANDO.",
-            "Atualize titulos e passos para refletir o card alvo e seus criterios.",
-            "Priorize reaproveitamento inteligente ao inves de reescrever tudo do zero.",
-        ],
-        "generation_settings": generation_settings,
-        "source_context": {
-            "work_item_id": source_work_item.get("id"),
-            "work_item_title": source_work_item.get("title") or "",
-            "copied_test_cases": compact_scenarios,
-        },
-        "target_context": {
+    return prompt_registry.render(
+        "system/adaptation.j2",
+        generation_settings=generation_settings,
+        source_work_item_id=source_work_item.get("id"),
+        source_work_item_title=source_work_item.get("title") or "",
+        compact_scenarios=compact_scenarios,
+        target_context={
             "id": target_card_data.get("id"),
             "title": target_card_data.get("title"),
             "description": _strip_html(target_card_data.get("description") or ""),
             "acceptance_criteria": criteria_list,
             "tags": target_card_data.get("tags") or "",
         },
-        "user_focus": user_focus or "",
-        "technical_detail": technical_detail or "",
-        "output_schema": {
-            "test_cases": [
-                {
-                    "title": "[PREFIXO] - Titulo ajustado ao card alvo",
-                    "bdd_description": "DADO ...\\nQUANDO ...\\nENTAO ...",
-                    "steps": [
-                        {"action": "DADO ...", "expected": "...", "needs_evidence": False},
-                        {"action": "QUANDO ...", "expected": "...", "needs_evidence": True},
-                    ],
-                    "parameters": {"@campo": "valor"},
-                    "acceptance_refs": ["CA1", "CA2"],
-                }
-            ]
-        },
-    }
-    return json.dumps(payload, ensure_ascii=False)
+        user_focus=user_focus or "",
+        technical_detail=technical_detail or "",
+    )
 
 
 def _fallback_test_plan(criteria_list, generation_settings):
@@ -395,7 +312,18 @@ def orchestrate_scenario_generation(
         batch_prompt = _build_batch_prompt(
             card_data, criteria_list, rules, batch_plan, generation_settings, user_focus, technical_detail
         )
-        batch_result = provider_json_prompt(selected_ai, ai_settings, batch_prompt, 0.2, github_token)
+        try:
+            batch_result = provider_json_prompt(selected_ai, ai_settings, batch_prompt, 0.2, github_token)
+        except Exception as error:
+            # Nao deixa UM lote com falha (timeout, JSON malformado, rate limit) derrubar os
+            # demais lotes ja gerados com sucesso -- sem isso, uma unica falha jogava fora tudo
+            # e caia no fallback legado (single-shot, sem decomposicao), que tende a gerar bem
+            # menos casos de teste do que a geracao em lote completa.
+            print(
+                f"[{_now_iso()}] [orchestration] Lote {batch_index + 1}/{len(batches)} falhou, "
+                f"pulando (demais lotes seguem normalmente): {error}"
+            )
+            continue
         batch_cases = batch_result.get("test_cases") if isinstance(batch_result, dict) else None
         generated_tests.extend(batch_cases if isinstance(batch_cases, list) else [])
 
@@ -483,130 +411,23 @@ def orchestrate_scenario_adaptation(
     }
 
 
-def _detect_track_from_tags(tags):
-    normalized = (tags or "").lower()
-    if "frontend" in normalized and "backend" not in normalized:
-        return "Frontend"
-    if "backend" in normalized and "frontend" not in normalized:
-        return "Backend"
-    return "Geral (Frontend e Backend)"
-
-
 def legacy_generate_scenarios(selected_ai, ai_settings, card_data, user_focus, technical_detail, generation_settings, github_token=None):
-    """Fallback single-shot (sem decomposicao em lotes), usado quando a orquestracao completa falha."""
-    card_data = card_data or {}
-    generation_settings = generation_settings or {}
+    """Fallback single-shot (sem decomposicao em lotes), usado quando a orquestracao completa falha.
 
-    track = _detect_track_from_tags(card_data.get("tags"))
-    objective = generation_settings.get("objective") or "All Objectives"
-    test_type = generation_settings.get("type") or "Funcional"
-    granularity = generation_settings.get("granularity") or "Detalhado"
-    data_level = generation_settings.get("dataLevel") or "Massa de dados basica"
-
-    objective_instruction = (
-        "Gere uma suite de testes COMPLETA e ABRANGENTE, cobrindo de forma equilibrada o Fluxo Principal, "
-        "Cenarios de Excecao, Casos de Borda e Regras de Negocio Complexas."
-        if objective == "All Objectives"
-        else f"FOCO NO OBJETIVO: {objective}."
-    )
-
-    existing_tests = card_data.get("existing_tests")
-
-    prompt_task = {
-        "role": "QA Senior",
-        "objective": f"""Aja como QA Senior. Gere ou atualize Casos de Teste em BDD.
-CONFIGURACAO DE GERACAO:
-- Objetivo: {objective} ({objective_instruction})
-- Tipo de Teste: {test_type}
-- Estilo de Escrita: {granularity}
-- Estrategia de Dados: {data_level}
-Forneca metricas de cobertura com resumo qualitativo e score.
-Retorne EXATAMENTE UM objeto JSON estrito com o formato especificado.""",
-        "test_context": {
-            "track": track,
-            "focus": f"Foque em {objective}. Tipo de validacao: {test_type}. Estilo: {granularity}. "
-            f"Estrategia de dados: {data_level}.",
-            "special_instructions": objective_instruction,
-        },
-        "input_data": {
-            "work_item": {
-                "id": card_data.get("id"),
-                "title": card_data.get("title"),
-                "description": card_data.get("description"),
-                "acceptance_criteria": card_data.get("acceptance_criteria"),
-                "tags": card_data.get("tags"),
-            },
-            "user_technical_context": user_focus or "Nao informado pelo usuario.",
-            "deep_technical_detail": technical_detail or "Nao informado.",
-            "legacy_tests_for_upgrade": existing_tests if existing_tests else "Nenhum",
-        },
-        "formatting_rules": {
-            "output_language": "Portugues do Brasil (pt-BR)",
-            "gherkin_style": "O campo bdd_description DEVE ter os termos GHERKIN (DADO, QUANDO, ENTAO, E) "
-            "no inicio de cada frase, com quebras de linha entre eles.",
-            "step_style": "O campo action de CADA PASSO do array de passos DEVE tambem comecar com DADO, E, "
-            "QUANDO ou ENTAO. IMPORTANTE: Deve haver EXATAMENTE UM passo comecando com QUANDO.",
-            "step_detail": "Cada teste deve ter entre 6 e 10 passos claros.",
-            "parameters": "IMPORTANTE: Use parametros explicitos com simbolo @ nos passos sempre que houver "
-            "massa de dados dinamica.",
-            "evidence": "Se um passo valida estado do sistema, mensagens de erro ou um sucesso critico de "
-            "interface, defina needs_evidence: true para esse passo. Caso contrario, false.",
-        },
-        "expected_json_structure": {
-            "total_criterios": 0,
-            "total_tests": 0,
-            "coverage_analysis": {
-                "rtm_matrix": [{"criteria": "criterio", "covered_by_scenarios": ["Titulo do CT"], "status": "TOTAL"}],
-                "insights": "Resumo qualitativo",
-                "coverage_score": "100%",
-            },
-            "test_cases": [
-                {
-                    "title": "[PREFIXO] - Titulo",
-                    "bdd_description": "DADO ...\nQUANDO ...\nENTAO ...",
-                    "steps": [
-                        {"action": "DADO ...", "expected": "...", "needs_evidence": False},
-                        {"action": "QUANDO ...", "expected": "...", "needs_evidence": True},
-                    ],
-                    "parameters": {},
-                }
-            ],
-        },
-    }
-
-    prompt = "\n\n".join(
-        [
-            "Voce e um gerador especialista de testes de software em BDD.",
-            "Retorne APENAS um objeto JSON valido correspondente a estrutura esperada.",
-            "Nao use markdown e nao use bloco de codigo.",
-            json.dumps(prompt_task, ensure_ascii=False),
-        ]
-    )
-
+    Reutiliza build_qa_generation_prompt (o mesmo prompt do endpoint dedicado do Copilot) para
+    nao manter uma segunda copia divergente das regras de geracao de teste.
+    """
+    prompt = build_qa_generation_prompt(card_data, user_focus, technical_detail, generation_settings)
     return provider_json_prompt(selected_ai, ai_settings, prompt, 0.2, github_token)
 
 
 def evaluate_coverage(selected_ai, card_data, ai_settings, github_token=None):
     card_data = card_data or {}
-    existing_tests = card_data.get("existing_tests")
-    if not existing_tests:
+    if not card_data.get("existing_tests"):
         return "Nao ha testes existentes para avaliar."
 
-    prompt_text = f"""
-Voce e um QA Senior.
-Analise os Criterios de Aceite da historia abaixo e os Testes Existentes.
-Avalie a cobertura. Ela esta boa? Faltam caminhos felizes, cenarios de erro ou validacoes de seguranca?
-
-CRITERIOS DE ACEITE:
-{card_data.get("acceptance_criteria")}
-
-TESTES EXISTENTES (JSON):
-{json.dumps(existing_tests, ensure_ascii=False)}
-
-Responda em Portugues do Brasil com no maximo 3 paragrafos curtos e diretos, sem markdown pesado.
-"""
-
-    return provider_text_prompt(selected_ai, ai_settings, prompt_text, 0.3, github_token)
+    prompt = build_qa_evaluation_prompt(card_data)
+    return provider_text_prompt(selected_ai, ai_settings, prompt, 0.3, github_token)
 
 
 def classify_ai_error(selected_ai, error):

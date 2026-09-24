@@ -9,32 +9,13 @@ funcionar sem aviso, e seu uso deve respeitar os Termos de Servico do GitHub Cop
 """
 import json
 import os
-import re
 import threading
 import time
-from pathlib import Path
 
 import requests
 
 from ..core.json_utils import parse_json_loosely
-
-_PROMPTS_DIR = Path(__file__).resolve().parent.parent.parent / "prompts"
-_QA_TEMPLATE_PATH = _PROMPTS_DIR / "qa-test-prompt.txt"
-
-_DEFAULT_QA_TEMPLATE = "\n".join(
-    [
-        "Voce e um especialista em QA e testes BDD.",
-        "",
-        "Gere exatamente 2 casos de teste em portugues brasileiro.",
-        "Retorne somente JSON valido no formato:",
-        '{"test_cases":[{...},{...}]}',
-        "",
-        "Pedido:",
-        "{{USER_PROMPT}}",
-    ]
-)
-
-_qa_template_cache = None
+from . import prompt_registry
 
 GITHUB_COPILOT_TOKEN_URL = "https://api.github.com/copilot_internal/v2/token"
 GITHUB_COPILOT_CHAT_URL = "https://api.githubcopilot.com/chat/completions"
@@ -74,23 +55,12 @@ def _get_int_env(name, default_value):
         return default_value
 
 
-def _get_qa_template():
-    global _qa_template_cache
-    if _qa_template_cache:
-        return _qa_template_cache
-
-    try:
-        _qa_template_cache = _QA_TEMPLATE_PATH.read_text(encoding="utf-8")
-    except OSError as error:
-        print(f"[{_now_iso()}] [copilot] Falha ao ler template de QA: {error}")
-        _qa_template_cache = _DEFAULT_QA_TEMPLATE
-
-    return _qa_template_cache
-
-
 def build_qa_prompt(user_prompt):
-    template = _get_qa_template()
-    return template.replace("{{USER_PROMPT}}", user_prompt.strip())
+    return prompt_registry.render(
+        "system/qa_test_debug.j2",
+        user_prompt=user_prompt.strip(),
+        expected_json_structure=prompt_registry.schema_example("qa_test_debug.schema.json"),
+    )
 
 
 def _detect_track_from_tags(tags):
@@ -281,9 +251,13 @@ def send_prompt_to_copilot(prompt, github_token=None, preferred_model=None):
         _release_copilot_slot()
 
 
-def generate_scenarios_with_copilot(
-    card_data, user_focus, technical_detail, generation_settings, github_token=None, preferred_model=None
-):
+def build_qa_generation_prompt(card_data, user_focus, technical_detail, generation_settings):
+    """Monta o prompt de geracao de cenarios a partir de um card e das configuracoes de geracao.
+
+    Usada tanto pelo endpoint dedicado do Copilot (generate_scenarios_with_copilot) quanto pelo
+    fallback single-shot de src.ai.orchestration.legacy_generate_scenarios -- um unico lugar
+    define o que "gerar casos de teste" significa, independente do provedor de IA por tras.
+    """
     card_data = card_data or {}
     generation_settings = generation_settings or {}
 
@@ -293,118 +267,59 @@ def generate_scenarios_with_copilot(
     granularity = generation_settings.get("granularity") or "Detalhado"
     data_level = generation_settings.get("dataLevel") or "Massa de dados basica"
 
-    objective_instruction = (
-        "Gere uma suite de testes COMPLETA e ABRANGENTE, cobrindo de forma equilibrada o Fluxo Principal, "
-        "Cenarios de Excecao, Casos de Borda e Regras de Negocio Complexas."
-        if objective == "All Objectives"
-        else f"FOCO NO OBJETIVO: {objective}."
-    )
-
     existing_tests = card_data.get("existing_tests")
+    legacy_tests_for_upgrade = json.dumps(existing_tests, ensure_ascii=False) if existing_tests else "Nenhum"
 
-    prompt_task = {
-        "role": "QA Senior",
-        "objective": f"""Aja como QA Senior. Gere ou atualize Casos de Teste em BDD.
-CONFIGURACAO DE GERACAO:
-- Objetivo: {objective} ({objective_instruction})
-- Tipo de Teste: {test_type}
-- Estilo de Escrita: {granularity}
-- Estrategia de Dados: {data_level}
-Forneca metricas de cobertura com resumo qualitativo e score.
-Retorne EXATAMENTE UM objeto JSON estrito com o formato especificado.""",
-        "test_context": {
-            "track": track,
-            "focus": f"Foque em {objective}. Tipo de validacao: {test_type}. Estilo: {granularity}. "
-            f"Estrategia de dados: {data_level}.",
-            "special_instructions": objective_instruction,
+    return prompt_registry.render(
+        "system/qa_generator.j2",
+        track=track,
+        objective=objective,
+        test_type=test_type,
+        granularity=granularity,
+        data_level=data_level,
+        work_item={
+            "id": card_data.get("id"),
+            "title": card_data.get("title"),
+            "description": card_data.get("description"),
+            "acceptance_criteria": card_data.get("acceptance_criteria"),
+            "tags": card_data.get("tags"),
         },
-        "input_data": {
-            "work_item": {
-                "id": card_data.get("id"),
-                "title": card_data.get("title"),
-                "description": card_data.get("description"),
-                "acceptance_criteria": card_data.get("acceptance_criteria"),
-                "tags": card_data.get("tags"),
-            },
-            "user_technical_context": user_focus or "Nao informado pelo usuario.",
-            "deep_technical_detail": technical_detail or "Nao informado.",
-            "legacy_tests_for_upgrade": existing_tests if existing_tests else "Nenhum",
-        },
-        "formatting_rules": {
-            "output_language": "Portugues do Brasil (pt-BR)",
-            "acceptance_criteria_hierarchy": "Quando os criterios de aceite tiverem listas aninhadas ou "
-            "subitens, preserve a hierarquia e trate cada subitem como um subcriterio distinto.",
-            "gherkin_style": "O campo bdd_description DEVE ter os termos GHERKIN (DADO, QUANDO, ENTAO, E) "
-            "no inicio de cada frase, com quebras de linha entre eles.",
-            "step_style": "O campo action de CADA PASSO do array de passos DEVE tambem comecar com DADO, E, "
-            "QUANDO ou ENTAO. IMPORTANTE: Deve haver EXATAMENTE UM passo comecando com QUANDO.",
-            "naming_convention": {
-                "structure": "[PREFIXO] - [Contexto/Componente]",
-                "frontend_prefixes": ["UI", "FUNC", "UX", "ACC", "INT"],
-                "backend_prefixes": ["SCHEMA", "FUNC", "SEG", "PERF", "INT"],
-            },
-            "step_detail": "Cada teste deve ter entre 6 e 10 passos claros.",
-            "parameters": "IMPORTANTE: Use parametros explicitos com simbolo @ (ex.: @username, @role, "
-            "@endpoint, @password) nos passos sempre que houver massa de dados dinamica.",
-            "evidence": "Se um passo valida estado do sistema, mensagens de erro ou um sucesso critico de "
-            "interface, defina needs_evidence: true para esse passo. Caso contrario, false.",
-        },
-        "expected_json_structure": {
-            "total_criterios": 0,
-            "total_tests": 0,
-            "coverage_analysis": {
-                "rtm_matrix": [{"criteria": "criterio", "covered_by_scenarios": ["Titulo do CT"], "status": "TOTAL"}],
-                "insights": "Resumo qualitativo",
-                "coverage_score": "100%",
-            },
-            "test_cases": [
-                {
-                    "title": "[PREFIXO] - Titulo",
-                    "bdd_description": "DADO ...\nQUANDO ...\nENTAO ...",
-                    "steps": [
-                        {"action": "DADO ...", "expected": "...", "needs_evidence": False},
-                        {"action": "QUANDO ...", "expected": "...", "needs_evidence": True},
-                    ],
-                    "parameters": {},
-                }
-            ],
-        },
-    }
-
-    prompt = "\n\n".join(
-        [
-            "Voce e um gerador especialista de testes de software em BDD.",
-            "Retorne APENAS um objeto JSON valido correspondente a estrutura esperada.",
-            "Nao use markdown e nao use bloco de codigo.",
-            json.dumps(prompt_task, ensure_ascii=False),
-        ]
+        user_technical_context=user_focus or "Nao informado pelo usuario.",
+        deep_technical_detail=technical_detail or "Nao informado.",
+        legacy_tests_for_upgrade=legacy_tests_for_upgrade,
+        expected_json_structure=prompt_registry.schema_example("qa_test_case.schema.json"),
     )
+
+
+def generate_scenarios_with_copilot(
+    card_data, user_focus, technical_detail, generation_settings, github_token=None, preferred_model=None
+):
+    prompt = build_qa_generation_prompt(card_data, user_focus, technical_detail, generation_settings)
 
     raw_response = send_prompt_to_copilot(prompt, github_token=github_token, preferred_model=preferred_model)
-    return parse_json_loosely(raw_response)
+    parsed_response = parse_json_loosely(raw_response)
+    prompt_registry.validate_against_schema("qa_test_case.schema.json", parsed_response)
+    return parsed_response
+
+
+def build_qa_evaluation_prompt(card_data):
+    """Monta o prompt de avaliacao de cobertura. Compartilhada com
+    src.ai.orchestration.evaluate_coverage pelo mesmo motivo de build_qa_generation_prompt."""
+    card_data = card_data or {}
+    return prompt_registry.render(
+        "system/qa_evaluator.j2",
+        acceptance_criteria=card_data.get("acceptance_criteria"),
+        existing_tests=card_data.get("existing_tests"),
+    )
 
 
 def evaluate_coverage_with_copilot(card_data, github_token=None, preferred_model=None):
     card_data = card_data or {}
-    existing_tests = card_data.get("existing_tests")
-    if not existing_tests:
+    if not card_data.get("existing_tests"):
         return "Nao ha testes existentes para avaliar."
 
-    prompt_text = f"""
-Voce e um QA Senior.
-Analise os Criterios de Aceite da historia abaixo e os Testes Existentes.
-Avalie a cobertura. Ela esta boa? Faltam caminhos felizes, cenarios de erro ou validacoes de seguranca?
-
-CRITERIOS DE ACEITE:
-{card_data.get("acceptance_criteria")}
-
-TESTES EXISTENTES (JSON):
-{json.dumps(existing_tests, ensure_ascii=False)}
-
-Responda em Portugues do Brasil com no maximo 3 paragrafos curtos e diretos, sem markdown pesado.
-"""
-
-    return send_prompt_to_copilot(prompt_text, github_token=github_token, preferred_model=preferred_model)
+    prompt = build_qa_evaluation_prompt(card_data)
+    return send_prompt_to_copilot(prompt, github_token=github_token, preferred_model=preferred_model)
 
 
 def classify_copilot_error(error):

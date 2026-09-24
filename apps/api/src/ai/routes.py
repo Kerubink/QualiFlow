@@ -4,6 +4,7 @@ import os
 
 from flask import Blueprint, Response, jsonify, request, stream_with_context
 
+from .copilot import _now_iso
 from .providers import fetch_gemini_models, fetch_groq_models
 from ..auth.middleware import resolve_session_token
 from .orchestration import (
@@ -144,6 +145,10 @@ def _stream_scenarios(generator_factory, card_data, selected_ai, ai_settings, gi
             yield _ndjson_line({"type": "result", "data": processed})
         except Exception as error:
             try:
+                print(
+                    f"[{_now_iso()}] [scenarios] Orquestracao completa falhou, caindo para o fallback "
+                    f"legado (single-shot): {error}"
+                )
                 yield _ndjson_line({"type": "progress", "stage": "fallback", "message": "Executando fluxo legado de geracao..."})
                 raw = legacy_generate_scenarios(
                     selected_ai,
