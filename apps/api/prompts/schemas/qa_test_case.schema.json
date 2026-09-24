@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Resultado de geracao de casos de teste (QA Generator)",
+  "description": "Formato retornado por generate_scenarios_with_copilot. Usado tanto para ilustrar o prompt (via 'examples') quanto para validar a resposta do modelo.",
+  "type": "object",
+  "required": ["total_criterios", "total_tests", "coverage_analysis", "test_cases"],
+  "properties": {
+    "total_criterios": { "type": "integer", "minimum": 0 },
+    "total_tests": { "type": "integer", "minimum": 0 },
+    "coverage_analysis": {
+      "type": "object",
+      "required": ["rtm_matrix", "insights", "coverage_score"],
+      "properties": {
+        "rtm_matrix": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["criteria", "covered_by_scenarios", "status"],
+            "properties": {
+              "criteria": { "type": "string" },
+              "covered_by_scenarios": { "type": "array", "items": { "type": "string" } },
+              "status": { "type": "string" }
+            }
+          }
+        },
+        "insights": { "type": "string" },
+        "coverage_score": { "type": "string" }
+      }
+    },
+    "test_cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["title", "bdd_description", "steps"],
+        "properties": {
+          "title": { "type": "string" },
+          "bdd_description": { "type": "string" },
+          "steps": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["action", "expected", "needs_evidence"],
+              "properties": {
+                "action": { "type": "string" },
+                "expected": { "type": "string" },
+                "needs_evidence": { "type": "boolean" }
+              }
+            }
+          },
+          "parameters": { "type": "object" }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "total_criterios": 0,
+      "total_tests": 0,
+      "coverage_analysis": {
+        "rtm_matrix": [
+          { "criteria": "criterio", "covered_by_scenarios": ["Titulo do CT"], "status": "TOTAL" }
+        ],
+        "insights": "Resumo qualitativo",
+        "coverage_score": "100%"
+      },
+      "test_cases": [
+        {
+          "title": "[PREFIXO] - Titulo",
+          "bdd_description": "DADO ...\nQUANDO ...\nENTAO ...",
+          "steps": [
+            { "action": "DADO ...", "expected": "...", "needs_evidence": false },
+            { "action": "QUANDO ...", "expected": "...", "needs_evidence": true }
+          ],
+          "parameters": {}
+        }
+      ]
+    }
+  ]
+}
