@@ -42,6 +42,41 @@ def _error_response(error):
 # --- Azure DevOps ---
 
 
+@board_routes.post("/api/board/azure/organizations")
+def azure_organizations():
+    """Lista as organizacoes do Azure DevOps acessiveis pelo usuario autenticado (auto-discovery
+    apos o login Microsoft, para nao exigir digitar a URL da organizacao manualmente)."""
+    token_data, error = _require_board_session("microsoft")
+    if error:
+        return error
+    try:
+        data = az.azure_list_organizations(token_data["accessToken"])
+        return jsonify({"success": True, "data": data})
+    except Exception as error:
+        return _error_response(error)
+
+
+@board_routes.post("/api/board/azure/projects")
+def azure_projects():
+    """Lista os projetos de uma organizacao do Azure DevOps (auto-discovery apos escolher a
+    organizacao, para nao exigir digitar o nome do projeto manualmente)."""
+    token_data, error = _require_board_session("microsoft")
+    if error:
+        return error
+    body = request.get_json(silent=True) or {}
+    org_url = (body.get("orgUrl") or "").strip()
+    if not org_url:
+        return (
+            jsonify({"success": False, "error": {"code": "INVALID_BODY", "message": "Body invalido. Envie orgUrl no payload."}}),
+            400,
+        )
+    try:
+        data = az.azure_list_projects(token_data["accessToken"], org_url)
+        return jsonify({"success": True, "data": data})
+    except Exception as error:
+        return _error_response(error)
+
+
 @board_routes.post("/api/board/azure/work-item")
 def azure_work_item():
     token_data, error = _require_board_session("microsoft")
