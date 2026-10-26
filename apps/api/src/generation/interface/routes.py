@@ -46,12 +46,28 @@ def _to_ndjson(event):
     )
 
 
+# O Chrome segura o inicio de respostas "sem tipo conhecido" (como application/x-ndjson) ate juntar ~1 KB para
+# detectar o tipo (MIME sniffing); como cada evento de progresso tem ~150 bytes, o front ficava parado e recebia tudo
+# de uma vez no fim. `nosniff` desliga esse buffer e o preenchimento inicial cobre proxies/antivirus que tambem
+# acumulam bytes. O cliente ignora eventos de tipo desconhecido.
+_STREAM_PADDING = _ndjson_line({"type": "padding", "data": " " * 1100})
+
+
 def _ndjson_response(events):
     def generate():
+        yield _STREAM_PADDING
         for event in events:
             yield _to_ndjson(event)
 
-    return Response(stream_with_context(generate()), mimetype="application/x-ndjson")
+    return Response(
+        stream_with_context(generate()),
+        mimetype="application/x-ndjson",
+        headers={
+            "X-Content-Type-Options": "nosniff",
+            "Cache-Control": "no-cache, no-transform",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @scenario_routes.post("/api/gemini/models")

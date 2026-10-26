@@ -240,6 +240,10 @@ Progresso visual em fases:
 
 A extensao escuta mensagens de progresso do background via action GENERATION_PROGRESS.
 
+O stream NDJSON sai com `X-Content-Type-Options: nosniff` e uma primeira linha `{"type":"padding"}` (ignorada pelo
+cliente): sem isso o Chrome acumula ~1 KB do inicio da resposta para detectar o tipo e o progresso so chegava ao front
+no fim da geracao.
+
 Enquanto o modelo responde (chamadas que podem levar dezenas de segundos), o backend repete o evento de progresso a
 cada ~8s com `waitingSeconds` ("... aguardando a IA ha 24s"), mantendo o stream ativo e o painel de lotes atualizado;
 o service worker da extensao tambem faz um keep-alive durante a geracao para o Chrome nao encerra-lo por inatividade.
