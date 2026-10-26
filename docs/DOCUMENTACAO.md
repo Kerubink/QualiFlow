@@ -240,6 +240,16 @@ Progresso visual em fases:
 
 A extensao escuta mensagens de progresso do background via action GENERATION_PROGRESS.
 
+Enquanto o modelo responde (chamadas que podem levar dezenas de segundos), o backend repete o evento de progresso a
+cada ~8s com `waitingSeconds` ("... aguardando a IA ha 24s"), mantendo o stream ativo e o painel de lotes atualizado;
+o service worker da extensao tambem faz um keep-alive durante a geracao para o Chrome nao encerra-lo por inatividade.
+
+Anti-repeticao entre lotes: cada lote recebe em `already_generated` os CTs (id/titulo) ja gerados pelos lotes
+anteriores e o prompt proibe repeti-los. Alem disso, o backend remove repeticoes (mesmo titulo normalizado, titulo e
+passos muito parecidos ou passos praticamente identicos; fica a primeira ocorrencia) a cada lote e no
+pos-processamento (`domain/deduplication.py`), independente do provedor de IA (Copilot, Gemini ou Groq). O log
+`[geracao] lote N/M ok ... repetidos_removidos=X` mostra quantos foram descartados.
+
 Saida exibida:
 
 - Lista de cenarios editaveis.

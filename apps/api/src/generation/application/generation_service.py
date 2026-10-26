@@ -6,10 +6,12 @@ Portado do frontend (services/orchestration/testGeneration.js + postProcessor.js
 backend toda a logica de prompt engineering e regras de negocio. Depende apenas de domain e das portas
 (AiGateway, PromptCatalog); provedores e templates sao injetados pela composicao.
 """
+import threading
 import time
 
 from ...shared.log import log
 from ..domain.criteria import parse_acceptance_criteria
+from ..domain.deduplication import remove_duplicate_scenarios
 from ..domain.errors import classify_ai_error
 from ..domain.planning import fallback_test_plan, prefix_for_type, resolve_chunk_size, split_in_chunks
 from ..domain.post_processing import post_process_generated_scenarios
@@ -19,6 +21,9 @@ from ..domain.rtm import select_coverage
 def _card_label(card_data):
     card = card_data if isinstance(card_data, dict) else {}
     return f"{card.get('id') or card.get('work_item_id') or card.get('key') or '?'} {card.get('title') or ''}".strip()
+
+
+HEARTBEAT_SECONDS = 8
 
 
 def _elapsed(started_at):
@@ -61,7 +66,10 @@ class GenerationService:
         )
 
         try:
-            decomposition = self._ai.json_prompt(selected_ai, ai_settings, decomposition_prompt, 0.1, github_token)
+            decomposition = yield from self._await_ai(
+                lambda: self._ai.json_prompt(selected_ai, ai_settings, decomposition_prompt, 0.1, github_token),
+                {"stage": "analyzing", "message": "Analisando regras e decompondo os cenarios..."},
+            )
         except Exception as error:
             log("geracao", "decomposicao FALHOU, usando plano de fallback", erro=f"{type(error).__name__}: {error}")
             decomposition = None
@@ -94,10 +102,25 @@ class GenerationService:
             }
 
             batch_prompt = self._prompts.build_batch_prompt(
-                card_data, criteria_list, rules, batch_plan, generation_settings, user_focus, technical_detail
+                card_data,
+                criteria_list,
+                rules,
+                batch_plan,
+                generation_settings,
+                user_focus,
+                technical_detail,
+                already_generated=generated_tests,
             )
             try:
-                batch_result = self._ai.json_prompt(selected_ai, ai_settings, batch_prompt, 0.2, github_token)
+                batch_result = yield from self._await_ai(
+                    lambda: self._ai.json_prompt(selected_ai, ai_settings, batch_prompt, 0.2, github_token),
+                    {
+                        "stage": "batch-progress",
+                        "message": f"Gerando lote {batch_index + 1} de {len(batches)}...",
+                        "batchIndex": batch_index + 1,
+                        "totalBatches": len(batches),
+                    },
+                )
             except Exception as error:
                 # Nao deixa UM lote com falha (timeout, JSON malformado, rate limit) derrubar os
                 # demais lotes ja gerados com sucesso -- sem isso, uma unica falha jogava fora tudo
@@ -111,14 +134,23 @@ class GenerationService:
                 continue
             batch_cases = batch_result.get("test_cases") if isinstance(batch_result, dict) else None
             batch_cases = batch_cases if isinstance(batch_cases, list) else []
-            generated_tests.extend(batch_cases)
-            log("geracao", f"lote {batch_index + 1}/{len(batches)} ok", cts=len(batch_cases))
+            # Remove na hora o que o modelo repetiu em relacao aos lotes anteriores (e dentro do proprio lote), para
+            # que os proximos lotes ja recebam a lista sem repeticoes em `already_generated`.
+            unique_cases, duplicates = remove_duplicate_scenarios([*generated_tests, *batch_cases])
+            added = len(unique_cases) - len(generated_tests)
+            generated_tests = unique_cases
+            log(
+                "geracao",
+                f"lote {batch_index + 1}/{len(batches)} ok",
+                cts=added,
+                repetidos_removidos=len(duplicates) or None,
+            )
 
         if not generated_tests:
             raise RuntimeError("Nao foi possivel gerar casos de teste no lote.")
 
         yield "progress", {"stage": "rtm", "message": "Montando matriz RTM e analise de cobertura..."}
-        final_coverage = self._build_coverage(
+        final_coverage = yield from self._build_coverage(
             selected_ai, ai_settings, criteria_list, generated_tests, github_token
         )
 
@@ -170,7 +202,10 @@ class GenerationService:
             technical_detail,
         )
 
-        adaptation_result = self._ai.json_prompt(selected_ai, ai_settings, adaptation_prompt, 0.2, github_token)
+        adaptation_result = yield from self._await_ai(
+            lambda: self._ai.json_prompt(selected_ai, ai_settings, adaptation_prompt, 0.2, github_token),
+            {"stage": "analyzing", "message": "Analisando CTs copiados e criterios do card alvo..."},
+        )
         adapted_cases = adaptation_result.get("test_cases") if isinstance(adaptation_result, dict) else None
         adapted_cases = adapted_cases if isinstance(adapted_cases, list) else []
 
@@ -179,7 +214,9 @@ class GenerationService:
 
         yield "progress", {"stage": "rtm", "message": "Montando matriz RTM para validar cobertura apos ajustes..."}
 
-        final_coverage = self._build_coverage(selected_ai, ai_settings, criteria_list, adapted_cases, github_token)
+        final_coverage = yield from self._build_coverage(
+            selected_ai, ai_settings, criteria_list, adapted_cases, github_token
+        )
 
         log("adaptacao", "RTM atualizada", total_cts=len(adapted_cases))
         yield "progress", {"stage": "done", "message": "Ajuste concluido com RTM atualizado."}
@@ -191,12 +228,46 @@ class GenerationService:
             "test_cases": adapted_cases,
         }
 
+    @staticmethod
+    def _await_ai(call, progress):
+        """Generator: executa `call` (chamada bloqueante ao modelo) em uma thread e, enquanto espera, emite um evento
+        `progress` periodico (mesmo stage, com `waitingSeconds`). Assim o stream NDJSON nunca fica minutos em
+        silencio durante uma chamada lenta de IA: a UI continua mostrando o andamento e a conexao se mantem ativa.
+        Devolve o resultado de `call` (via `yield from`) ou relanca a excecao dele."""
+        outcome = {}
+
+        def run():
+            try:
+                outcome["value"] = call()
+            except BaseException as error:  # repassada ao chamador abaixo
+                outcome["error"] = error
+
+        worker = threading.Thread(target=run, daemon=True, name="ai-call")
+        worker.start()
+        started_at = time.time()
+        while True:
+            worker.join(HEARTBEAT_SECONDS)
+            if not worker.is_alive():
+                break
+            waited = round(time.time() - started_at)
+            yield "progress", {
+                **progress,
+                "message": f"{progress['message']} (aguardando a IA ha {waited}s)",
+                "waitingSeconds": waited,
+            }
+        if "error" in outcome:
+            raise outcome["error"]
+        return outcome.get("value")
+
     def _build_coverage(self, selected_ai, ai_settings, criteria_list, test_cases, github_token):
-        """RTM via IA; se falhar ou vier mal formada, usa a cobertura heuristica de fallback."""
+        """Generator: RTM via IA; se falhar ou vier mal formada, usa a cobertura heuristica de fallback."""
         coverage_analysis = None
         try:
             rtm_prompt = self._prompts.build_rtm_prompt(criteria_list, test_cases)
-            rtm_result = self._ai.json_prompt(selected_ai, ai_settings, rtm_prompt, 0.1, github_token)
+            rtm_result = yield from self._await_ai(
+                lambda: self._ai.json_prompt(selected_ai, ai_settings, rtm_prompt, 0.1, github_token),
+                {"stage": "rtm", "message": "Montando matriz RTM e analise de cobertura..."},
+            )
             coverage_analysis = rtm_result.get("coverage_analysis") if isinstance(rtm_result, dict) else None
         except Exception as error:
             log("geracao", "RTM via IA FALHOU, usando cobertura heuristica", erro=f"{type(error).__name__}: {error}")

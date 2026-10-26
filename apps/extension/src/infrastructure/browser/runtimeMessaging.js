@@ -10,6 +10,11 @@ export function sendRuntimeMessage(message) {
     });
 }
 
+// Chamada barata a uma API de extensao: reinicia o timer de inatividade (30s) do service worker MV3.
+export function keepServiceWorkerAlive() {
+    return chrome.runtime.getPlatformInfo();
+}
+
 export function sendMessageToTab(tabId, message) {
     return chrome.tabs.sendMessage(tabId, message);
 }

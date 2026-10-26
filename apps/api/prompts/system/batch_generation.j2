@@ -8,6 +8,8 @@
         "Demais steps com DADO/E/ENTAO",
         "Cada action comeca com UMA unica palavra-chave Gherkin; nunca encadeie ('E ENTAO', 'ENTAO ENTAO'). Escreva ENTAO sem acento.",
         'O title deve ser "PREFIXO - Contexto - Titulo" com UM prefixo real SEM colchetes (UI, FUNC, UX, ACC, INT, SCHEMA, SEG, PERF), ex.: "PERF - Login - Tempo de resposta"; nunca o texto literal PREFIXO.',
+        "Gere SOMENTE os casos descritos em batch_plan, exatamente um caso por item, na mesma ordem.",
+        "already_generated lista casos de lotes anteriores: NUNCA repita, reescreva nem gere variacao trivial deles (mesmo titulo, mesmo fluxo ou mesmo resultado esperado); cubra apenas o que ainda nao foi coberto.",
         "Mapear needs_evidence por step",
         "Mapear parameters usando @campo quando aplicavel",
     ],
@@ -17,6 +19,7 @@
     "user_focus": user_focus,
     "technical_detail": technical_detail,
     "batch_plan": batch_plan,
+    "already_generated": already_generated,
     "output_schema": {
         "test_cases": [
             {

@@ -83,7 +83,15 @@ class PromptCatalog:
         )
 
     def build_batch_prompt(
-        self, card_data, criteria_list, rules, batch_plan, generation_settings, user_focus, technical_detail
+        self,
+        card_data,
+        criteria_list,
+        rules,
+        batch_plan,
+        generation_settings,
+        user_focus,
+        technical_detail,
+        already_generated=None,
     ):
         card_data = card_data or {}
         return prompt_registry.render(
@@ -100,6 +108,11 @@ class PromptCatalog:
             user_focus=user_focus or "",
             technical_detail=technical_detail or "",
             batch_plan=batch_plan,
+            already_generated=[
+                {"id": test.get("id"), "title": test.get("title")}
+                for test in (already_generated or [])
+                if isinstance(test, dict)
+            ],
         )
 
     def build_rtm_prompt(self, criteria_list, generated_tests):

@@ -1,6 +1,7 @@
 """Pos-processamento do resultado da IA: normaliza cenarios, garante parametros e recalcula a RTM. Puro (sem I/O)."""
 from ...shared.scenario_params import ensure_scenario_params_default
 from .criteria import parse_acceptance_criteria
+from .deduplication import remove_duplicate_scenarios
 from .rtm import compute_rtm
 from .scenarios import DEFAULT_TITLE_PREFIX, normalize_scenario
 
@@ -16,6 +17,9 @@ def post_process_generated_scenarios(raw_response, card_data, default_prefix=Non
     test_cases_raw = source.get("test_cases")
     test_cases_raw = test_cases_raw if isinstance(test_cases_raw, list) else []
 
+    # Deduplica o que a IA devolveu ANTES de normalizar: a normalizacao preenche passos padrao em CTs sem passos, e
+    # CTs diferentes ficariam com passos identicos e seriam confundidos com repetidos.
+    test_cases_raw, _duplicates = remove_duplicate_scenarios(test_cases_raw)
     test_cases = [normalize_scenario(scenario, idx, default_prefix or DEFAULT_TITLE_PREFIX) for idx, scenario in enumerate(test_cases_raw)]
     for scenario in test_cases:
         ensure_scenario_params_default(scenario)

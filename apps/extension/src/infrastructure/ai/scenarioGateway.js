@@ -2,6 +2,13 @@
 // e repassa os eventos de progresso. Decomposicao, lotes, RTM e pos-processamento rodam no backend.
 import { buildAiSettingsPayload, streamScenarios } from '../backend/client.js';
 
+// O 'done' do backend chega antes do pos-processamento local; o 'done' final e emitido pela camada de aplicacao.
+function forwardProgress(onProgress) {
+    return (event) => {
+        if (event?.stage !== 'done') onProgress(event);
+    };
+}
+
 export function generateScenarios({ selectedAi, settings, cardData, userFocus, technicalDetail, generationSettings, onProgress = () => {} }) {
     return streamScenarios(
         '/api/scenarios/generate',
@@ -14,7 +21,7 @@ export function generateScenarios({ selectedAi, settings, cardData, userFocus, t
             aiSettings: buildAiSettingsPayload(settings)
         },
         settings,
-        onProgress
+        forwardProgress(onProgress)
     );
 }
 
@@ -45,6 +52,6 @@ export function adaptScenarios({
             aiSettings: buildAiSettingsPayload(settings)
         },
         settings,
-        onProgress
+        forwardProgress(onProgress)
     );
 }

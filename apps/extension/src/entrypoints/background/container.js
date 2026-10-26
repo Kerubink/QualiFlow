@@ -8,7 +8,7 @@ import * as copilot from '../../infrastructure/ai/copilot.js';
 import * as scenarioGateway from '../../infrastructure/ai/scenarioGateway.js';
 import * as authClient from '../../infrastructure/backend/authClient.js';
 import { sendSupportStatusWebhook } from '../../infrastructure/backend/supportWebhook.js';
-import { sendMessageToTab } from '../../infrastructure/browser/runtimeMessaging.js';
+import { keepServiceWorkerAlive, sendMessageToTab } from '../../infrastructure/browser/runtimeMessaging.js';
 import { getLocalStorage, setLocalStorage } from '../../infrastructure/browser/storage.js';
 import { captureActiveTab, openTab } from '../../infrastructure/browser/tabs.js';
 import { getSettings, saveSettings } from '../../infrastructure/persistence/settingsRepository.js';
@@ -27,7 +27,8 @@ export function createContainer() {
         authClient,
         openTab,
         captureActiveTab,
-        sendMessageToTab
+        sendMessageToTab,
+        keepServiceWorkerAlive
     };
 
     const supportMonitor = createSupportMonitor({
