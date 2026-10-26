@@ -1,7 +1,9 @@
 """Casos de uso de Jira. As rotas falam com este servico, nunca com o cliente REST."""
 from ...shared.scenario_params import ensure_scenario_params_default
+from ...shared.log import log_calls
 
 
+@log_calls("jira")
 class JiraBoardService:
     def __init__(self, gateway):
         self._gateway = gateway

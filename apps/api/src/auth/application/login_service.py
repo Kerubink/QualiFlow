@@ -3,6 +3,7 @@
 O cliente da extensao inicia o login e faz polling; este servico controla state, callback e sessoes
 (armazenadas em memoria em shared.session_store). Os clientes de provedor sao injetados.
 """
+from ...shared.log import log, short_id
 from ...shared.session_store import (
     cleanup_expired,
     complete_auth_request,
@@ -34,7 +35,9 @@ class OAuthLoginService:
 
     def start_request(self):
         cleanup_expired()
-        return create_auth_request()
+        request_id = create_auth_request()
+        log("auth", "solicitacao de login criada (aguardando o usuario autorizar)", solicitacao=short_id(request_id))
+        return request_id
 
     def get_request(self, request_id):
         cleanup_expired()
@@ -50,6 +53,7 @@ class OAuthLoginService:
         cleanup_expired()
         self._require_known_request(request_id)
         state = self._state.create_oauth_state({"requestId": request_id} if request_id else {})
+        log("auth", "redirecionando para o login do GitHub", solicitacao=short_id(request_id))
         return self._github.build_github_login_url(state)
 
     def build_microsoft_login_url(self, request_id):
@@ -58,6 +62,7 @@ class OAuthLoginService:
         state = self._state.create_oauth_state(
             {"requestId": request_id, "provider": "microsoft"} if request_id else {"provider": "microsoft"}
         )
+        log("auth", "redirecionando para o login Microsoft (Azure DevOps)", solicitacao=short_id(request_id))
         return self._microsoft.build_microsoft_login_url(state)
 
     def build_atlassian_login_url(self, request_id, jira_domain):
@@ -70,6 +75,7 @@ class OAuthLoginService:
         if jira_domain:
             payload["jiraDomain"] = jira_domain
 
+        log("auth", "redirecionando para o login Atlassian (Jira)", solicitacao=short_id(request_id))
         return self._atlassian.build_atlassian_login_url(self._state.create_oauth_state(payload))
 
     # --- callback ---
@@ -96,8 +102,16 @@ class OAuthLoginService:
                 if not complete_auth_request(request_id, session):
                     fail_auth_request(request_id, "Falha ao concluir autenticacao da solicitacao.")
 
+            log(
+                "auth",
+                "login GitHub concluido",
+                usuario=user.get("login"),
+                escopos=token_result.get("scope"),
+                solicitacao=short_id(request_id),
+            )
             return session, request_id
         except Exception as error:
+            log("auth", "login GitHub FALHOU", erro=f"{type(error).__name__}: {error}", solicitacao=short_id(request_id))
             if request_id:
                 fail_auth_request(request_id, str(error))
             raise
@@ -122,8 +136,10 @@ class OAuthLoginService:
                 if not complete_auth_request(request_id, session):
                     fail_auth_request(request_id, "Falha ao concluir autenticacao Microsoft.")
 
+            log("auth", "login Microsoft (Azure DevOps) concluido", usuario=profile.get("displayName"), solicitacao=short_id(request_id))
             return session, profile
         except Exception as error:
+            log("auth", "login Microsoft FALHOU", erro=f"{type(error).__name__}: {error}", solicitacao=short_id(request_id))
             if request_id:
                 fail_auth_request(request_id, str(error))
             raise
@@ -156,8 +172,10 @@ class OAuthLoginService:
                 if not complete_auth_request(request_id, session):
                     fail_auth_request(request_id, "Falha ao concluir autenticacao Atlassian.")
 
+            log("auth", "login Atlassian (Jira) concluido", usuario=profile.get("name"), site=site.get("url"), solicitacao=short_id(request_id))
             return session, profile
         except Exception as error:
+            log("auth", "login Atlassian FALHOU", erro=f"{type(error).__name__}: {error}", solicitacao=short_id(request_id))
             if request_id:
                 fail_auth_request(request_id, str(error))
             raise
@@ -180,4 +198,6 @@ class OAuthLoginService:
         return get_user_session(session_token)
 
     def logout(self, session_token):
+        session = get_user_session(session_token)
         revoke_user_session(session_token)
+        log("auth", "logout", usuario=((session or {}).get("user") or {}).get("login"))

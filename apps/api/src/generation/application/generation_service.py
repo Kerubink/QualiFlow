@@ -6,12 +6,23 @@ Portado do frontend (services/orchestration/testGeneration.js + postProcessor.js
 backend toda a logica de prompt engineering e regras de negocio. Depende apenas de domain e das portas
 (AiGateway, PromptCatalog); provedores e templates sao injetados pela composicao.
 """
-from ...shared.clock import now_iso
+import time
+
+from ...shared.log import log
 from ..domain.criteria import parse_acceptance_criteria
 from ..domain.errors import classify_ai_error
 from ..domain.planning import fallback_test_plan, prefix_for_type, resolve_chunk_size, split_in_chunks
 from ..domain.post_processing import post_process_generated_scenarios
 from ..domain.rtm import select_coverage
+
+
+def _card_label(card_data):
+    card = card_data if isinstance(card_data, dict) else {}
+    return f"{card.get('id') or card.get('work_item_id') or card.get('key') or '?'} {card.get('title') or ''}".strip()
+
+
+def _elapsed(started_at):
+    return f"{round(time.time() - started_at, 1)}s"
 
 
 class GenerationService:
@@ -36,6 +47,14 @@ class GenerationService:
         """Generator: yields ('progress', dict) durante o processo e ('result', dict) ao final."""
         yield "progress", {"stage": "analyzing", "message": "Analisando regras e decompondo os cenarios..."}
         criteria_list = parse_acceptance_criteria((card_data or {}).get("acceptance_criteria") or "")
+        log(
+            "geracao",
+            "iniciada",
+            ia=selected_ai,
+            card=_card_label(card_data),
+            criterios=len(criteria_list),
+            tipo=(generation_settings or {}).get("type"),
+        )
 
         decomposition_prompt = self._prompts.build_decomposition_prompt(
             card_data, user_focus, technical_detail, generation_settings, criteria_list
@@ -43,7 +62,8 @@ class GenerationService:
 
         try:
             decomposition = self._ai.json_prompt(selected_ai, ai_settings, decomposition_prompt, 0.1, github_token)
-        except Exception:
+        except Exception as error:
+            log("geracao", "decomposicao FALHOU, usando plano de fallback", erro=f"{type(error).__name__}: {error}")
             decomposition = None
 
         rules = (decomposition or {}).get("rules") if isinstance(decomposition, dict) else None
@@ -57,6 +77,7 @@ class GenerationService:
 
         batches = split_in_chunks(test_plan, chunk_size)
         generated_tests = []
+        log("geracao", "plano definido", cenarios_planejados=len(test_plan), lotes=len(batches), tamanho_lote=chunk_size)
 
         yield "progress", {
             "stage": "batch-start",
@@ -82,13 +103,16 @@ class GenerationService:
                 # demais lotes ja gerados com sucesso -- sem isso, uma unica falha jogava fora tudo
                 # e caia no fallback legado (single-shot, sem decomposicao), que tende a gerar bem
                 # menos casos de teste do que a geracao em lote completa.
-                print(
-                    f"[{now_iso()}] [orchestration] Lote {batch_index + 1}/{len(batches)} falhou, "
-                    f"pulando (demais lotes seguem normalmente): {error}"
+                log(
+                    "geracao",
+                    f"lote {batch_index + 1}/{len(batches)} FALHOU, pulando (demais lotes seguem)",
+                    erro=f"{type(error).__name__}: {error}",
                 )
                 continue
             batch_cases = batch_result.get("test_cases") if isinstance(batch_result, dict) else None
-            generated_tests.extend(batch_cases if isinstance(batch_cases, list) else [])
+            batch_cases = batch_cases if isinstance(batch_cases, list) else []
+            generated_tests.extend(batch_cases)
+            log("geracao", f"lote {batch_index + 1}/{len(batches)} ok", cts=len(batch_cases))
 
         if not generated_tests:
             raise RuntimeError("Nao foi possivel gerar casos de teste no lote.")
@@ -98,6 +122,7 @@ class GenerationService:
             selected_ai, ai_settings, criteria_list, generated_tests, github_token
         )
 
+        log("geracao", "RTM montada", cobertura=(final_coverage or {}).get("coverage_score"), total_cts=len(generated_tests))
         yield "progress", {"stage": "done", "message": "Geracao concluida com sucesso."}
 
         yield "result", {
@@ -120,6 +145,14 @@ class GenerationService:
         github_token=None,
     ):
         criteria_list = parse_acceptance_criteria((target_card_data or {}).get("acceptance_criteria") or "")
+        log(
+            "adaptacao",
+            "iniciada",
+            ia=selected_ai,
+            card_alvo=_card_label(target_card_data),
+            origem=(source_work_item or {}).get("id"),
+            cts_copiados=len(copied_scenarios) if isinstance(copied_scenarios, list) else 0,
+        )
         normalized_copied = copied_scenarios if isinstance(copied_scenarios, list) else []
 
         if not normalized_copied:
@@ -148,6 +181,7 @@ class GenerationService:
 
         final_coverage = self._build_coverage(selected_ai, ai_settings, criteria_list, adapted_cases, github_token)
 
+        log("adaptacao", "RTM atualizada", total_cts=len(adapted_cases))
         yield "progress", {"stage": "done", "message": "Ajuste concluido com RTM atualizado."}
 
         yield "result", {
@@ -164,7 +198,8 @@ class GenerationService:
             rtm_prompt = self._prompts.build_rtm_prompt(criteria_list, test_cases)
             rtm_result = self._ai.json_prompt(selected_ai, ai_settings, rtm_prompt, 0.1, github_token)
             coverage_analysis = rtm_result.get("coverage_analysis") if isinstance(rtm_result, dict) else None
-        except Exception:
+        except Exception as error:
+            log("geracao", "RTM via IA FALHOU, usando cobertura heuristica", erro=f"{type(error).__name__}: {error}")
             coverage_analysis = None
 
         return select_coverage(coverage_analysis, criteria_list, test_cases)
@@ -182,11 +217,15 @@ class GenerationService:
 
     def evaluate_coverage(self, selected_ai, card_data, ai_settings, github_token=None):
         card_data = card_data or {}
+        log("cobertura", "avaliacao iniciada", ia=selected_ai, card=_card_label(card_data))
         if not card_data.get("existing_tests"):
+            log("cobertura", "sem testes existentes, nada a avaliar")
             return "Nao ha testes existentes para avaliar."
 
         prompt = self._prompts.build_qa_evaluation_prompt(card_data)
-        return self._ai.text_prompt(selected_ai, ai_settings, prompt, 0.3, github_token)
+        result = self._ai.text_prompt(selected_ai, ai_settings, prompt, 0.3, github_token)
+        log("cobertura", "avaliacao concluida")
+        return result
 
     # --- Eventos de streaming (a interface serializa cada evento como uma linha NDJSON) ---
 
@@ -195,6 +234,7 @@ class GenerationService:
     ):
         """Generator de eventos: {"type": "progress", ...} | {"type": "result", "data": ...} |
         {"type": "error", "error": {code, message}, "cause": Exception}."""
+        started_at = time.time()
         try:
             final_result = None
             for kind, payload in self.orchestrate_scenario_generation(
@@ -217,12 +257,14 @@ class GenerationService:
             processed = post_process_generated_scenarios(
                 final_result, card_data, prefix_for_type((generation_settings or {}).get("type"))
             )
+            log("geracao", "CONCLUIDA", cts=len(processed.get("test_cases") or []), duracao=_elapsed(started_at))
             yield {"type": "result", "data": processed}
         except Exception as error:
             try:
-                print(
-                    f"[{now_iso()}] [scenarios] Orquestracao completa falhou, caindo para o fallback "
-                    f"legado (single-shot): {error}"
+                log(
+                    "geracao",
+                    "orquestracao completa FALHOU, caindo para o fallback legado (single-shot)",
+                    erro=f"{type(error).__name__}: {error}",
                 )
                 yield {"type": "progress", "stage": "fallback", "message": "Executando fluxo legado de geracao..."}
                 raw = self.legacy_generate_scenarios(
@@ -237,6 +279,7 @@ class GenerationService:
                 processed = post_process_generated_scenarios(
                     raw, card_data, prefix_for_type((generation_settings or {}).get("type"))
                 )
+                log("geracao", "CONCLUIDA via fallback legado", cts=len(processed.get("test_cases") or []), duracao=_elapsed(started_at))
                 yield {"type": "result", "data": processed}
             except Exception as fallback_error:
                 yield self._error_event(selected_ai, fallback_error)
@@ -254,6 +297,7 @@ class GenerationService:
         github_token=None,
     ):
         """Mesmo formato de eventos de stream_generation, sem fallback legado."""
+        started_at = time.time()
         try:
             final_result = None
             for kind, payload in self.orchestrate_scenario_adaptation(
@@ -276,10 +320,20 @@ class GenerationService:
                 raise RuntimeError("Orquestracao de adaptacao nao retornou resultado.")
 
             processed = post_process_generated_scenarios(final_result, target_card_data)
+            log("adaptacao", "CONCLUIDA", cts=len(processed.get("test_cases") or []), duracao=_elapsed(started_at))
             yield {"type": "result", "data": processed}
         except Exception as error:
             yield self._error_event(selected_ai, error)
 
     @staticmethod
     def _error_event(selected_ai, error):
+        classified = classify_ai_error(selected_ai, error)
+        log(
+            "erro",
+            "operacao de IA falhou",
+            ia=selected_ai,
+            codigo=classified["code"],
+            http=classified["httpStatus"],
+            detalhe=f"{type(error).__name__}: {error}",
+        )
         return {"type": "error", "error": classify_ai_error(selected_ai, error), "cause": error}

@@ -4,6 +4,7 @@ from functools import wraps
 from flask import request
 
 from ...shared.interface.responses import error_response
+from ...shared.log import log
 from ..container import login_service
 from ..domain.session_tokens import is_github_session, resolve_session_token_from_headers
 
@@ -17,6 +18,7 @@ def github_session_or_error():
     """Retorna (session, None) para uma sessao GitHub valida, ou (None, resposta_401) caso contrario."""
     session_token = resolve_session_token(request)
     if not session_token:
+        log("auth", "requisicao sem sessao", rota=request.path)
         return None, error_response(
             "AUTH_REQUIRED",
             "Sessao ausente. Faca login em /auth/github/login e envie Authorization: Bearer <sessionToken>.",
@@ -25,6 +27,7 @@ def github_session_or_error():
 
     session = login_service.get_session(session_token)
     if not session or not is_github_session(session):
+        log("auth", "sessao invalida ou expirada", rota=request.path)
         return None, error_response(
             "AUTH_SESSION_INVALID", "Sessao invalida ou expirada. Refaca o login no GitHub.", 401
         )

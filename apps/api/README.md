@@ -4,6 +4,17 @@ Backend Python (Flask) migrado a partir da versao original em Node.js/Express.
 
 Render Free -> Backend Python -> GitHub OAuth (QA) -> Chamada HTTP direta ao GitHub Copilot -> resposta JSON.
 
+## Logs no terminal
+
+Cada acao relevante gera uma linha `[timestamp] [escopo] mensagem chave=valor` (escopos: `servidor`, `auth`, `http`,
+`geracao`, `adaptacao`, `cobertura`, `azure`, `jira`, `copilot-sdk`, `erro`): login (solicitacao, redirecionamento,
+conclusao com o usuario, falhas, logout), cada requisicao HTTP (com usuario e duracao), etapas da geracao (plano,
+lotes, RTM, duracao), operacoes nos boards e erros classificados. Tokens, secrets e chaves nunca sao registrados
+(`shared/log.py` oculta campos sensiveis e valores com formato de token). Health checks e polling de login pendente
+ficam de fora para nao poluir o terminal.
+
+Em uso local a API escuta apenas em `127.0.0.1` (use `HOST=0.0.0.0` no `.env` para expor na rede).
+
 ## Copilot via SDK oficial em Python (modo padrao)
 
 O backend gera os casos de teste com o **SDK oficial do GitHub Copilot para Python** (`github-copilot-sdk`,

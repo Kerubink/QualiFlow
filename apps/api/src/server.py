@@ -1,4 +1,5 @@
 """Composition root da API Flask: bootstrap, hooks HTTP e registro dos blueprints de cada contexto."""
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -13,12 +14,17 @@ from .boards.interface.jira_routes import jira_routes
 from .generation.interface.copilot_routes import copilot_routes
 from .generation.interface.routes import scenario_routes
 from .observability.interface.routes import ops_routes
+from .auth.container import login_service
+from .generation.container import copilot_service
 from .shared.interface.http_hooks import register_http_hooks
+from .shared.log import log
 from .shared.runtime_metrics import start_runtime_metrics_logger, stop_runtime_metrics_logger
 
 
 def create_app():
     flask_app = Flask(__name__)
+    # O log de acesso proprio (shared/interface/http_hooks.py) ja registra cada requisicao com usuario e duracao.
+    logging.getLogger("werkzeug").setLevel(logging.WARNING)
     register_http_hooks(flask_app)
 
     for blueprint in (
@@ -44,6 +50,15 @@ def _bootstrap():
 
     start_runtime_metrics_logger(enabled=metrics_enabled, interval_ms=metrics_interval_ms)
 
+    oauth = login_service.github_oauth_config()
+    log(
+        "servidor",
+        "QualiFlow API iniciada",
+        oauth_github="configurado" if oauth.get("configured") else "NAO configurado (veja GITHUB_OAUTH_* no .env)",
+        copilot=copilot_service.get_status().get("mode"),
+        ambiente=os.environ.get("FLASK_ENV") or "production",
+    )
+
 
 app = create_app()
 _bootstrap()
@@ -51,7 +66,9 @@ _bootstrap()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", "3000"))
+    # Uso local: escuta so em 127.0.0.1 por padrao (nao expoe a API/sessoes na rede). Defina HOST=0.0.0.0 para abrir.
+    host = (os.environ.get("HOST") or "127.0.0.1").strip()
     try:
-        app.run(host="0.0.0.0", port=port, threaded=True)
+        app.run(host=host, port=port, threaded=True)
     finally:
         stop_runtime_metrics_logger()

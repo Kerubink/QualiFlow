@@ -2,8 +2,10 @@
 from ...shared.scenario_params import ensure_scenario_params_default
 from ..domain.deploy_validation import build_deploy_report
 from ..domain.iterations import normalize_iteration_path
+from ...shared.log import log_calls
 
 
+@log_calls("azure")
 class AzureBoardService:
     def __init__(self, gateway):
         self._gateway = gateway

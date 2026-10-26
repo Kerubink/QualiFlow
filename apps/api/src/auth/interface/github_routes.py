@@ -2,6 +2,7 @@
 from flask import Blueprint, jsonify, redirect, request
 
 from ...shared.interface.responses import error_response
+from ...shared.log import log, short_id
 from ..application.errors import AuthRequestInvalid
 from ..container import login_service
 from .middleware import require_auth_session, resolve_session_token
@@ -49,6 +50,7 @@ def poll_auth_session(request_id):
 
     if auth_request["status"] == "completed":
         session = auth_request["session"]
+        log("auth", "extensao recebeu a sessao (login concluido)", usuario=session["user"].get("login"), solicitacao=short_id(request_id))
         return jsonify(
             {
                 "success": True,
@@ -60,6 +62,7 @@ def poll_auth_session(request_id):
         )
 
     if auth_request["status"] == "error":
+        log("auth", "extensao recebeu erro de login", erro=auth_request.get("error"), solicitacao=short_id(request_id))
         return (
             jsonify(
                 {
@@ -142,12 +145,14 @@ def github_callback():
     state = (request.args.get("state") or "").strip()
 
     if not code or not state:
+        log("auth", "callback do GitHub sem code/state", erro=request.args.get("error_description") or request.args.get("error"))
         return error_response(
             "OAUTH_CALLBACK_INVALID", "Parametros code/state obrigatorios nao informados.", 400
         )
 
     state_payload = login_service.verify_state(state)
     if not state_payload:
+        log("auth", "callback do GitHub com state invalido ou expirado")
         return error_response("OAUTH_STATE_INVALID", "State invalido ou expirado. Tente o login novamente.", 400)
 
     try:
