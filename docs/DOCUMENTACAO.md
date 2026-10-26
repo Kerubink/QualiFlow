@@ -244,6 +244,12 @@ O stream NDJSON sai com `X-Content-Type-Options: nosniff` e uma primeira linha `
 cliente): sem isso o Chrome acumula ~1 KB do inicio da resposta para detectar o tipo e o progresso so chegava ao front
 no fim da geracao.
 
+Polling de progresso: alem do stream, cada evento de progresso recebe um `seq` e fica em memoria no backend
+(`shared/progress_store.py`). A extensao envia um `progressId` aleatorio no payload e consulta
+`GET /api/scenarios/progress/<progressId>?after=<seq>` a cada ~1,5s, desde antes de receber os headers da resposta.
+Se um antivirus/proxy acumular a resposta em streaming ate o fim (UI parada na primeira etapa), o andamento continua
+chegando por polling; stream e polling alimentam o mesmo despachante e `seq` evita eventos repetidos.
+
 Enquanto o modelo responde (chamadas que podem levar dezenas de segundos), o backend repete o evento de progresso a
 cada ~8s com `waitingSeconds` ("... aguardando a IA ha 24s"), mantendo o stream ativo e o painel de lotes atualizado;
 o service worker da extensao tambem faz um keep-alive durante a geracao para o Chrome nao encerra-lo por inatividade.

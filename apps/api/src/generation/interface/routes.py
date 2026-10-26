@@ -4,6 +4,7 @@ import json
 from flask import Blueprint, Response, jsonify, request, stream_with_context
 
 from ...auth.interface.middleware import github_session_or_error
+from ...shared import progress_store
 from ...shared.interface.responses import error_response, is_development
 from ..container import generation_service
 from ..domain.ai_providers import normalize_selected_ai
@@ -53,11 +54,22 @@ def _to_ndjson(event):
 _STREAM_PADDING = _ndjson_line({"type": "padding", "data": " " * 1100})
 
 
-def _ndjson_response(events):
+def _ndjson_response(events, progress_id=None):
     def generate():
         yield _STREAM_PADDING
-        for event in events:
-            yield _to_ndjson(event)
+        seq = 0
+        try:
+            for event in events:
+                if event.get("type") == "progress":
+                    # `seq` permite ao cliente juntar o stream e o polling (progress_store) sem repetir eventos.
+                    seq += 1
+                    event = {**event, "seq": seq}
+                    if progress_id:
+                        progress_store.append(progress_id, event)
+                yield _to_ndjson(event)
+        finally:
+            if progress_id:
+                progress_store.finish(progress_id)
 
     return Response(
         stream_with_context(generate()),
@@ -68,6 +80,20 @@ def _ndjson_response(events):
             "X-Accel-Buffering": "no",
         },
     )
+
+
+@scenario_routes.get("/api/scenarios/progress/<progress_id>")
+def scenarios_progress(progress_id):
+    """Polling do progresso de uma geracao/adaptacao em andamento (alternativa ao stream em redes que o acumulam)."""
+    progress_id = progress_store.normalize_progress_id(progress_id)
+    if not progress_id:
+        return error_response("INVALID_PROGRESS_ID", "progressId invalido.", 400)
+    try:
+        after = max(0, int(request.args.get("after") or 0))
+    except ValueError:
+        after = 0
+    events, finished = progress_store.read(progress_id, after)
+    return jsonify({"success": True, "events": events, "finished": finished})
 
 
 @scenario_routes.post("/api/gemini/models")
@@ -139,7 +165,8 @@ def scenarios_generate():
         return auth_error
 
     return _ndjson_response(
-        generation_service.stream_generation(
+        progress_id=progress_store.normalize_progress_id(body.get("progressId")),
+        events=generation_service.stream_generation(
             selected_ai,
             ai_settings,
             card_data,
@@ -168,7 +195,8 @@ def scenarios_adapt():
         return auth_error
 
     return _ndjson_response(
-        generation_service.stream_adaptation(
+        progress_id=progress_store.normalize_progress_id(body.get("progressId")),
+        events=generation_service.stream_adaptation(
             selected_ai,
             ai_settings,
             target_card_data,
