@@ -6,13 +6,16 @@ from .application.generation_service import GenerationService
 from .infrastructure.ai_gateway import ProviderAiGateway
 from .infrastructure.prompts import PromptCatalog
 from .infrastructure.providers.copilot import CopilotGateway
-from .infrastructure.providers.copilot_cli import CopilotCliGateway
+from .infrastructure.providers.copilot_sdk import CopilotSdkGateway, sdk_available, warm_up_runtime
 
 
 def _build_copilot_gateway():
-    """COPILOT_MODE=cli (padrao) executa o GitHub Copilot CLI; COPILOT_MODE=http usa os endpoints internos."""
-    mode = (os.environ.get("COPILOT_MODE") or "cli").strip().lower()
-    return CopilotGateway() if mode == "http" else CopilotCliGateway()
+    """COPILOT_MODE: "sdk" (padrao) usa o SDK oficial do Copilot (pip, sem Node); "http" usa os endpoints internos."""
+    mode = (os.environ.get("COPILOT_MODE") or "sdk").strip().lower()
+    if mode == "http" or not sdk_available():
+        return CopilotGateway()
+    warm_up_runtime()
+    return CopilotSdkGateway()
 
 
 _copilot_gateway = _build_copilot_gateway()

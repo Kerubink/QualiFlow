@@ -28,12 +28,12 @@ def classify_copilot_error(error):
             "(fine-grained), gho_/ghu_ (OAuth/App user) ou ghs_ (installation token via COPILOT_GITHUB_TOKEN).",
         }
 
-    if "copilot_cli_not_found" in normalized:
+    if "copilot_sdk_not_installed" in normalized:
         return {
             "httpStatus": 503,
-            "code": "COPILOT_CLI_NOT_FOUND",
-            "message": "GitHub Copilot CLI nao encontrado no servidor. Instale com "
-            "`npm install -g @github/copilot` e reinicie a API.",
+            "code": "COPILOT_SDK_NOT_INSTALLED",
+            "message": "SDK do Copilot nao instalado no servidor. Rode "
+            "`pip install -r requirements.txt` e reinicie a API.",
         }
 
     if "falha ao obter token do copilot" in normalized or "acesso negado pelo copilot" in normalized:
