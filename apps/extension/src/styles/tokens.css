@@ -1,0 +1,170 @@
+/*
+ * QualiFlow design tokens.
+ * Fonte unica de cores, espacamento, tipografia, raio, sombra e movimento.
+ * Prefixo --qf- para nao colidir com variaveis das paginas hospedeiras (Azure DevOps/Jira).
+ * Tema escuro por padrao (identidade atual do produto).
+ */
+:root {
+  /* Superficies */
+  --qf-bg: #0a0c14;
+  --qf-surface: #11141f;
+  --qf-surface-raised: #1a1e2d;
+  --qf-surface-sunken: #070910;
+  --qf-overlay: rgba(4, 5, 10, 0.72);
+
+  /* Texto */
+  --qf-text: #f4f5fb;
+  --qf-text-muted: #9aa1b8;
+  --qf-text-subtle: #667089;
+  --qf-text-on-accent: #ffffff;
+
+  /* Bordas */
+  --qf-border: #232839;
+  --qf-border-strong: #343a52;
+
+  /* Marca */
+  --qf-accent: #7c5cff;
+  --qf-accent-hover: #6a47f5;
+  --qf-accent-soft: rgba(124, 92, 255, 0.16);
+  --qf-info: #3b82f6;
+  --qf-info-soft: rgba(59, 130, 246, 0.16);
+  --qf-gradient: linear-gradient(135deg, #7c5cff 0%, #22d3ee 100%);
+
+  /* Semanticas */
+  --qf-success: #22c55e;
+  --qf-success-soft: rgba(34, 197, 94, 0.16);
+  --qf-warning: #f59e0b;
+  --qf-warning-soft: rgba(245, 158, 11, 0.16);
+  --qf-danger: #ef4444;
+  --qf-danger-soft: rgba(239, 68, 68, 0.16);
+
+  /* Variantes com contraste AA (texto/fundo solido sobre superficies escuras) */
+  --qf-accent-solid: #6a47f5;
+  --qf-accent-solid-hover: #4338ca;
+  --qf-danger-solid: #dc2626;
+  --qf-danger-solid-hover: #b91c1c;
+  --qf-success-fg: #4ade80;
+  --qf-warning-fg: #fbbf24;
+  --qf-danger-fg: #f87171;
+  --qf-link: #93c5fd;
+
+  /* Tipografia */
+  --qf-font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --qf-font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --qf-text-xs: 0.75rem;
+  --qf-text-sm: 0.8125rem;
+  --qf-text-md: 0.9375rem;
+  --qf-text-lg: 1.125rem;
+  --qf-text-xl: 1.5rem;
+  --qf-leading: 1.5;
+
+  /* Espacamento (escala de 4px) */
+  --qf-space-1: 4px;
+  --qf-space-2: 8px;
+  --qf-space-3: 12px;
+  --qf-space-4: 16px;
+  --qf-space-5: 24px;
+  --qf-space-6: 32px;
+
+  /* Forma */
+  --qf-radius-sm: 8px;
+  --qf-radius-md: 14px;
+  --qf-radius-lg: 20px;
+  --qf-radius-pill: 999px;
+  --qf-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --qf-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --qf-shadow-lg: 0 24px 48px -12px rgba(0, 0, 0, 0.55);
+
+  /* Foco acessivel */
+  --qf-focus-ring: 0 0 0 3px rgba(124, 92, 255, 0.5);
+
+  /* Movimento */
+  --qf-ease: cubic-bezier(0.2, 0, 0, 1);
+  --qf-duration-fast: 120ms;
+  --qf-duration: 200ms;
+
+  /* Camadas */
+  --qf-z-fab: 2147483646;
+  --qf-z-modal: 2147483647;
+
+  /* Alvo minimo de toque */
+  --qf-hit: 40px;
+}
+
+/*
+ * Extensoes aditivas usadas pela UI injetada (content.css).
+ * Nao renomear/remover tokens acima: a pagina de opcoes tambem os usa.
+ */
+:root {
+  /* Texto em niveis intermediarios */
+  --qf-text-soft: #e2e8f0;
+  --qf-text-softer: #cbd5e1;
+
+  /* Superficies auxiliares */
+  --qf-surface-hover: #242a3e;
+  --qf-surface-tint: rgba(255, 255, 255, 0.03);
+  --qf-border-faint: rgba(148, 163, 184, 0.25);
+  --qf-neutral-soft: rgba(148, 163, 184, 0.14);
+
+  /* Acentos de texto (contraste AA sobre superficies escuras) */
+  --qf-info-text: #93c5fd;
+  --qf-info-strong: #60a5fa;
+  --qf-info-hover: #2563eb;
+  --qf-sky: #38bdf8;
+  --qf-sky-soft: rgba(56, 189, 248, 0.16);
+  --qf-violet: #8b5cf6;
+  --qf-violet-text: #a78bfa;
+  --qf-violet-soft: rgba(139, 92, 246, 0.16);
+  --qf-accent-text: #a5b4fc;
+  --qf-success-solid: #10b981;
+  --qf-success-solid-hover: #059669;
+  --qf-success-text: #34d399;
+  --qf-success-text-soft: #6ee7b7;
+  --qf-danger-hover: #dc2626;
+  --qf-success-strong: #047857;
+  --qf-success-strong-hover: #065f46;
+  --qf-danger-strong: #b91c1c;
+  --qf-danger-strong-hover: #991b1b;
+  --qf-info-strong-bg: #7c5cff;
+  --qf-info-strong-bg-hover: #6a47f5;
+  --qf-danger-text: #f87171;
+  --qf-danger-text-soft: #fca5a5;
+  --qf-warning-text: #fbbf24;
+  --qf-gradient-text: linear-gradient(to right, #c4b5fd, #67e8f9);
+  --qf-gradient-surface: linear-gradient(145deg, rgba(10, 12, 20, 0.97), rgba(26, 30, 45, 0.97));
+
+  /* Tipografia extra */
+  --qf-text-2xs: 0.6875rem;
+  --qf-text-2xl: 2rem;
+  --qf-weight-medium: 500;
+  --qf-weight-semibold: 600;
+  --qf-weight-bold: 700;
+
+  /* Forma extra */
+  --qf-radius-xs: 4px;
+  --qf-shadow-fab: 0 8px 24px rgba(124, 92, 255, 0.45);
+  --qf-shadow-fab-hover: 0 10px 28px rgba(124, 92, 255, 0.65);
+  --qf-shadow-drawer: 4px 0 25px rgba(0, 0, 0, 0.5);
+  --qf-shadow-drawer-right: -4px 0 25px rgba(0, 0, 0, 0.5);
+  --qf-backdrop: rgba(5, 6, 12, 0.78);
+  --qf-backdrop-light: rgba(0, 0, 0, 0.4);
+
+  /* Camadas (preservam a ordem de empilhamento historica) */
+  --qf-z-raised: 1;
+  --qf-z-dropdown: 60;
+  --qf-z-drawer: 2147483646;
+  --qf-z-floating: 2147483647;
+  --qf-z-dialog: 2147483647;
+
+  /* Breakpoints (documentacao; media queries nao aceitam var()):
+     sm 640px, md 980px, lg 1280px */
+  --qf-modal-w: min(1180px, 100vw);
+  --qf-rail-w: 68px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --qf-duration-fast: 0.01ms;
+    --qf-duration: 0.01ms;
+  }
+}

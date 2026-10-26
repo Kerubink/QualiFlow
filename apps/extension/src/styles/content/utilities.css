@@ -1,0 +1,106 @@
+/* ==========================================================================
+   UTILITIES - classes atomicas para substituir style="..." estaticos
+   ========================================================================== */
+
+/* Layout */
+.qualiflow-u-flex { display: flex; }
+.qualiflow-u-inline-flex { display: inline-flex; }
+.qualiflow-u-block { display: block; }
+.qualiflow-u-col { flex-direction: column; }
+.qualiflow-u-wrap { flex-wrap: wrap; }
+.qualiflow-u-items-center { align-items: center; }
+.qualiflow-u-items-start { align-items: flex-start; }
+.qualiflow-u-items-end { align-items: flex-end; }
+.qualiflow-u-justify-between { justify-content: space-between; }
+.qualiflow-u-justify-end { justify-content: flex-end; }
+.qualiflow-u-justify-center { justify-content: center; }
+.qualiflow-u-grow { flex: 1; min-width: 0; }
+.qualiflow-u-shrink-0 { flex-shrink: 0; }
+.qualiflow-u-ml-auto { margin-left: auto; }
+.qualiflow-u-relative { position: relative; }
+.qualiflow-u-min-w-0 { min-width: 0; }
+
+/* Espacamento */
+.qualiflow-u-gap-1 { gap: var(--qf-space-1); }
+.qualiflow-u-gap-2 { gap: var(--qf-space-2); }
+.qualiflow-u-gap-3 { gap: var(--qf-space-3); }
+.qualiflow-u-gap-4 { gap: var(--qf-space-4); }
+.qualiflow-u-m-0 { margin: 0; }
+.qualiflow-u-mt-1 { margin-top: var(--qf-space-1); }
+.qualiflow-u-mt-2 { margin-top: var(--qf-space-2); }
+.qualiflow-u-mt-3 { margin-top: var(--qf-space-3); }
+.qualiflow-u-mt-4 { margin-top: var(--qf-space-4); }
+.qualiflow-u-mt-5 { margin-top: var(--qf-space-5); }
+.qualiflow-u-mb-0 { margin-bottom: 0; }
+.qualiflow-u-mb-1 { margin-bottom: var(--qf-space-1); }
+.qualiflow-u-mb-2 { margin-bottom: var(--qf-space-2); }
+.qualiflow-u-mb-3 { margin-bottom: var(--qf-space-3); }
+.qualiflow-u-mb-4 { margin-bottom: var(--qf-space-4); }
+.qualiflow-u-mb-5 { margin-bottom: var(--qf-space-5); }
+.qualiflow-u-mr-1 { margin-right: var(--qf-space-1); }
+.qualiflow-u-mr-2 { margin-right: var(--qf-space-2); }
+.qualiflow-u-p-0 { padding: 0; }
+.qualiflow-u-p-3 { padding: var(--qf-space-3); }
+.qualiflow-u-p-4 { padding: var(--qf-space-4); }
+.qualiflow-u-p-5 { padding: var(--qf-space-5); }
+.qualiflow-u-w-full { width: 100%; }
+.qualiflow-u-w-auto { width: auto; }
+
+/* Texto */
+.qualiflow-u-text-xs { font-size: var(--qf-text-xs); }
+.qualiflow-u-text-sm { font-size: var(--qf-text-sm); }
+.qualiflow-u-text-md { font-size: var(--qf-text-md); }
+.qualiflow-u-text-lg { font-size: var(--qf-text-lg); }
+.qualiflow-u-semibold { font-weight: var(--qf-weight-semibold); }
+.qualiflow-u-bold { font-weight: var(--qf-weight-bold); }
+.qualiflow-u-muted { color: var(--qf-text-muted); }
+.qualiflow-u-soft { color: var(--qf-text-soft); }
+.qualiflow-u-strong { color: var(--qf-text); }
+.qualiflow-u-success { color: var(--qf-success-text); }
+.qualiflow-u-danger { color: var(--qf-danger-text); }
+.qualiflow-u-warning { color: var(--qf-warning-text); }
+.qualiflow-u-info { color: var(--qf-info-strong); }
+.qualiflow-u-italic { font-style: italic; }
+.qualiflow-u-center { text-align: center; }
+.qualiflow-u-right { text-align: right; }
+.qualiflow-u-nowrap { white-space: nowrap; }
+.qualiflow-u-pre-wrap { white-space: pre-wrap; }
+.qualiflow-u-break { overflow-wrap: anywhere; }
+.qualiflow-u-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.qualiflow-u-mono { font-family: var(--qf-font-mono); }
+.qualiflow-u-pointer { cursor: pointer; }
+
+/* Overflow */
+.qualiflow-u-scroll-y { overflow-y: auto; }
+.qualiflow-u-scroll-x { overflow-x: auto; max-width: 100%; }
+
+/* Acessibilidade */
+.qualiflow-u-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Barra de progresso dinamica: <div class="qualiflow-progress-bar" style="--pct:42%"> */
+.qualiflow-progress {
+    height: 8px;
+    border-radius: var(--qf-radius-pill);
+    background: var(--qf-border);
+    overflow: hidden;
+}
+.qualiflow-progress-bar {
+    height: 100%;
+    width: var(--pct, 0%);
+    border-radius: inherit;
+    background: var(--qf-gradient);
+    transition: width var(--qf-duration) var(--qf-ease);
+}
+.qualiflow-progress-bar.is-success { background: var(--qf-success); }
+.qualiflow-progress-bar.is-danger { background: var(--qf-danger); }
+.qualiflow-progress-bar.is-warning { background: var(--qf-warning); }

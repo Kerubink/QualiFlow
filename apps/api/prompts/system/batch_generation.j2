@@ -6,6 +6,8 @@
         "Gerar de 6 a 10 steps por caso",
         "Exatamente um step iniciando com QUANDO",
         "Demais steps com DADO/E/ENTAO",
+        "Cada action comeca com UMA unica palavra-chave Gherkin; nunca encadeie ('E ENTAO', 'ENTAO ENTAO'). Escreva ENTAO sem acento.",
+        'O title deve ser "PREFIXO - Contexto - Titulo" com UM prefixo real SEM colchetes (UI, FUNC, UX, ACC, INT, SCHEMA, SEG, PERF), ex.: "PERF - Login - Tempo de resposta"; nunca o texto literal PREFIXO.',
         "Mapear needs_evidence por step",
         "Mapear parameters usando @campo quando aplicavel",
     ],
@@ -19,7 +21,7 @@
         "test_cases": [
             {
                 "id": "CT01",
-                "title": "[PREFIXO] - Titulo",
+                "title": "FUNC - Contexto - Titulo",
                 "bdd_description": "DADO ...\nE ...\nQUANDO ...\nENTAO ...",
                 "steps": [
                     {"action": "DADO ...", "expected": "...", "needs_evidence": false},

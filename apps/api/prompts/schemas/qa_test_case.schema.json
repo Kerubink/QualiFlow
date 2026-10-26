@@ -67,7 +67,7 @@
       },
       "test_cases": [
         {
-          "title": "[PREFIXO] - Titulo",
+          "title": "FUNC - Contexto - Titulo",
           "bdd_description": "DADO ...\nQUANDO ...\nENTAO ...",
           "steps": [
             { "action": "DADO ...", "expected": "...", "needs_evidence": false },

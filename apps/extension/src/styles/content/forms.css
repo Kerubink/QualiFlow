@@ -1,0 +1,190 @@
+/* ==========================================================================
+   FORMS - inputs, selects, textareas, checkbox, grupos e dropdown multi-select
+   ========================================================================== */
+
+.qualiflow-form-group { margin-bottom: var(--qf-space-3); }
+
+.qualiflow-form-group label,
+.qualiflow-select-group label,
+.qualiflow-field-label {
+    display: block;
+    margin-bottom: var(--qf-space-1);
+    font-size: var(--qf-text-xs);
+    font-weight: var(--qf-weight-medium);
+    color: var(--qf-text-muted);
+}
+
+.qualiflow-description {
+    margin-top: var(--qf-space-1);
+    font-size: var(--qf-text-xs);
+    line-height: 1.45;
+    color: var(--qf-text-muted);
+}
+
+/* Controles de texto: um unico visual */
+.qualiflow-input-edit,
+.qualiflow-textarea-edit,
+.qualiflow-textarea-steps,
+.qualiflow-select-input,
+.qualiflow-step-input,
+.qualiflow-input-param,
+.qualiflow-field,
+#qualiflow-user-focus,
+#qualiflow-technical-detail,
+#qualiflow-acceptance-criteria {
+    width: 100%;
+    max-width: 100%;
+    background-color: var(--qf-bg);
+    border: 1px solid var(--qf-border-strong);
+    border-radius: var(--qf-radius-sm);
+    color: var(--qf-text-soft);
+    padding: var(--qf-space-2) var(--qf-space-3);
+    font-family: inherit;
+    font-size: var(--qf-text-sm);
+    line-height: 1.4;
+    transition: border-color var(--qf-duration-fast) var(--qf-ease), box-shadow var(--qf-duration-fast) var(--qf-ease);
+}
+
+.qualiflow-input-edit,
+.qualiflow-select-input,
+.qualiflow-field:not(textarea) {
+    min-height: var(--qf-hit);
+}
+
+.qualiflow-select-input { cursor: pointer; }
+
+:is(.qualiflow-input-edit, .qualiflow-textarea-edit, .qualiflow-textarea-steps, .qualiflow-select-input, .qualiflow-step-input, .qualiflow-input-param, .qualiflow-field, #qualiflow-user-focus, #qualiflow-technical-detail, #qualiflow-acceptance-criteria)::placeholder {
+    color: var(--qf-text-subtle);
+    opacity: 1;
+}
+
+:is(.qualiflow-input-edit, .qualiflow-textarea-edit, .qualiflow-textarea-steps, .qualiflow-select-input, .qualiflow-step-input, .qualiflow-input-param, .qualiflow-field, #qualiflow-user-focus, #qualiflow-technical-detail, #qualiflow-acceptance-criteria):hover:not(:disabled) {
+    border-color: var(--qf-text-subtle);
+}
+
+:is(.qualiflow-input-edit, .qualiflow-textarea-edit, .qualiflow-textarea-steps, .qualiflow-select-input, .qualiflow-step-input, .qualiflow-input-param, .qualiflow-field, #qualiflow-user-focus, #qualiflow-technical-detail, #qualiflow-acceptance-criteria):focus {
+    outline: none;
+    border-color: var(--qf-info);
+    box-shadow: var(--qf-focus-ring);
+}
+
+:is(.qualiflow-input-edit, .qualiflow-textarea-edit, .qualiflow-textarea-steps, .qualiflow-select-input, .qualiflow-step-input, .qualiflow-input-param, .qualiflow-field, #qualiflow-user-focus, #qualiflow-technical-detail, #qualiflow-acceptance-criteria):disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.qualiflow-textarea-edit { height: 100px; resize: vertical; }
+.qualiflow-textarea-steps { height: 180px; resize: vertical; white-space: pre-wrap; }
+#qualiflow-user-focus { height: 80px; resize: vertical; margin-bottom: var(--qf-space-4); }
+#qualiflow-technical-detail { height: 80px; resize: vertical; margin-bottom: var(--qf-space-3); }
+#qualiflow-acceptance-criteria { height: 100px; resize: vertical; }
+.qualiflow-step-input { flex: 1; width: auto; min-width: 0; resize: vertical; }
+.qualiflow-input-param { padding: var(--qf-space-1) var(--qf-space-2); font-size: var(--qf-text-xs); min-height: 32px; }
+
+.qualiflow-select-group { display: flex; flex-direction: column; margin-bottom: var(--qf-space-3); min-width: 0; }
+.qualiflow-select-row { display: flex; gap: var(--qf-space-3); margin-bottom: var(--qf-space-1); }
+.qualiflow-select-row .qualiflow-select-group { flex: 1; }
+.qualiflow-focus-container { display: flex; flex-wrap: wrap; gap: var(--qf-space-2); margin-bottom: var(--qf-space-3); }
+
+/* Checkbox custom */
+.qualiflow-chk {
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin: 0 var(--qf-space-3) 0 0;
+    border: 2px solid var(--qf-info);
+    border-radius: var(--qf-radius-xs);
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color var(--qf-duration-fast) var(--qf-ease);
+}
+.qualiflow-chk:checked { background-color: var(--qf-info-strong-bg); border-color: var(--qf-info-strong-bg); }
+.qualiflow-chk:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 4px;
+    height: 8px;
+    border: solid var(--qf-text-on-accent);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+.qualiflow-chk-large { width: 22px; height: 22px; }
+.qualiflow-chk-large:checked::after { left: 6px; top: 2px; width: 5px; height: 10px; }
+.qualiflow-chk:focus-visible { outline: none; box-shadow: var(--qf-focus-ring); }
+
+/* Parametros @campo */
+.qualiflow-param-indicator {
+    display: flex;
+    align-items: center;
+    margin-left: var(--qf-space-2);
+    color: var(--qf-warning);
+    font-size: var(--qf-text-lg);
+    font-weight: var(--qf-weight-bold);
+}
+.qualiflow-params-table { width: 100%; border-collapse: collapse; margin-top: var(--qf-space-2); }
+.qualiflow-params-table th {
+    padding: var(--qf-space-1) var(--qf-space-2);
+    border-bottom: 1px solid var(--qf-border);
+    text-align: left;
+    font-size: var(--qf-text-xs);
+    color: var(--qf-text-muted);
+}
+.qualiflow-params-table td { padding: var(--qf-space-1); }
+
+/* Dropdown multi-select */
+.qualiflow-multi-select { position: relative; min-width: 0; }
+.qualiflow-multi-select-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--qf-space-2);
+    text-align: left;
+}
+.qualiflow-multi-select-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qualiflow-multi-select-arrow {
+    font-size: var(--qf-text-xs);
+    color: var(--qf-info-text);
+    transition: transform var(--qf-duration-fast) var(--qf-ease);
+}
+.qualiflow-multi-select.is-open .qualiflow-multi-select-arrow { transform: rotate(180deg); }
+.qualiflow-multi-select-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: var(--qf-z-dropdown);
+    width: 100%;
+    min-width: min(220px, 100%);
+    max-width: calc(100vw - 32px);
+    max-height: 240px;
+    overflow: auto;
+    padding: var(--qf-space-2);
+    background: var(--qf-surface-sunken);
+    border: 1px solid var(--qf-border);
+    border-radius: var(--qf-radius-md);
+    box-shadow: var(--qf-shadow-md);
+}
+.qualiflow-multi-select.is-open .qualiflow-multi-select-panel { display: block; }
+.qualiflow-multi-select-option {
+    display: flex;
+    align-items: center;
+    gap: var(--qf-space-2);
+    min-height: 36px;
+    padding: var(--qf-space-1) var(--qf-space-2);
+    border-radius: var(--qf-radius-sm);
+    color: var(--qf-text-soft);
+    font-size: var(--qf-text-sm);
+    cursor: pointer;
+}
+.qualiflow-multi-select-option:hover { background: var(--qf-info-soft); }
+.qualiflow-multi-select-option input[type='checkbox'] {
+    accent-color: var(--qf-info);
+    width: 16px;
+    height: 16px;
+    margin: 0;
+}

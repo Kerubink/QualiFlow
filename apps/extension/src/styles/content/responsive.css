@@ -1,0 +1,82 @@
+/* ==========================================================================
+   RESPONSIVE - breakpoints: 640 (mobile) / 980 (tablet) / 1280 (desktop largo)
+   ========================================================================== */
+
+@media (min-width: 1280px) {
+    .qualiflow-analytics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .qualiflow-analytics-card-wide { grid-column: span 2; }
+}
+
+/* Tablet: colunas do gerador empilham, rolagem vertical unica */
+@media (max-width: 980px) {
+    .qualiflow-generation-layout { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+    .qualiflow-generation-layout > .qualiflow-step-col {
+        flex: 0 0 auto;
+        width: 100%;
+        height: auto;
+        min-width: 0;
+        max-width: 100%;
+        overflow-y: visible;
+        resize: none;
+        border-right: none;
+        border-bottom: 1px solid var(--qf-border);
+    }
+    .qualiflow-analytics-grid { grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); }
+    #qualiflow-dashboard-container.qualiflow-dashboard-resizable { resize: none; }
+}
+
+/* Mobile: modais em tela cheia, grids de 1 coluna, menu do FAB fora do conteudo */
+@media (max-width: 640px) {
+    #qualiflow-modal { width: 100vw; width: 100dvw; }
+
+    #qualiflow-dashboard-container.qualiflow-dashboard-resizable,
+    #qualiflow-dashboard-container.qualiflow-dashboard-wide {
+        width: 100vw !important;
+        min-width: 0 !important;
+        max-width: 100vw !important;
+        resize: none;
+    }
+    #qualiflow-dashboard-container { padding: var(--qf-space-4); }
+
+    .qualiflow-analytics-filters,
+    .qualiflow-analytics-grid,
+    .qualiflow-dashboard-chart-grid,
+    .qualiflow-analytics-kpis { grid-template-columns: 1fr; }
+    .qualiflow-analytics-card,
+    .qualiflow-analytics-grid-secondary .qualiflow-analytics-card { min-height: 240px; }
+    .qualiflow-analytics-plot { min-height: 180px; }
+
+    .qualiflow-select-row { flex-direction: column; gap: 0; }
+    .qualiflow-step-col { padding: var(--qf-space-4); }
+    .qualiflow-header { padding-left: var(--qf-space-4); }
+
+    /* Dialogs em tela cheia */
+    .qualiflow-dialog-overlay,
+    #qualiflow-edit-modal-overlay { padding: 0; }
+    .qualiflow-dialog,
+    #qualiflow-edit-modal {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        max-height: none;
+        border-radius: 0;
+        border: 0;
+    }
+    #qualiflow-tests-modal,
+    .qualiflow-drawer-right { width: 100vw; }
+    .qualiflow-edit-modal-body,
+    .qualiflow-dialog-body { padding: var(--qf-space-4); }
+
+    #qualiflow-runner-window { max-width: calc(100vw - 16px); }
+    .qualiflow-deploy-controls { align-items: stretch; flex-direction: column; }
+
+    /* FAB menor e some quando o drawer principal esta aberto (evita cobrir conteudo/botoes) */
+    #qualiflow-fab-container { right: var(--qf-space-3); bottom: var(--qf-space-3); }
+    :root:has(#qualiflow-modal-overlay.qualiflow-open) #qualiflow-fab-container { display: none; }
+}
+
+/* Telas muito pequenas (320px) */
+@media (max-width: 380px) {
+    .qualiflow-tab-btn { padding: 0 var(--qf-space-3); }
+    .qualiflow-scenarios-actions { width: 100%; }
+}

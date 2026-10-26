@@ -1,0 +1,285 @@
+"""
+Orquestracao de geracao de cenarios de teste (decomposicao -> lotes -> RTM) e adaptacao de cenarios
+copiados para outro card.
+
+Portado do frontend (services/orchestration/testGeneration.js + postProcessor.js) para centralizar no
+backend toda a logica de prompt engineering e regras de negocio. Depende apenas de domain e das portas
+(AiGateway, PromptCatalog); provedores e templates sao injetados pela composicao.
+"""
+from ...shared.clock import now_iso
+from ..domain.criteria import parse_acceptance_criteria
+from ..domain.errors import classify_ai_error
+from ..domain.planning import fallback_test_plan, prefix_for_type, resolve_chunk_size, split_in_chunks
+from ..domain.post_processing import post_process_generated_scenarios
+from ..domain.rtm import select_coverage
+
+
+class GenerationService:
+    def __init__(self, ai, prompts):
+        """`ai`: porta AiGateway; `prompts`: porta PromptCatalog."""
+        self._ai = ai
+        self._prompts = prompts
+
+    # --- Modelos disponiveis por provedor ---
+
+    def list_gemini_models(self, gemini_key):
+        return self._ai.list_gemini_models(gemini_key)
+
+    def list_groq_models(self, groq_key):
+        return self._ai.list_groq_models(groq_key)
+
+    # --- Pipelines (generators de eventos internos) ---
+
+    def orchestrate_scenario_generation(
+        self, selected_ai, ai_settings, card_data, user_focus, technical_detail, generation_settings, github_token=None
+    ):
+        """Generator: yields ('progress', dict) durante o processo e ('result', dict) ao final."""
+        yield "progress", {"stage": "analyzing", "message": "Analisando regras e decompondo os cenarios..."}
+        criteria_list = parse_acceptance_criteria((card_data or {}).get("acceptance_criteria") or "")
+
+        decomposition_prompt = self._prompts.build_decomposition_prompt(
+            card_data, user_focus, technical_detail, generation_settings, criteria_list
+        )
+
+        try:
+            decomposition = self._ai.json_prompt(selected_ai, ai_settings, decomposition_prompt, 0.1, github_token)
+        except Exception:
+            decomposition = None
+
+        rules = (decomposition or {}).get("rules") if isinstance(decomposition, dict) else None
+        rules = rules if isinstance(rules, list) else []
+
+        test_plan = (decomposition or {}).get("test_plan") if isinstance(decomposition, dict) else None
+        if not isinstance(test_plan, list) or not test_plan:
+            test_plan = fallback_test_plan(criteria_list, generation_settings)
+
+        chunk_size = resolve_chunk_size((ai_settings or {}).get("generationChunkSize"))
+
+        batches = split_in_chunks(test_plan, chunk_size)
+        generated_tests = []
+
+        yield "progress", {
+            "stage": "batch-start",
+            "message": "Gerando cenarios de teste em lotes...",
+            "totalBatches": len(batches),
+        }
+
+        for batch_index, batch_plan in enumerate(batches):
+            yield "progress", {
+                "stage": "batch-progress",
+                "message": f"Gerando lote {batch_index + 1} de {len(batches)}...",
+                "batchIndex": batch_index + 1,
+                "totalBatches": len(batches),
+            }
+
+            batch_prompt = self._prompts.build_batch_prompt(
+                card_data, criteria_list, rules, batch_plan, generation_settings, user_focus, technical_detail
+            )
+            try:
+                batch_result = self._ai.json_prompt(selected_ai, ai_settings, batch_prompt, 0.2, github_token)
+            except Exception as error:
+                # Nao deixa UM lote com falha (timeout, JSON malformado, rate limit) derrubar os
+                # demais lotes ja gerados com sucesso -- sem isso, uma unica falha jogava fora tudo
+                # e caia no fallback legado (single-shot, sem decomposicao), que tende a gerar bem
+                # menos casos de teste do que a geracao em lote completa.
+                print(
+                    f"[{now_iso()}] [orchestration] Lote {batch_index + 1}/{len(batches)} falhou, "
+                    f"pulando (demais lotes seguem normalmente): {error}"
+                )
+                continue
+            batch_cases = batch_result.get("test_cases") if isinstance(batch_result, dict) else None
+            generated_tests.extend(batch_cases if isinstance(batch_cases, list) else [])
+
+        if not generated_tests:
+            raise RuntimeError("Nao foi possivel gerar casos de teste no lote.")
+
+        yield "progress", {"stage": "rtm", "message": "Montando matriz RTM e analise de cobertura..."}
+        final_coverage = self._build_coverage(
+            selected_ai, ai_settings, criteria_list, generated_tests, github_token
+        )
+
+        yield "progress", {"stage": "done", "message": "Geracao concluida com sucesso."}
+
+        yield "result", {
+            "total_criterios": len(criteria_list) or len(final_coverage["rtm_matrix"]),
+            "total_tests": len(generated_tests),
+            "coverage_analysis": final_coverage,
+            "test_cases": generated_tests,
+        }
+
+    def orchestrate_scenario_adaptation(
+        self,
+        selected_ai,
+        ai_settings,
+        target_card_data,
+        source_work_item,
+        copied_scenarios,
+        user_focus,
+        technical_detail,
+        generation_settings,
+        github_token=None,
+    ):
+        criteria_list = parse_acceptance_criteria((target_card_data or {}).get("acceptance_criteria") or "")
+        normalized_copied = copied_scenarios if isinstance(copied_scenarios, list) else []
+
+        if not normalized_copied:
+            raise RuntimeError("Nao ha cenarios copiados para ajustar.")
+
+        yield "progress", {"stage": "analyzing", "message": "Analisando CTs copiados e criterios do card alvo..."}
+
+        adaptation_prompt = self._prompts.build_adaptation_prompt(
+            target_card_data,
+            source_work_item,
+            normalized_copied,
+            criteria_list,
+            generation_settings,
+            user_focus,
+            technical_detail,
+        )
+
+        adaptation_result = self._ai.json_prompt(selected_ai, ai_settings, adaptation_prompt, 0.2, github_token)
+        adapted_cases = adaptation_result.get("test_cases") if isinstance(adaptation_result, dict) else None
+        adapted_cases = adapted_cases if isinstance(adapted_cases, list) else []
+
+        if not adapted_cases:
+            raise RuntimeError("A IA nao retornou cenarios ajustados para o card alvo.")
+
+        yield "progress", {"stage": "rtm", "message": "Montando matriz RTM para validar cobertura apos ajustes..."}
+
+        final_coverage = self._build_coverage(selected_ai, ai_settings, criteria_list, adapted_cases, github_token)
+
+        yield "progress", {"stage": "done", "message": "Ajuste concluido com RTM atualizado."}
+
+        yield "result", {
+            "total_criterios": len(criteria_list) or len(final_coverage["rtm_matrix"]),
+            "total_tests": len(adapted_cases),
+            "coverage_analysis": final_coverage,
+            "test_cases": adapted_cases,
+        }
+
+    def _build_coverage(self, selected_ai, ai_settings, criteria_list, test_cases, github_token):
+        """RTM via IA; se falhar ou vier mal formada, usa a cobertura heuristica de fallback."""
+        coverage_analysis = None
+        try:
+            rtm_prompt = self._prompts.build_rtm_prompt(criteria_list, test_cases)
+            rtm_result = self._ai.json_prompt(selected_ai, ai_settings, rtm_prompt, 0.1, github_token)
+            coverage_analysis = rtm_result.get("coverage_analysis") if isinstance(rtm_result, dict) else None
+        except Exception:
+            coverage_analysis = None
+
+        return select_coverage(coverage_analysis, criteria_list, test_cases)
+
+    def legacy_generate_scenarios(
+        self, selected_ai, ai_settings, card_data, user_focus, technical_detail, generation_settings, github_token=None
+    ):
+        """Fallback single-shot (sem decomposicao em lotes), usado quando a orquestracao completa falha.
+
+        Reutiliza build_qa_generation_prompt (o mesmo prompt do endpoint dedicado do Copilot) para
+        nao manter uma segunda copia divergente das regras de geracao de teste.
+        """
+        prompt = self._prompts.build_qa_generation_prompt(card_data, user_focus, technical_detail, generation_settings)
+        return self._ai.json_prompt(selected_ai, ai_settings, prompt, 0.2, github_token)
+
+    def evaluate_coverage(self, selected_ai, card_data, ai_settings, github_token=None):
+        card_data = card_data or {}
+        if not card_data.get("existing_tests"):
+            return "Nao ha testes existentes para avaliar."
+
+        prompt = self._prompts.build_qa_evaluation_prompt(card_data)
+        return self._ai.text_prompt(selected_ai, ai_settings, prompt, 0.3, github_token)
+
+    # --- Eventos de streaming (a interface serializa cada evento como uma linha NDJSON) ---
+
+    def stream_generation(
+        self, selected_ai, ai_settings, card_data, user_focus, technical_detail, generation_settings, github_token=None
+    ):
+        """Generator de eventos: {"type": "progress", ...} | {"type": "result", "data": ...} |
+        {"type": "error", "error": {code, message}, "cause": Exception}."""
+        try:
+            final_result = None
+            for kind, payload in self.orchestrate_scenario_generation(
+                selected_ai,
+                ai_settings,
+                card_data,
+                user_focus,
+                technical_detail,
+                generation_settings,
+                github_token=github_token,
+            ):
+                if kind == "progress":
+                    yield {"type": "progress", **payload}
+                else:
+                    final_result = payload
+
+            if final_result is None:
+                raise RuntimeError("Orquestracao nao retornou resultado.")
+
+            processed = post_process_generated_scenarios(
+                final_result, card_data, prefix_for_type((generation_settings or {}).get("type"))
+            )
+            yield {"type": "result", "data": processed}
+        except Exception as error:
+            try:
+                print(
+                    f"[{now_iso()}] [scenarios] Orquestracao completa falhou, caindo para o fallback "
+                    f"legado (single-shot): {error}"
+                )
+                yield {"type": "progress", "stage": "fallback", "message": "Executando fluxo legado de geracao..."}
+                raw = self.legacy_generate_scenarios(
+                    selected_ai,
+                    ai_settings,
+                    card_data,
+                    user_focus,
+                    technical_detail,
+                    generation_settings,
+                    github_token=github_token,
+                )
+                processed = post_process_generated_scenarios(
+                    raw, card_data, prefix_for_type((generation_settings or {}).get("type"))
+                )
+                yield {"type": "result", "data": processed}
+            except Exception as fallback_error:
+                yield self._error_event(selected_ai, fallback_error)
+
+    def stream_adaptation(
+        self,
+        selected_ai,
+        ai_settings,
+        target_card_data,
+        source_work_item,
+        copied_scenarios,
+        user_focus,
+        technical_detail,
+        generation_settings,
+        github_token=None,
+    ):
+        """Mesmo formato de eventos de stream_generation, sem fallback legado."""
+        try:
+            final_result = None
+            for kind, payload in self.orchestrate_scenario_adaptation(
+                selected_ai,
+                ai_settings,
+                target_card_data,
+                source_work_item,
+                copied_scenarios,
+                user_focus,
+                technical_detail,
+                generation_settings,
+                github_token=github_token,
+            ):
+                if kind == "progress":
+                    yield {"type": "progress", **payload}
+                else:
+                    final_result = payload
+
+            if final_result is None:
+                raise RuntimeError("Orquestracao de adaptacao nao retornou resultado.")
+
+            processed = post_process_generated_scenarios(final_result, target_card_data)
+            yield {"type": "result", "data": processed}
+        except Exception as error:
+            yield self._error_event(selected_ai, error)
+
+    @staticmethod
+    def _error_event(selected_ai, error):
+        return {"type": "error", "error": classify_ai_error(selected_ai, error), "cause": error}

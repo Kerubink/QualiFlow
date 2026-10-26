@@ -1,0 +1,134 @@
+/* ==========================================================================
+   VIEW UI SHELL - drawer principal, configuracoes, runner no drawer, status
+   Prefixo das classes novas: qualiflow-ui-
+   ========================================================================== */
+
+/* Status global do drawer */
+.qualiflow-ui-status { margin: 0 0 var(--qf-space-4); }
+.qualiflow-ui-sessions-area { margin-bottom: var(--qf-space-4); }
+
+/* Cores semanticas aplicadas por classe (substituem style.color) */
+.qualiflow-ui-tone-error { color: var(--qf-danger-text); }
+.qualiflow-ui-tone-success { color: var(--qf-success-text); }
+.qualiflow-ui-tone-warning { color: var(--qf-warning-text); }
+.qualiflow-ui-tone-muted { color: var(--qf-text-muted); }
+
+.qualiflow-ui-hint { font-size: var(--qf-text-xs); color: var(--qf-text-muted); }
+.qualiflow-ui-hint-block { display: block; margin-top: var(--qf-space-1); }
+
+.qualiflow-ui-plain-list { list-style: none; margin: 0; padding: 0; }
+
+/* Pagina de configuracoes */
+#qualiflow-page-settings {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    background: var(--qf-bg);
+}
+.qualiflow-ui-settings-sidebar {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    width: min(250px, 100%);
+    padding: var(--qf-space-5) 0;
+    background-color: var(--qf-surface);
+    border-right: 1px solid var(--qf-border);
+}
+.qualiflow-ui-settings-sidebar-title {
+    margin: 0 0 var(--qf-space-4);
+    padding: 0 var(--qf-space-5) var(--qf-space-4);
+    border-bottom: 1px solid var(--qf-border);
+}
+.qualiflow-ui-settings-content {
+    flex: 1;
+    min-width: 0;
+    padding: var(--qf-space-6);
+    overflow-y: auto;
+}
+.qualiflow-ui-settings-heading { margin: 0 0 var(--qf-space-5); }
+.qualiflow-ui-settings-provider {
+    padding: var(--qf-space-3);
+    background: var(--qf-surface-tint);
+    border: 1px dashed var(--qf-border);
+    border-radius: var(--qf-radius-md);
+}
+.qualiflow-ui-settings-card {
+    margin-bottom: var(--qf-space-5);
+    padding: var(--qf-space-4);
+    background: var(--qf-surface-tint);
+    border: 1px solid var(--qf-border);
+    border-radius: var(--qf-radius-md);
+}
+.qualiflow-ui-settings-card-title {
+    margin: 0 0 var(--qf-space-3);
+    font-size: var(--qf-text-md);
+    color: var(--qf-text);
+}
+.qualiflow-ui-settings-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--qf-space-3);
+    margin-bottom: var(--qf-space-3);
+}
+.qualiflow-ui-col-1 { flex: 1 1 min(160px, 100%); min-width: 0; }
+.qualiflow-ui-col-2 { flex: 2 1 min(240px, 100%); min-width: 0; }
+.qualiflow-ui-settings-subhead { margin: var(--qf-space-5) 0 var(--qf-space-3); }
+.qualiflow-ui-settings-subhead h4 { font-size: var(--qf-text-md); color: var(--qf-text); }
+.qualiflow-ui-settings-footer {
+    display: flex;
+    align-items: center;
+    gap: var(--qf-space-4);
+    margin-top: var(--qf-space-6);
+    padding-top: var(--qf-space-5);
+    border-top: 1px solid var(--qf-border);
+}
+.qualiflow-ui-settings-footer .qualiflow-btn { width: auto; }
+.qualiflow-ui-settings-feedback { font-size: var(--qf-text-sm); }
+
+/* Runner dentro do drawer */
+.qualiflow-ui-runner-panel {
+    width: min(640px, 100vw);
+    max-width: 100%;
+    padding: var(--qf-space-5);
+    overflow-x: hidden;
+    overflow-y: auto;
+    background-color: var(--qf-surface);
+    border-right: 1px solid var(--qf-border);
+}
+.qualiflow-ui-runner-search {
+    display: flex;
+    gap: var(--qf-space-2);
+    margin-bottom: var(--qf-space-3);
+}
+.qualiflow-ui-runner-body {
+    position: relative;
+    padding: 0;
+    background: transparent;
+    color: var(--qf-text-muted);
+    font-size: var(--qf-text-sm);
+}
+
+/* Settings: sidebar vira barra horizontal em telas estreitas */
+@media (max-width: 640px) {
+    #qualiflow-page-settings { flex-direction: column; overflow-y: auto; }
+    .qualiflow-ui-settings-sidebar {
+        width: 100%;
+        padding: var(--qf-space-3) 0 0;
+        border-right: 0;
+        border-bottom: 1px solid var(--qf-border);
+    }
+    .qualiflow-ui-settings-sidebar-title { margin-bottom: var(--qf-space-2); padding-bottom: var(--qf-space-2); border-bottom: 0; }
+    .qualiflow-ui-settings-sidebar .qualiflow-settings-nav {
+        display: flex;
+        overflow-x: auto;
+    }
+    .qualiflow-ui-settings-sidebar .qualiflow-settings-nav-item {
+        flex-shrink: 0;
+        padding: var(--qf-space-2) var(--qf-space-4);
+        border-left: 0;
+        border-bottom: 3px solid transparent;
+        white-space: nowrap;
+    }
+    .qualiflow-ui-settings-sidebar .qualiflow-settings-nav-item.qualiflow-tab-active { border-bottom-color: var(--qf-accent); }
+    .qualiflow-ui-settings-content { flex: none; padding: var(--qf-space-4); overflow-y: visible; }
+}

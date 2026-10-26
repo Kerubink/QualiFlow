@@ -1,0 +1,54 @@
+/* view-scenarios: classes extraidas dos estilos inline */
+.qualiflow-sc-copy-toolbar {
+    display: flex;
+    gap: var(--qf-space-2);
+    padding: var(--qf-space-3) var(--qf-space-4);
+    border-bottom: 1px solid var(--qf-border);
+}
+.qualiflow-sc-copy-toolbar .qualiflow-input-edit { flex: 1; min-width: 0; }
+.qualiflow-sc-copy-body { padding: var(--qf-space-3) var(--qf-space-4); }
+.qualiflow-sc-note { color: var(--qf-text-muted); font-size: var(--qf-text-xs); padding: var(--qf-space-2) 0; }
+.qualiflow-sc-note-italic { font-style: italic; }
+.qualiflow-sc-note-error { color: var(--qf-danger-text); }
+.qualiflow-sc-note-warning { color: var(--qf-warning-text); }
+.qualiflow-sc-source-card { margin-bottom: var(--qf-space-2); }
+.qualiflow-sc-source-title { font-weight: var(--qf-weight-semibold); color: var(--qf-text-soft); font-size: var(--qf-text-xs); margin-bottom: var(--qf-space-1); }
+.qualiflow-sc-source-meta { color: var(--qf-text-muted); font-size: var(--qf-text-2xs); margin-bottom: var(--qf-space-2); }
+
+/* Sessoes locais */
+.qualiflow-sc-local-title { margin: 0 0 var(--qf-space-3); color: var(--qf-text); }
+.qualiflow-sc-local-card { display: flex; flex-direction: column; gap: var(--qf-space-2); padding: var(--qf-space-3); margin-bottom: var(--qf-space-2); }
+.qualiflow-sc-local-name { font-weight: var(--qf-weight-semibold); color: var(--qf-text-soft); font-size: var(--qf-text-sm); }
+.qualiflow-sc-local-meta { font-size: var(--qf-text-xs); color: var(--qf-text-muted); }
+.qualiflow-sc-local-actions { display: flex; gap: var(--qf-space-2); }
+.qualiflow-sc-local-actions .qualiflow-btn-inline { font-size: var(--qf-text-xs); }
+.qualiflow-sc-grow { flex: 1; }
+.qualiflow-sc-btn-danger-outline { color: var(--qf-danger-text); border-color: color-mix(in srgb, var(--qf-danger-text) 25%, transparent); }
+
+/* Render */
+.qualiflow-sc-rtm-hidden-note { padding: var(--qf-space-3); border: 1px solid var(--qf-border); border-radius: var(--qf-radius-md); background: var(--qf-surface-raised); color: var(--qf-text-muted); font-size: var(--qf-text-xs); }
+.qualiflow-sc-rtm-scn { font-size: var(--qf-text-xs); color: var(--qf-text-muted); }
+.qualiflow-sc-crit-list { padding-left: var(--qf-space-5); margin: 0; color: var(--qf-text-soft); }
+.qualiflow-sc-crit-list li { margin-bottom: 6px; }
+.qualiflow-sc-crit-wrap { font-size: var(--qf-text-sm); }
+.qualiflow-sc-rtm-head { margin-top: var(--qf-space-5); }
+.qualiflow-sc-score { font-size: var(--qf-text-sm); color: var(--qf-text-muted); }
+.qualiflow-sc-rtm-table { margin-bottom: var(--qf-space-3); }
+.qualiflow-sc-insights { font-size: var(--qf-text-sm); color: var(--qf-text-softer); border-left: 3px solid var(--qf-accent); padding-left: var(--qf-space-3); }
+.qualiflow-sc-select-label { font-weight: var(--qf-weight-semibold); font-size: var(--qf-text-sm); cursor: pointer; }
+.qualiflow-sc-edit-btn { float: right; margin-bottom: var(--qf-space-2); }
+.qualiflow-sc-edit-btn svg { vertical-align: text-bottom; margin-right: 2px; }
+.qualiflow-sc-view-title { margin-top: 0; padding-top: var(--qf-space-1); }
+
+/* Modal de edicao */
+.qualiflow-sc-grow-field { flex: 1; }
+.qualiflow-sc-steps-head { display: flex; justify-content: space-between; align-items: flex-end; }
+.qualiflow-sc-steps-container { margin-top: var(--qf-space-2); }
+.qualiflow-sc-add-step { padding: var(--qf-space-1) var(--qf-space-2); font-size: var(--qf-text-xs); }
+.qualiflow-sc-params-label { color: var(--qf-warning-text); font-weight: var(--qf-weight-semibold); }
+.qualiflow-sc-step-handle { cursor: grab; color: var(--qf-text-muted); padding: 0 6px; font-size: var(--qf-text-lg); user-select: none; align-self: center; }
+.qualiflow-sc-step-del { padding: var(--qf-space-2); min-width: var(--qf-hit); }
+.qualiflow-sc-param-empty { font-size: var(--qf-text-xs); color: var(--qf-text-muted); }
+.qualiflow-sc-param-name { font-family: monospace; color: var(--qf-warning-text); }
+.qualiflow-step-row.qualiflow-sc-step-row { cursor: default; }
+.qualiflow-sc-icon-inline { vertical-align: text-bottom; margin-right: var(--qf-space-1); }

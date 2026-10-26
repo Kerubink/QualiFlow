@@ -142,13 +142,13 @@ Uso:
 
 ## 8. Arquivos-chave do fluxo
 
-1. apps/extension/src/content/ui.js.
-2. apps/extension/src/content/scenarios.js.
-3. apps/extension/src/content/state.js.
-4. apps/extension/src/content/utils.js.
-5. apps/extension/src/services/background.js.
-6. apps/extension/src/services/orchestration/testGeneration.js.
-7. apps/extension/src/services/orchestration/postProcessor.js.
+1. apps/extension/src/presentation/content/ui/.
+2. apps/extension/src/presentation/content/scenarios/.
+3. apps/extension/src/presentation/content/state.js.
+4. apps/extension/src/presentation/content/shared/.
+5. apps/extension/src/entrypoints/background/ (router + handlers).
+6. apps/extension/src/application/scenarioGeneration.js.
+7. apps/extension/src/domain/scenarioPostProcessing.js.
 
 ---
 
@@ -159,25 +159,12 @@ A arquitetura nao e mais monolitica em um unico content script. Hoje ela esta se
 ### 2.1 Estrutura principal da extensao
 
 - apps/extension/manifest.json
-- apps/extension/src/content/
-  - state.js
-  - utils.js
-  - ui.js
-  - dashboard.js
-  - scenarios.js
-  - main.js
-  - runner.js
-- apps/extension/src/services/
-  - background.js
-  - azureService.js
-  - geminiService.js
-  - copilotService.js
-  - groqService.js
-  - scenarioPostProcessor.js
-  - testGenerationOrchestrator.js
-- apps/extension/src/pages/options/
-  - options.html
-  - options.js
+- apps/extension/src/domain/ (logica pura: cenarios, parametros @campo, RTM, sessoes locais)
+- apps/extension/src/application/ (casos de uso: geracao, adaptacao, cobertura, salvamento, runner)
+- apps/extension/src/infrastructure/ (backend, ai, boards, browser, persistence)
+- apps/extension/src/entrypoints/background/ (index.js, container.js, router.js, handlers/)
+- apps/extension/src/presentation/content/ (ui/, dashboard/, scenarios/, runner/, shared/, state.js, main.js)
+- apps/extension/src/presentation/options/ (options.html e modulos)
 - apps/extension/src/styles/
   - content.css
   - options.css
@@ -187,7 +174,7 @@ A arquitetura nao e mais monolitica em um unico content script. Hoje ela esta se
 Arquivo: apps/extension/manifest.json
 
 - manifest_version: 3
-- background service worker em modulo: src/services/background.js
+- background service worker em modulo: src/entrypoints/background/ (router + handlers)
 
 Content scripts configurados:
 
@@ -198,7 +185,7 @@ Content scripts configurados:
 
 2. Contexto universal para runner
 - Matches: <all_urls>
-- JS: src/content/runner.js
+- JS: src/presentation/content/runner/
 - CSS: src/styles/content.css
 
 Observacao importante:
@@ -211,7 +198,7 @@ Observacao importante:
 
 ### 3.1 FAB e modal lateral (Azure)
 
-Implementado em src/content/ui.js.
+Implementado em src/presentation/content/ui/.
 
 Botoes do FAB:
 
@@ -229,7 +216,7 @@ Aberturas no modal:
 
 ### 3.2 Gerador de cenarios
 
-Implementado em src/content/scenarios.js + background/service layer.
+Implementado em src/presentation/content/scenarios/ + background/service layer.
 
 Entradas de geracao:
 
@@ -266,7 +253,7 @@ Persistencia local:
 
 ### 3.3 Dashboard QA
 
-Implementado em src/content/dashboard.js.
+Implementado em src/presentation/content/dashboard/.
 
 Capacidades atuais:
 
@@ -280,7 +267,7 @@ Capacidades atuais:
 
 ### 3.4 Runner no Azure (pagina lateral)
 
-Implementado em src/content/ui.js.
+Implementado em src/presentation/content/ui/.
 
 Objetivo:
 
@@ -295,7 +282,7 @@ Sessao salva:
 
 ### 3.5 Runner na pagina alvo (janela flutuante)
 
-Implementado em src/content/runner.js.
+Implementado em src/presentation/content/runner/.
 
 Capacidades atuais:
 
@@ -317,7 +304,7 @@ Novidade recente:
 
 ## 4. Service Worker (orquestrador central)
 
-Arquivo: apps/extension/src/services/background.js
+Arquivo: apps/extension/src/entrypoints/background/ (router + handlers)
 
 E o ponto unico para:
 
@@ -373,8 +360,8 @@ O selectedAi define o provider:
 
 Na geracao:
 
-1. Tenta fluxo orquestrado em testGenerationOrchestrator.
-2. Em erro, cai para fallback legado de geracao direta por provider.
+1. A extensao chama `/api/scenarios/generate` uma unica vez (testGenerationOrchestrator).
+2. Em erro, o proprio backend cai para o fluxo legado de geracao dentro do mesmo stream (evento `progress` com `stage: fallback`); a extensao nao repete a chamada.
 3. Resultado final passa por scenarioPostProcessor para consolidacao.
 
 ---
@@ -383,7 +370,7 @@ Na geracao:
 
 ### 5.1 Azure DevOps
 
-Implementacao principal em apps/extension/src/services/azureService.js.
+Implementacao principal em apps/extension/src/infrastructure/boards/azure.js.
 
 Usos principais:
 
@@ -401,7 +388,7 @@ Campos de configuracao necessarios:
 
 ### 5.2 Gemini
 
-Implementacao em apps/extension/src/services/geminiService.js.
+Implementacao em apps/extension/src/infrastructure/ai/gemini.js.
 
 - Gera cenarios em JSON estruturado.
 - Avalia cobertura.
@@ -409,7 +396,7 @@ Implementacao em apps/extension/src/services/geminiService.js.
 
 ### 5.3 GitHub Copilot (via backend)
 
-Implementacao em apps/extension/src/services/copilotService.js + backend Node.
+Implementacao em apps/extension/src/infrastructure/ai/copilot.js + backend Flask.
 
 Fluxo:
 
@@ -427,7 +414,7 @@ URL backend padrao atualmente:
 
 Implementacoes em:
 
-- apps/extension/src/services/groqService.js
+- apps/extension/src/infrastructure/ai/groq.js
 
 Suporta:
 
@@ -486,11 +473,11 @@ Sessoes locais de revisao:
 A extensao possui duas UIs de configuracao:
 
 1. Popup/options page:
-- apps/extension/src/pages/options/options.html
-- apps/extension/src/pages/options/options.js
+- apps/extension/src/presentation/options/options.html
+- apps/extension/src/presentation/options/
 
 2. Tela de configuracoes dentro do modal lateral (Azure):
-- apps/extension/src/content/ui.js
+- apps/extension/src/presentation/content/ui/
 
 A tela interna do modal e a mais completa para o fluxo em pagina Azure.
 
@@ -599,23 +586,23 @@ Na pagina alvo:
 Core da extensao:
 
 1. apps/extension/manifest.json
-2. apps/extension/src/services/background.js
-3. apps/extension/src/services/azureService.js
-4. apps/extension/src/content/ui.js
-5. apps/extension/src/content/scenarios.js
-6. apps/extension/src/content/dashboard.js
-7. apps/extension/src/content/runner.js
+2. apps/extension/src/entrypoints/background/ (router + handlers)
+3. apps/extension/src/infrastructure/boards/azure.js
+4. apps/extension/src/presentation/content/ui/
+5. apps/extension/src/presentation/content/scenarios/
+6. apps/extension/src/presentation/content/dashboard/
+7. apps/extension/src/presentation/content/runner/
 
 Configuracoes:
 
-1. apps/extension/src/pages/options/options.html
-2. apps/extension/src/pages/options/options.js
+1. apps/extension/src/presentation/options/options.html
+2. apps/extension/src/presentation/options/
 
 Backend Copilot:
 
-1. apps/api/src/server.js
-2. apps/api/src/authRoutes.js
-3. apps/api/src/copilotService.js
+1. apps/api/src/server.py
+2. apps/api/src/auth/interface/github_routes.py
+3. apps/api/src/generation/application/copilot_service.py
 
 ---
 
@@ -1214,7 +1201,7 @@ Utiliza `responseMimeType: "application/json"` + `responseSchema` para garantir 
 | Frontend | `UI`, `FUNC`, `UX`, `ACC`, `INT` |
 | Backend | `SCHEMA`, `FUNC`, `SEG`, `PERF`, `INT` |
 
-**Estrutura do título:** `[PREFIX] - [Contexto/Componente]`
+**Estrutura do título:** `PREFIX - Contexto/Componente` (sem colchetes, ex.: `PERF - Login - Tempo de resposta`)
 
 ### Detalhes de Formatação BDD
 

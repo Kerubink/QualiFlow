@@ -1,0 +1,293 @@
+/* ==========================================================================
+   view-runner: janela do runner, execucao, evidencias, anotacao, barra de
+   gravacao e listas de cards/projetos. Prefixo: qualiflow-run-
+   ========================================================================== */
+
+/* ---------- Janela flutuante ---------- */
+.qualiflow-run-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--qf-space-2);
+    padding: var(--qf-space-1) var(--qf-space-2) var(--qf-space-1) var(--qf-space-4);
+    background: var(--qf-surface);
+    border-bottom: 1px solid var(--qf-border);
+    cursor: move;
+    user-select: none;
+}
+.qualiflow-run-title {
+    display: flex;
+    align-items: center;
+    gap: var(--qf-space-2);
+    min-width: 0;
+    color: var(--qf-text);
+    font-size: var(--qf-text-md);
+    font-weight: var(--qf-weight-semibold);
+}
+.qualiflow-run-title svg { flex-shrink: 0; color: var(--qf-accent); }
+.qualiflow-run-header-actions { display: flex; align-items: center; gap: var(--qf-space-1); flex-shrink: 0; }
+.qualiflow-run-header .qualiflow-close { width: 32px; height: 32px; }
+
+.qualiflow-run-body {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    padding: var(--qf-space-4);
+    overflow-y: auto;
+    background: var(--qf-bg);
+    color: var(--qf-text-muted);
+    font-size: var(--qf-text-sm);
+}
+
+#qualiflow-runner-bubble:focus-visible { box-shadow: var(--qf-focus-ring); outline: none; }
+
+/* FAB desabilitado: sem hover ele ja fica esmaecido; com hover mantem o esmaecimento */
+#qualiflow-fab-container:hover .qualiflow-fab-sub.is-disabled,
+#qualiflow-fab-container:focus-within .qualiflow-fab-sub.is-disabled { opacity: 0.45; }
+
+/* ---------- Estados e textos ---------- */
+.qualiflow-run-eyebrow {
+    margin-bottom: var(--qf-space-1);
+    color: var(--qf-accent-text);
+    font-size: var(--qf-text-2xs);
+    font-weight: var(--qf-weight-bold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.qualiflow-run-heading {
+    margin-bottom: var(--qf-space-3);
+    color: var(--qf-text-soft);
+    font-weight: var(--qf-weight-semibold);
+}
+.qualiflow-run-heading-rule {
+    margin-bottom: var(--qf-space-4);
+    padding-bottom: var(--qf-space-3);
+    border-bottom: 1px solid var(--qf-border);
+    color: var(--qf-text-soft);
+    font-weight: var(--qf-weight-semibold);
+}
+.qualiflow-run-status {
+    padding: var(--qf-space-5) var(--qf-space-4);
+    font-weight: var(--qf-weight-semibold);
+    text-align: center;
+}
+.qualiflow-run-status-info { color: var(--qf-sky); }
+.qualiflow-run-status-ok { color: var(--qf-success-solid); }
+.qualiflow-run-status-sub {
+    display: block;
+    margin-top: var(--qf-space-1);
+    color: var(--qf-text-muted);
+    font-size: var(--qf-text-xs);
+    font-weight: 400;
+}
+.qualiflow-run-status-icon { margin-bottom: var(--qf-space-2); font-size: var(--qf-text-xl); }
+
+.qualiflow-run-done { padding: var(--qf-space-5) var(--qf-space-4); text-align: center; }
+.qualiflow-run-done-icon { margin-bottom: var(--qf-space-4); font-size: var(--qf-text-2xl); }
+.qualiflow-run-done-title { margin-bottom: var(--qf-space-2); color: var(--qf-text); font-size: var(--qf-text-lg); font-weight: var(--qf-weight-bold); }
+.qualiflow-run-done-text { margin-bottom: var(--qf-space-5); color: var(--qf-text-muted); font-size: var(--qf-text-xs); }
+
+/* Botoes contorno (acoes destrutivas/de aviso compactas) */
+.qualiflow-btn-inline.qualiflow-run-btn-danger-outline {
+    background: transparent;
+    border-color: color-mix(in srgb, var(--qf-danger) 55%, transparent);
+    color: var(--qf-danger-text);
+}
+.qualiflow-btn-inline.qualiflow-run-btn-danger-outline:hover:not(:disabled) { background: var(--qf-danger-soft); }
+.qualiflow-btn-inline.qualiflow-run-btn-warn-outline {
+    background: transparent;
+    border-color: color-mix(in srgb, var(--qf-warning) 55%, transparent);
+    color: var(--qf-warning-text);
+}
+.qualiflow-btn-inline.qualiflow-run-btn-warn-outline:hover:not(:disabled) { background: var(--qf-warning-soft); }
+.qualiflow-btn-icon.qualiflow-run-del-btn { color: var(--qf-danger-text); }
+.qualiflow-btn-icon.qualiflow-run-del-btn:hover:not(:disabled) { background: var(--qf-danger-soft); color: var(--qf-danger-text); }
+
+/* ---------- Cards (sessao, CTs, projetos) ---------- */
+.qualiflow-run-session { margin-bottom: var(--qf-space-3); border-color: var(--qf-accent); }
+.qualiflow-run-session-title { margin-bottom: var(--qf-space-1); color: var(--qf-text); font-size: var(--qf-text-md); font-weight: var(--qf-weight-semibold); overflow-wrap: anywhere; }
+.qualiflow-run-session-actions { display: flex; flex-wrap: wrap; gap: var(--qf-space-2); margin-top: var(--qf-space-2); }
+
+.qualiflow-run-tc-card { margin-bottom: var(--qf-space-2); padding: var(--qf-space-3); }
+.qualiflow-run-id { margin-bottom: 2px; color: var(--qf-text-muted); font-size: var(--qf-text-2xs); font-weight: var(--qf-weight-semibold); }
+.qualiflow-run-tc-title { color: var(--qf-text); font-size: var(--qf-text-sm); font-weight: var(--qf-weight-semibold); overflow-wrap: anywhere; }
+
+/* Cards de work item (lista do runner no drawer) */
+.qualiflow-run-card { display: flex; flex-direction: column; justify-content: space-between; gap: var(--qf-space-3); padding: var(--qf-space-3); }
+.qualiflow-run-card-title { color: var(--qf-text-soft); font-weight: var(--qf-weight-semibold); line-height: 1.4; overflow-wrap: anywhere; }
+.qualiflow-run-card-meta { display: flex; flex-direction: column; gap: var(--qf-space-2); margin-top: var(--qf-space-2); color: var(--qf-text-muted); font-size: var(--qf-text-xs); }
+.qualiflow-run-card-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--qf-space-2); }
+.qualiflow-run-card-foot { display: flex; gap: var(--qf-space-2); }
+
+.qualiflow-run-target-list { display: flex; flex-direction: column; gap: var(--qf-space-2); }
+.qualiflow-run-target-btn {
+    display: flex;
+    flex-direction: column;
+    gap: var(--qf-space-1);
+    width: 100%;
+    min-height: var(--qf-hit);
+    text-align: left;
+    color: var(--qf-text);
+    font: inherit;
+}
+.qualiflow-run-target-btn:hover { border-color: var(--qf-accent); }
+.qualiflow-run-target-name { font-size: var(--qf-text-md); font-weight: var(--qf-weight-semibold); overflow-wrap: anywhere; }
+.qualiflow-run-target-url { color: var(--qf-sky); font-size: var(--qf-text-xs); overflow-wrap: anywhere; }
+.qualiflow-run-target-footer { display: flex; justify-content: flex-end; margin-top: var(--qf-space-5); padding-top: var(--qf-space-4); border-top: 1px solid var(--qf-border); }
+.qualiflow-run-lead { margin-bottom: var(--qf-space-4); color: var(--qf-text-muted); font-size: var(--qf-text-xs); }
+
+.qualiflow-run-proj-list { margin: 0; padding: 0; list-style: none; }
+.qualiflow-run-proj-item { display: flex; align-items: center; justify-content: space-between; gap: var(--qf-space-3); margin-bottom: var(--qf-space-2); padding: var(--qf-space-3) var(--qf-space-4); }
+.qualiflow-run-proj-info { min-width: 0; }
+.qualiflow-run-proj-name { display: block; color: var(--qf-text); font-size: var(--qf-text-md); overflow-wrap: anywhere; }
+.qualiflow-run-proj-url { color: var(--qf-text-muted); font-size: var(--qf-text-xs); overflow-wrap: anywhere; }
+
+/* ---------- Execucao do CT ---------- */
+.qualiflow-run-topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--qf-space-2); margin-bottom: var(--qf-space-3); }
+.qualiflow-run-topbar-label { color: var(--qf-sky); font-size: var(--qf-text-xs); font-weight: var(--qf-weight-semibold); }
+
+.qualiflow-run-ct-card { position: relative; margin-bottom: var(--qf-space-3); padding: var(--qf-space-3); overflow: hidden; border-color: var(--qf-accent); background: var(--qf-surface); }
+.qualiflow-run-ct-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--qf-accent); }
+.qualiflow-run-ct-title { color: var(--qf-text); font-size: var(--qf-text-md); font-weight: var(--qf-weight-semibold); line-height: 1.4; overflow-wrap: anywhere; }
+
+.qualiflow-run-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--qf-space-2);
+    margin-bottom: var(--qf-space-4);
+    padding-bottom: var(--qf-space-3);
+    border-bottom: 1px solid var(--qf-border);
+}
+.qualiflow-run-actions-main { flex: 1 1 140px; min-width: 0; }
+.qualiflow-run-actions-btns { display: flex; flex-wrap: wrap; gap: var(--qf-space-2); }
+
+/* Cor por resultado: --run-c e lida por select, botoes etc. */
+.qualiflow-run-status-none { --run-c: var(--qf-text-subtle); }
+.qualiflow-run-status-passed { --run-c: var(--qf-success-solid); }
+.qualiflow-run-status-failed { --run-c: var(--qf-danger); }
+.qualiflow-run-status-blocked { --run-c: var(--qf-warning); }
+.qualiflow-run-status-paused { --run-c: var(--qf-accent); }
+.qualiflow-run-status-notapplicable { --run-c: var(--qf-text-muted); }
+.qualiflow-run-outcome {
+    --run-c: var(--qf-text-subtle);
+    width: 100%;
+    background: var(--qf-bg);
+    border: 1px solid color-mix(in srgb, var(--run-c) 40%, transparent);
+    border-radius: var(--qf-radius-sm);
+    color: var(--run-c);
+    font-weight: var(--qf-weight-semibold);
+}
+
+.qualiflow-btn-inline.qualiflow-run-tool-btn { background: var(--qf-surface); border-color: var(--qf-border-strong); color: var(--qf-text-softer); }
+.qualiflow-btn-inline.qualiflow-run-tool-btn:hover:not(:disabled) { background: var(--qf-surface-hover); }
+.qualiflow-btn-inline.qualiflow-run-tool-btn.is-active { background: var(--qf-accent); border-color: var(--qf-accent); color: var(--qf-text-on-accent); }
+
+.qualiflow-run-comment { margin-bottom: var(--qf-space-4); }
+.qualiflow-run-comment textarea { min-height: 64px; resize: vertical; border-color: color-mix(in srgb, var(--qf-accent) 40%, transparent); }
+
+.qualiflow-run-step { margin-bottom: var(--qf-space-2); padding: var(--qf-space-3); background: var(--qf-surface); border: 1px solid var(--qf-border); border-radius: var(--qf-radius-sm); }
+.qualiflow-run-step-row { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--qf-space-3); }
+.qualiflow-run-step-num { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--qf-border); color: var(--qf-text-muted); font-size: var(--qf-text-2xs); font-weight: var(--qf-weight-bold); }
+.qualiflow-run-step-main { flex: 1 1 160px; min-width: 0; }
+.qualiflow-run-step-action { margin-bottom: var(--qf-space-1); color: var(--qf-text-soft); font-size: var(--qf-text-sm); overflow-wrap: anywhere; }
+.qualiflow-run-expected { padding: var(--qf-space-1) var(--qf-space-2); background: color-mix(in srgb, var(--qf-accent) 8%, transparent); border-left: 2px solid var(--qf-accent); color: var(--qf-accent-text); font-size: var(--qf-text-xs); overflow-wrap: anywhere; }
+.qualiflow-run-step-strip { margin-top: var(--qf-space-2); }
+.qualiflow-run-step-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--qf-space-1); }
+
+.qualiflow-btn-inline.qualiflow-run-step-btn { background: var(--qf-surface); border-color: var(--qf-border-strong); color: var(--qf-text-softer); }
+.qualiflow-btn-inline.qualiflow-run-step-btn.pass-btn.is-active { background: var(--qf-success-solid); border-color: var(--qf-success-solid); color: var(--qf-text-on-accent); }
+.qualiflow-btn-inline.qualiflow-run-step-btn.fail-btn.is-active { background: var(--qf-danger); border-color: var(--qf-danger); color: var(--qf-text-on-accent); }
+
+.qualiflow-run-step-fail { margin-top: var(--qf-space-3); padding-top: var(--qf-space-3); border-top: 1px dashed var(--qf-border); }
+.qualiflow-run-step-fail textarea { margin-bottom: var(--qf-space-2); border-color: color-mix(in srgb, var(--qf-danger) 55%, transparent); resize: vertical; }
+
+.qualiflow-run-busy { position: absolute; inset: 0; z-index: var(--qf-z-raised); display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--qf-bg) 80%, transparent); }
+.qualiflow-run-busy-box { padding: var(--qf-space-4); border-radius: var(--qf-radius-md); background: var(--qf-surface); color: var(--qf-text); font-size: var(--qf-text-sm); font-weight: var(--qf-weight-semibold); }
+
+/* ---------- Indicadores de evidencia ---------- */
+.qualiflow-run-ev-btn {
+    --ev-c: var(--qf-text-subtle);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--qf-space-1);
+    min-height: var(--qf-hit);
+    padding: 0 var(--qf-space-3);
+    border: 1px solid color-mix(in srgb, var(--ev-c) 50%, transparent);
+    border-radius: var(--qf-radius-sm);
+    background: var(--qf-surface);
+    color: var(--qf-text-softer);
+    font-size: var(--qf-text-xs);
+    font-weight: var(--qf-weight-semibold);
+    cursor: pointer;
+    transition: background-color var(--qf-duration-fast) var(--qf-ease), border-color var(--qf-duration-fast) var(--qf-ease);
+}
+.qualiflow-run-ev-btn.is-error { --ev-c: var(--qf-danger); background: color-mix(in srgb, var(--ev-c) 10%, transparent); color: var(--qf-danger-text-soft); }
+.qualiflow-run-ev-btn.is-uploaded { --ev-c: var(--qf-success-solid); background: color-mix(in srgb, var(--ev-c) 10%, transparent); color: var(--qf-success-text); }
+.qualiflow-run-ev-btn.is-pending { --ev-c: var(--qf-warning); background: color-mix(in srgb, var(--ev-c) 8%, transparent); color: var(--qf-warning-text); }
+.qualiflow-run-ev-count { min-width: 16px; padding: 0 5px; border-radius: var(--qf-radius-pill); background: var(--ev-c); color: var(--qf-bg); font-size: var(--qf-text-2xs); line-height: 16px; text-align: center; }
+
+.qualiflow-run-ev-strip { padding: var(--qf-space-2); background: var(--qf-bg); border: 1px solid var(--qf-border); border-radius: var(--qf-radius-sm); }
+.qualiflow-run-ev-strip-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--qf-space-2); margin-bottom: var(--qf-space-1); }
+.qualiflow-run-ev-strip-title { color: var(--qf-text-muted); font-size: var(--qf-text-2xs); font-weight: var(--qf-weight-bold); letter-spacing: 0.03em; text-transform: uppercase; }
+.qualiflow-run-ev-strip-sum { color: var(--qf-text-subtle); font-size: var(--qf-text-2xs); }
+.qualiflow-run-ev-chips { display: flex; flex-wrap: wrap; gap: var(--qf-space-1); }
+.qualiflow-run-ev-chip { --ev-c: var(--qf-warning); display: inline-flex; align-items: center; gap: var(--qf-space-1); max-width: 100%; padding: 2px var(--qf-space-2); border: 1px solid color-mix(in srgb, var(--ev-c) 40%, transparent); border-radius: var(--qf-radius-pill); background: var(--qf-bg); color: var(--qf-text-softer); font-size: var(--qf-text-2xs); }
+.qualiflow-run-ev-chip.is-uploaded { --ev-c: var(--qf-success-solid); }
+.qualiflow-run-ev-chip.is-error { --ev-c: var(--qf-danger); }
+.qualiflow-run-ev-chip-name { max-width: 9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qualiflow-run-ev-chip-idx { color: var(--qf-text-subtle); }
+
+/* ---------- Painel de evidencias (dialog) ---------- */
+.qualiflow-dialog-overlay.qualiflow-run-overlay { z-index: var(--qf-z-floating); }
+.qualiflow-run-note { padding: var(--qf-space-2) var(--qf-space-4); border-bottom: 1px solid var(--qf-surface); color: var(--qf-text-muted); font-size: var(--qf-text-2xs); flex-shrink: 0; }
+.qualiflow-run-ev-actions { display: flex; flex-wrap: wrap; gap: var(--qf-space-2); padding: var(--qf-space-3) var(--qf-space-4); border-bottom: 1px solid var(--qf-surface); flex-shrink: 0; }
+.qualiflow-run-ev-actions .qualiflow-btn-inline { flex: 1 1 140px; }
+.qualiflow-run-rec-status { flex-shrink: 0; padding: var(--qf-space-2) var(--qf-space-4); background: var(--qf-danger-soft); border-bottom: 1px solid color-mix(in srgb, var(--qf-danger) 25%, transparent); color: var(--qf-danger-text); font-size: var(--qf-text-xs); font-weight: var(--qf-weight-semibold); }
+.qualiflow-run-ev-list { display: flex; flex: 1; flex-direction: column; gap: var(--qf-space-2); min-height: 0; padding: var(--qf-space-3) var(--qf-space-4); overflow-y: auto; }
+.qualiflow-run-ev-item { overflow: hidden; background: var(--qf-surface); border: 1px solid var(--qf-border); border-radius: var(--qf-radius-md); }
+.qualiflow-run-ev-media { display: block; width: 100%; max-height: 10rem; background: var(--qf-bg); object-fit: contain; }
+.qualiflow-run-ev-item-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--qf-space-2); padding: var(--qf-space-2) var(--qf-space-3); }
+.qualiflow-run-ev-item-info { flex: 1 1 120px; min-width: 0; }
+.qualiflow-run-ev-name { overflow: hidden; color: var(--qf-text-muted); font-size: var(--qf-text-2xs); text-overflow: ellipsis; white-space: nowrap; }
+.qualiflow-run-ev-item-btns { display: flex; flex-wrap: wrap; gap: var(--qf-space-1); }
+.qualiflow-run-ev-state { font-size: var(--qf-text-2xs); font-weight: var(--qf-weight-semibold); }
+.qualiflow-run-ev-state.is-pending { color: var(--qf-warning-text); }
+.qualiflow-run-ev-state.is-uploaded { color: var(--qf-success-text); }
+.qualiflow-run-ev-state.is-error { color: var(--qf-danger-text); }
+.qualiflow-run-ev-state.is-none { color: var(--qf-text-subtle); font-weight: 400; }
+
+/* ---------- Painel de anotacao (tela cheia) ---------- */
+.qualiflow-run-annot { position: fixed; inset: 0; z-index: var(--qf-z-dialog); display: flex; flex-direction: column; background: var(--qf-surface-sunken); color: var(--qf-text); }
+.qualiflow-run-annot-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--qf-space-2); flex-shrink: 0; padding: var(--qf-space-2) var(--qf-space-3); background: var(--qf-bg); border-bottom: 1px solid var(--qf-surface); }
+.qualiflow-run-annot-title { color: var(--qf-text); font-size: var(--qf-text-sm); font-weight: var(--qf-weight-bold); }
+.qualiflow-run-annot-tools { display: flex; flex-wrap: wrap; gap: var(--qf-space-1); }
+.qualiflow-btn-inline.qualiflow-run-annot-tool { background: var(--qf-surface); border-color: var(--qf-border-strong); color: var(--qf-text-softer); }
+.qualiflow-btn-inline.qualiflow-run-annot-tool.is-active { background: var(--qf-accent); border-color: var(--qf-accent); color: var(--qf-text-on-accent); }
+.qualiflow-run-annot-color { width: var(--qf-hit); height: var(--qf-hit); padding: 2px; border: 0; border-radius: var(--qf-radius-xs); background: transparent; cursor: pointer; }
+.qualiflow-run-annot-size { width: min(90px, 25vw); accent-color: var(--qf-accent); }
+.qualiflow-run-annot-stage { position: relative; display: flex; flex: 1; align-items: center; justify-content: center; min-height: 0; overflow: hidden; }
+.qualiflow-run-annot-canvas { max-width: 100%; max-height: 100%; object-fit: contain; cursor: crosshair; touch-action: none; }
+
+/* ---------- Barra de gravacao flutuante ---------- */
+.qualiflow-run-recbar {
+    position: fixed;
+    bottom: var(--qf-space-5);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: var(--qf-z-floating);
+    display: flex;
+    align-items: center;
+    gap: var(--qf-space-3);
+    max-width: calc(100vw - 16px);
+    padding: var(--qf-space-2) var(--qf-space-4);
+    background: color-mix(in srgb, var(--qf-bg) 93%, transparent);
+    border: 1px solid color-mix(in srgb, var(--qf-danger) 50%, transparent);
+    border-radius: var(--qf-radius-pill);
+    box-shadow: var(--qf-shadow-md);
+    color: var(--qf-text);
+    font-size: var(--qf-text-xs);
+}
+.qualiflow-run-recbar-timer { min-width: 70px; color: var(--qf-danger); font-weight: var(--qf-weight-bold); }

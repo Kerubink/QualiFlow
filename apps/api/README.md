@@ -7,7 +7,7 @@ Render Free -> Backend Python -> GitHub OAuth (QA) -> Chamada HTTP direta ao Git
 ## Aviso importante sobre a integracao com o Copilot
 
 Esta versao **nao usa** o pacote `@github/copilot-sdk` (que e Node.js only e spawna o
-binario do Copilot CLI). Em vez disso, o `src/ai/copilot.py` chama diretamente:
+binario do Copilot CLI). Em vez disso, o `src/generation/infrastructure/providers/copilot.py` chama diretamente:
 
 - `GET https://api.github.com/copilot_internal/v2/token` para trocar o token OAuth do
   usuario por um token de sessao do Copilot.
@@ -27,7 +27,7 @@ ao provedor e devolve o resultado. As API keys **nao sao persistidas** no backen
 trafegam apenas na requisicao e sao descartadas ao final do processamento.
 
 A logica de prompt engineering (decomposicao da historia, geracao em lotes, matriz RTM,
-pos-processamento de steps BDD) tambem foi movida para `src/ai/orchestration.py`, para nao
+pos-processamento de steps BDD) tambem foi movida para `src/generation/` (pipeline em `application/generation_service.py`, regras puras em `domain/`), para nao
 ficar exposta no bundle da extensao.
 
 - `POST /api/scenarios/generate`: gera cenarios (decomposicao -> lotes -> RTM), resposta
@@ -45,11 +45,15 @@ So as chamadas com `selectedAi: "copilot"` exigem sessao GitHub OAuth
 
 PAT do Azure DevOps e email+API Token do Jira foram substituidos por login OAuth:
 
-- **Azure DevOps**: login com Microsoft Entra ID (`src/auth/microsoft_oauth.py`).
+- **Azure DevOps (alternativa por PAT)**: as rotas `/api/board/azure/*` tambem aceitam o header
+  `X-Azure-Pat` com o PAT do usuario, que tem prioridade sobre a sessao OAuth. O backend so o repassa
+  ao Azure (Basic auth) e nao o guarda nem o registra em log. A descoberta de organizacoes
+  (`/organizations`) so funciona com OAuth; com PAT, informe `orgUrl` e `project` manualmente.
+- **Azure DevOps**: login com Microsoft Entra ID (`src/auth/infrastructure/microsoft_client.py`).
   Requer um App Registration no Azure Portal com a permissao delegada
   `user_impersonation` da API "Azure DevOps" (App ID `499b84ac-1321-427f-aa17-267ca6975798`)
   e redirect URI `<backend>/auth/microsoft/callback`.
-- **Jira**: login com Atlassian OAuth 2.0 (3LO) (`src/auth/atlassian_oauth.py`).
+- **Jira**: login com Atlassian OAuth 2.0 (3LO) (`src/auth/infrastructure/atlassian_client.py`).
   Requer um app em https://developer.atlassian.com/console/myapps/ com os escopos
   `read:jira-work write:jira-work read:me offline_access` e callback
   `<backend>/auth/atlassian/callback`.
@@ -85,46 +89,58 @@ Nao incluido:
 
 ## Estrutura
 
+O backend segue uma arquitetura em camadas estilo DDD, organizada por bounded context. Cada contexto
+tem as camadas `domain/` (regras puras, sem Flask/requests/I-O), `application/` (casos de uso e portas),
+`infrastructure/` (clientes HTTP, provedores, prompt_registry) e `interface/` (blueprints Flask). A
+dependencia aponta sempre para dentro: `interface -> application -> domain`, com `infrastructure`
+implementando as portas de `application`. Cada contexto liga as pecas em `container.py`.
+
 ```
 src/
-  server.py            # App Flask (factory, rotas de health/metrics, bootstrap)
-  core/                # Infra compartilhada, sem dependencia de dominio
-    session_store.py   # Sessoes/auth requests em memoria (genericos p/ qualquer provedor)
-    request_metrics.py # Metricas agregadas de requisicoes HTTP
-    runtime_metrics.py  # Snapshot de CPU/memoria do processo
-    json_utils.py       # Parsing tolerante de JSON vindo de respostas de LLM
-  auth/                # Login GitHub (Copilot) + login de boards (Microsoft/Atlassian)
-    middleware.py       # require_auth_session / resolve_session_token
-    routes.py           # Rotas OAuth GitHub e sessao (/auth/github/*, /auth/me, ...)
-    github_oauth.py     # Troca de code por token e leitura de usuario GitHub
-    microsoft_oauth.py  # OAuth Microsoft Entra ID (Azure DevOps)
-    atlassian_oauth.py  # OAuth Atlassian 3LO (Jira)
-    board_routes.py     # Rotas de login/callback/refresh dos boards
-  ai/                  # Geracao de cenarios e integracao com provedores de IA
-    providers.py        # Chamadas HTTP diretas a Gemini e Groq
-    copilot.py          # Chamada HTTP direta ao Copilot e envio de prompts
-    prompt_registry.py  # Renderiza prompts/*.j2 (Jinja2) e valida respostas contra prompts/schemas/*.json
-    orchestration.py    # Prompts de decomposicao/lotes/RTM e pos-processamento
-    routes.py           # Endpoints /api/scenarios/*, /api/coverage/evaluate, /api/*/models
-  boards/              # Integracao com Azure DevOps e Jira
-    azure.py            # Chamadas a API REST do Azure DevOps via Bearer token
-    jira.py             # Chamadas a API REST do Jira Cloud via Bearer token
-    routes.py           # Endpoints /api/board/*
-prompts/               # Conteudo dos prompts usados por src/ai/copilot.py e src/ai/orchestration.py,
-                       # carregado via prompt_registry
-  system/              # Um template Jinja2 por prompt (qa_generator, qa_evaluator, qa_test_debug,
-                       # decomposition, batch_generation, rtm, adaptation)
-  fragments/           # Blocos de instrucao reutilizados entre prompts (_json_only.j2, _gherkin_rules.j2, ...)
-  schemas/             # Um JSON Schema por formato de saida esperado (tambem usado para validar a resposta)
-tests/
-  test_prompt_registry.py      # Testes "golden" dos prompts de src/ai/copilot.py
-  test_orchestration_prompts.py  # Testes "golden" dos prompts de src/ai/orchestration.py
+  server.py                 # Composition root: create_app(), hooks HTTP, registro de blueprints, gunicorn src.server:app
+  shared/                   # Kernel compartilhado, sem dependencia de contexto
+    json_utils.py           # Parsing tolerante de JSON vindo de respostas de LLM
+    session_store.py        # Sessoes/auth requests em memoria (genericos p/ qualquer provedor)
+    request_metrics.py      # Metricas agregadas de requisicoes HTTP
+    runtime_metrics.py      # Snapshot de CPU/memoria do processo
+    scenario_params.py      # Parametros @campo de um cenario (usado por geracao e boards)
+    clock.py                # now_iso() para logs
+    interface/              # Helpers Flask: error_response, set_metric_error_code, hooks HTTP globais
+  generation/               # Geracao/adaptacao de cenarios e provedores de IA
+    domain/                 # Criterios, plano/lotes, normalizacao BDD, RTM, pos-processamento, classificacao de erros
+    application/            # GenerationService (pipeline decomposicao->lotes->RTM, streaming), CopilotService, ports.py
+    infrastructure/         # ai_gateway.py (Gemini/Groq/Copilot), providers/, prompts.py (PromptCatalog), prompt_registry.py
+    interface/              # routes.py (/api/scenarios/*, /api/coverage/evaluate, /api/*/models), copilot_routes.py (/api/copilot/*)
+    container.py
+  boards/                   # Integracao com Azure DevOps e Jira
+    domain/                 # XML de Test Case (escaping), validacao de deploy, iteracoes, assignee, ADF/Jira
+    application/            # AzureBoardService, JiraBoardService, ports.py
+    infrastructure/azure/   # http, discovery, work_items, reports, test_cases, test_runs, gateway
+    infrastructure/jira/    # client, issues, gateway
+    interface/              # azure_routes.py, jira_routes.py (/api/board/*), common.py (sessao de board)
+    container.py
+  auth/                     # Login GitHub (Copilot) + login de boards (Microsoft/Atlassian)
+    domain/                 # Extracao de Bearer token, tipo de sessao, escolha do site Jira
+    application/            # OAuthLoginService, BoardSessionService (refresh de token), erros
+    infrastructure/         # github_client, microsoft_client, atlassian_client, oauth_state (assinatura do state)
+    interface/              # middleware.py (require_auth_session), github_routes.py, board_login_routes.py
+    container.py
+  observability/interface/  # /health e /metrics/*
+prompts/                    # Conteudo dos prompts usados por src/generation, carregado via prompt_registry
+  system/                   # Um template Jinja2 por prompt (qa_generator, qa_evaluator, qa_test_debug,
+                            # decomposition, batch_generation, rtm, adaptation)
+  fragments/                # Blocos de instrucao reutilizados entre prompts (_json_only.j2, _gherkin_rules.j2, ...)
+  schemas/                  # Um JSON Schema por formato de saida esperado (tambem usado para validar a resposta)
+tests/                      # Espelha a estrutura de src/ (offline: sem rede nem credenciais)
+  shared/ generation/ boards/ auth/
 ```
 
 - `render.yaml`: deploy para Render.
 - `.env.example`: variaveis de ambiente (sem segredos reais - preencha o seu `.env`).
-- Para editar o texto/regras de um prompt de `src/ai/copilot.py`, edite o `.j2` correspondente em
-  `prompts/` (nao o Python) e rode `pytest apps/api/tests/test_prompt_registry.py`.
+- Para editar o texto/regras de um prompt de `src/generation/infrastructure/prompts.py`, edite o `.j2`
+  correspondente em `prompts/` (nao o Python) e rode `pytest tests/generation/test_prompt_registry.py`.
+- Regras puras (domain) novas devem ganhar testes unitarios em `tests/<contexto>/` sem monkeypatch de rede;
+  casos de uso se testam injetando gateways falsos nos servicos de `application/`.
 
 ## Pre-requisitos
 
@@ -204,6 +220,23 @@ python -m src.server
 ```
 
 Servidor padrao: `http://localhost:3000`
+
+### Uso local pelos QAs (sem o Render)
+
+1. Cada QA cria o proprio `.env` a partir de `.env.example` (nunca compartilhe um `.env` preenchido nem o `.venv`/`node_modules`).
+2. Cada QA precisa de um OAuth App proprio no GitHub (callback `http://localhost:3000/auth/github/callback`) e, para os boards, dos apps Microsoft Entra ID / Atlassian com callback em `localhost:3000`. Sem isso o login nao funciona.
+3. A conta GitHub usada no login precisa ter assinatura ativa do Copilot.
+4. Suba a API (`python -m src.server`) antes de usar a extensao e, na extensao, ative o Modo Desenvolvedor (ou informe `http://localhost:3000`) para nao cair no backend do Render.
+5. Os timeouts do Copilot em `.env.example` ja estao ajustados para uso local; as sessoes ficam em memoria, entao reiniciar a API exige novo login.
+
+## Testes
+
+Os testes sao offline (mocks/gateways falsos, sem Gemini/Groq/Copilot/Azure DevOps/Jira):
+
+```bash
+cd apps/api
+.venv/bin/pytest -q   # ou `pytest` com o venv ativado
+```
 
 ## Fluxo de teste local
 
@@ -330,6 +363,9 @@ Fluxo resumido para o QA:
 
 - `401 AUTH_REQUIRED`: faltou `Authorization: Bearer <sessionToken>`.
 - `401 AUTH_SESSION_INVALID`: sessao expirada/invalida, refaca login.
+  Tambem ocorre ao enviar um token de sessao de board (Microsoft/Atlassian) para uma rota do Copilot.
+- `401 BOARD_SESSION_WRONG_PROVIDER`: token de sessao de outro provedor (ex.: GitHub) enviado para uma rota de board.
+- `AI_KEY_MISSING` (evento `error` do stream): API key do Gemini/Groq nao informada nas configuracoes.
 - `401 COPILOT_AUTH_ERROR`: token OAuth sem permissao para Copilot.
 - `401 COPILOT_AUTH_UNSUPPORTED_TOKEN`: token nao suportado (ex.: `ghp_`).
 - `500 COPILOT_CLI_INIT_ERROR`: falha ao iniciar runtime CLI.

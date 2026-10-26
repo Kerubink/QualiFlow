@@ -41,9 +41,9 @@ A documentacao funcional canonica do gerador esta em `docs/DOCUMENTACAO.md`.
 
 Toda a comunicacao com provedores de IA e boards deve passar pelo backend:
 
-- IA: Gemini, Groq e Copilot sao acessados em `apps/api/src/ai/`.
-- Boards: Azure DevOps e Jira sao acessados em `apps/api/src/boards/`.
-- A extensao usa proxies/clientes HTTP em `apps/extension/src/services/`.
+- IA: Gemini, Groq e Copilot sao acessados em `apps/api/src/generation/infrastructure/` (`providers/`, `ai_gateway.py`).
+- Boards: Azure DevOps e Jira sao acessados em `apps/api/src/boards/infrastructure/` (`azure/`, `jira/`).
+- A extensao usa proxies/clientes HTTP em `apps/extension/src/infrastructure/` (`backend/`, `ai/`, `boards/`).
 
 Nao reintroduza chamadas diretas da extensao para:
 
@@ -57,17 +57,33 @@ As API keys de Gemini/Groq entram na requisicao, sao usadas pelo backend e nao d
 
 ### Backend
 
+O backend e organizado por bounded context (`generation`, `boards`, `auth`, mais `shared` e `observability`).
+Cada contexto tem as camadas `domain/` (regras puras: sem Flask, requests ou I/O), `application/` (casos de uso
+e portas em `ports.py`), `infrastructure/` (clientes HTTP, provedores, prompt_registry) e `interface/` (blueprints
+Flask, parse de request, mapeamento de erro). A dependencia aponta para dentro (`interface -> application ->
+domain`); `infrastructure` implementa as portas e cada contexto liga tudo em `container.py`. Rotas nao chamam
+cliente HTTP direto: passam por um servico de `application/`.
+
 Pontos principais:
 
-- `apps/api/src/server.py`: factory/bootstrap Flask, health, metricas e registro de blueprints.
-- `apps/api/src/ai/`: provedores, Copilot, registro de prompts, rotas e orquestracao.
-- `apps/api/src/auth/`: middleware, estado OAuth, GitHub, Microsoft Entra ID e Atlassian 3LO.
-- `apps/api/src/boards/`: clientes REST e rotas de Azure DevOps/Jira.
-- `apps/api/src/core/`: sessoes em memoria, parsing JSON e metricas.
+- `apps/api/src/server.py`: composition root (`create_app`, hooks HTTP, bootstrap e registro de blueprints).
+- `apps/api/src/generation/`: geracao/adaptacao e IA.
+  - `domain/`: criterios, plano/lotes, normalizacao BDD, RTM, pos-processamento, classificacao de erros.
+  - `application/`: `generation_service.py` (pipeline e streaming), `copilot_service.py`, `ports.py`.
+  - `infrastructure/`: `providers/` (Gemini, Groq, Copilot), `ai_gateway.py`, `prompts.py`, `prompt_registry.py`.
+  - `interface/`: `routes.py` (`/api/scenarios/*`, `/api/coverage/evaluate`), `copilot_routes.py`.
+- `apps/api/src/boards/`: Azure DevOps e Jira (`domain/` com XML de steps e validacao de deploy,
+  `application/` com `AzureBoardService`/`JiraBoardService`, `infrastructure/azure|jira/` com os clientes REST,
+  `interface/` com `azure_routes.py` e `jira_routes.py`).
+- `apps/api/src/auth/`: middleware (`interface/middleware.py`), estado OAuth (`infrastructure/oauth_state.py`),
+  clientes GitHub/Microsoft Entra ID/Atlassian 3LO (`infrastructure/*_client.py`), servicos de login e refresh de
+  sessao de board (`application/`) e rotas (`interface/github_routes.py`, `interface/board_login_routes.py`).
+- `apps/api/src/shared/`: sessoes em memoria, parsing JSON, metricas, helpers de interface.
+- `apps/api/src/observability/`: `/health` e `/metrics/*`.
 - `apps/api/prompts/system/`: templates Jinja2 dos prompts.
 - `apps/api/prompts/fragments/`: regras compartilhadas de prompts.
 - `apps/api/prompts/schemas/`: JSON Schemas e exemplos de saida.
-- `apps/api/tests/`: testes locais sem chamadas reais aos provedores.
+- `apps/api/tests/`: testes locais sem chamadas reais aos provedores, espelhando a estrutura de `src/`.
 
 Rotas de alto nivel:
 
@@ -84,17 +100,17 @@ Rotas de alto nivel:
 
 A base oficial da extensao e `apps/extension/`.
 
-- `src/content/`: scripts e UI injetados em Azure DevOps, Jira e paginas suportadas.
-- `src/pages/options/`: pagina de configuracoes.
-- `src/services/ai/`: clientes/proxies de IA para o backend.
-- `src/services/boards/`: clientes/proxies de Azure DevOps e Jira.
-- `src/services/orchestration/`: encaminhamento de geracao/adaptacao e pos-processamento pass-through.
-- `src/infrastructure/`: adaptadores de IA, boards, browser e persistencia.
-- `src/application/`: casos de uso da extensao.
-- `src/contracts/`: contratos de actions/runtime.
-- `src/entrypoints/background/`: entrypoint modular do background.
-- `src/core/constants.js`: constantes e normalizacao compartilhada.
+Arquitetura em camadas (dependencia aponta para dentro: `presentation`/`entrypoints` -> `application` -> `domain`; `infrastructure` implementa as portas e so conhece `domain`; o ESLint barra violacoes):
+
+- `src/domain/`: logica pura (sem `chrome.*`, `fetch` ou DOM): constantes, normalizacao de cenarios e parametros `@campo`, regras de board, RTM, sessoes locais, monitor de suporte.
+- `src/application/`: casos de uso (cobertura, geracao/adaptacao, salvamento, dados do card, runner, OAuth, monitor de suporte) com dependencias injetadas.
+- `src/infrastructure/`: unica implementacao real de `backend/` (cliente HTTP/NDJSON e OAuth), `ai/` (proxies Gemini/Groq/Copilot), `boards/` (Azure/Jira), `browser/` (runtime, storage, tabs, alarms) e `persistence/` (configuracoes e `qualiflowSavedSessions`).
+- `src/entrypoints/background/`: service worker; `index.js` so faz wiring, `container.js` liga portas a adaptadores, `router.js` despacha por action e `handlers/` tem um arquivo por grupo.
+- `src/presentation/content/`: content scripts injetados em Azure DevOps, Jira e paginas suportadas (`ui/`, `dashboard/`, `scenarios/`, `runner/`, `shared/`; estado em `state.js`, chamadas ciclicas via `hooks.js`).
+- `src/presentation/options/`: pagina de configuracoes.
+- `src/contracts/`: contratos de actions/runtime (`runtimeActions.js`).
 - `src/styles/`: estilos de content/options pages.
+- `apps/extension/tests/`: testes `node --test` dos modulos de `domain/`.
 
 O fluxo do background e a ponte de runtime/storage devem continuar centralizando as mensagens entre content scripts, options page e service worker.
 
@@ -171,12 +187,14 @@ gunicorn --workers 1 --threads 4 --bind 0.0.0.0:$PORT src.server:app
 ```bash
 cd apps/extension
 npm run build
+npm run lint
+npm test
 npm run build:obf
 ```
 
 `npm run build:obf` primeiro cria o build normal e depois ofusca os arquivos JavaScript em `dist/`. A ofuscacao nao e uma fronteira de seguranca e nao deve ser tratada como protecao de segredo.
 
-Nao ha script de lint ou suite JavaScript configurado atualmente no `package.json`; nao documente um comando como se ele existisse sem antes adicionar a configuracao correspondente.
+`npm run lint` roda o ESLint (flat config em `eslint.config.js`, inclui as regras de dependencia entre camadas) e `npm test` roda os testes offline de `domain/` com o runner nativo `node --test`, sem dependencias extras.
 
 ## Desenvolvimento do backend
 
@@ -189,7 +207,7 @@ A geracao principal segue este fluxo:
 3. construcao da RTM;
 4. pos-processamento e normalizacao.
 
-Uma falha em um lote nao deve descartar os lotes que ja produziram casos validos. Preserve esse comportamento ao alterar `orchestration.py`.
+Uma falha em um lote nao deve descartar os lotes que ja produziram casos validos. Preserve esse comportamento ao alterar `apps/api/src/generation/application/generation_service.py`.
 
 As funcoes de prompt devem continuar produzindo JSON completo quando esse for o contrato do estagio. Nao misture texto explicativo na resposta esperada do modelo.
 
@@ -255,7 +273,7 @@ Para novas mudancas no backend, prefira testes unitarios deterministas em `apps/
 - cubra regressao de orquestracao por lotes quando o fluxo for tocado;
 - nao dependa de rede, OAuth real ou credenciais locais.
 
-Para mudancas na extensao, sempre execute pelo menos `npm run build`. Quando o fluxo visual ou de runtime mudar, carregue o build no Chrome e valide manualmente o caminho afetado no Azure DevOps/Jira. Documente qualquer validacao manual que nao possa ser automatizada.
+Para mudancas na extensao, sempre execute `npm run lint`, `npm test` e `npm run build`; logica nova em `domain/` deve ter teste em `apps/extension/tests/`. Quando o fluxo visual ou de runtime mudar, carregue o build no Chrome e valide manualmente o caminho afetado no Azure DevOps/Jira. Documente qualquer validacao manual que nao possa ser automatizada.
 
 ## Documentacao
 
@@ -275,6 +293,6 @@ Nao use a documentacao historica como autoridade quando ela divergir da secao ca
 - [ ] Contratos de payload, streaming e sessoes foram preservados ou documentados.
 - [ ] Prompts, schemas e exemplos permanecem consistentes.
 - [ ] `cd apps/api && pytest` passou quando o backend foi tocado.
-- [ ] `cd apps/extension && npm run build` passou quando a extensao foi tocada.
+- [ ] `cd apps/extension && npm run lint && npm test && npm run build` passaram quando a extensao foi tocada.
 - [ ] A documentacao ou `.env.example` foi atualizada quando necessario.
 - [ ] Nao foram incluidos `dist/`, caches ou artefatos gerados na mudanca.

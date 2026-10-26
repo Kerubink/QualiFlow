@@ -1,0 +1,275 @@
+/* ==========================================================================
+   SCENARIOS - gerador: colunas, progresso, acordeao, RTM, edicao de passos
+   ========================================================================== */
+
+#qualiflow-page-generator {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.qualiflow-generation-layout {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+.qualiflow-generation-layout.qualiflow-loading-active > .qualiflow-step-col {
+    filter: blur(1.8px) saturate(0.88);
+    transition: filter var(--qf-duration) var(--qf-ease);
+}
+
+.qualiflow-step-col {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: min(300px, 100vw);
+    max-width: 50vw;
+    padding: var(--qf-space-5);
+    border-right: 1px solid var(--qf-border);
+    overflow-y: auto;
+    resize: horizontal;
+}
+.qualiflow-col-context { width: min(340px, 100vw); background-color: var(--qf-bg); }
+.qualiflow-col-rtm { width: min(500px, 100vw); background-color: var(--qf-surface); }
+.qualiflow-col-scenarios { width: min(550px, 100vw); background-color: var(--qf-bg); border-right: none; }
+
+/* Painel de progresso da geracao */
+.qualiflow-gen-progress-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--qf-space-5);
+    background: radial-gradient(circle at 30% 20%, rgba(15, 23, 42, 0.45), rgba(2, 6, 23, 0.8));
+    backdrop-filter: blur(5px);
+}
+.qualiflow-gen-progress-shell {
+    width: min(560px, 100%);
+    padding: var(--qf-space-4);
+    border: 1px solid var(--qf-border-strong);
+    border-radius: var(--qf-radius-lg);
+    background: var(--qf-gradient-surface);
+    box-shadow: var(--qf-shadow-lg);
+}
+.qualiflow-gen-progress-head {
+    display: flex;
+    align-items: center;
+    gap: var(--qf-space-3);
+    margin-bottom: var(--qf-space-3);
+    font-size: var(--qf-text-sm);
+    font-weight: var(--qf-weight-semibold);
+    color: var(--qf-text-soft);
+}
+.qualiflow-gen-spinner {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--qf-info-strong);
+    box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.7);
+    animation: qualiflowPulse 1.2s infinite;
+}
+.qualiflow-gen-steps { display: grid; gap: var(--qf-space-2); }
+.qualiflow-gen-step {
+    position: relative;
+    padding-left: var(--qf-space-5);
+    font-size: var(--qf-text-sm);
+    color: var(--qf-text-muted);
+    transition: color var(--qf-duration) var(--qf-ease);
+}
+.qualiflow-gen-step::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--qf-border-strong);
+    transform: translateY(-50%);
+}
+.qualiflow-gen-step.is-active { color: var(--qf-text); }
+.qualiflow-gen-step.is-active::before {
+    background: var(--qf-sky);
+    box-shadow: 0 0 0 5px var(--qf-sky-soft);
+    animation: qualiflowPulseSmall 1s infinite;
+}
+.qualiflow-gen-step.is-done { color: var(--qf-success-text); }
+.qualiflow-gen-step.is-done::before { background: var(--qf-success); }
+.qualiflow-gen-batch-label { margin-top: var(--qf-space-2); font-size: var(--qf-text-xs); color: var(--qf-info-text); }
+.qualiflow-gen-progress-overlay.qualiflow-hidden { display: none !important; }
+
+/* Contexto do card */
+.qualiflow-azure-html {
+    margin-bottom: var(--qf-space-3);
+    padding: var(--qf-space-3);
+    background: var(--qf-bg);
+    border: 1px solid var(--qf-border);
+    border-radius: var(--qf-radius-sm);
+    color: var(--qf-text-softer);
+    font-size: var(--qf-text-sm);
+    line-height: var(--qf-leading);
+    overflow-wrap: anywhere;
+}
+.qualiflow-azure-html ul,
+.qualiflow-azure-html ol { margin: 0 0 var(--qf-space-2) var(--qf-space-5); }
+.qualiflow-azure-html p { margin: 0 0 var(--qf-space-2); }
+
+#qualiflow-wi-title { margin: 0 0 var(--qf-space-1); font-size: var(--qf-text-lg); line-height: 1.3; overflow-wrap: anywhere; }
+.qualiflow-wi-meta {
+    margin: 0 0 var(--qf-space-4);
+    padding-bottom: var(--qf-space-4);
+    border-bottom: 1px solid var(--qf-border);
+    font-size: var(--qf-text-xs);
+    color: var(--qf-text-muted);
+}
+.qualiflow-section-header h4 { margin: 0 0 var(--qf-space-2); font-size: var(--qf-text-sm); font-weight: var(--qf-weight-semibold); color: var(--qf-text-soft); }
+
+.qualiflow-scenarios-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--qf-space-3);
+    margin-bottom: var(--qf-space-4);
+    padding-bottom: var(--qf-space-4);
+    border-bottom: 1px solid var(--qf-border);
+}
+.qualiflow-scenarios-header h3 { margin: 0; font-size: var(--qf-text-lg); }
+.qualiflow-scenarios-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--qf-space-2); }
+.qualiflow-save-feedback { color: var(--qf-success-text); font-size: var(--qf-text-xs); font-weight: var(--qf-weight-semibold); }
+
+.qualiflow-eval-result {
+    margin-bottom: var(--qf-space-4);
+    padding: var(--qf-space-3);
+    background-color: var(--qf-surface-sunken);
+    border: 1px solid var(--qf-violet);
+    border-radius: var(--qf-radius-sm);
+    color: var(--qf-text-soft);
+    font-size: var(--qf-text-sm);
+    line-height: 1.45;
+}
+.qualiflow-eval-result.error { border-color: var(--qf-danger); }
+
+/* Acordeao de cenarios */
+#qualiflow-scenarios-area h3 {
+    margin: var(--qf-space-5) 0 var(--qf-space-4);
+    padding-bottom: var(--qf-space-2);
+    border-bottom: 1px solid var(--qf-border);
+    font-size: var(--qf-text-md);
+}
+.qualiflow-acc-item {
+    margin-bottom: var(--qf-space-2);
+    background-color: var(--qf-surface-raised);
+    border: 1px solid var(--qf-border);
+    border-radius: var(--qf-radius-sm);
+}
+.qualiflow-acc-header {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    padding: var(--qf-space-3);
+    cursor: pointer;
+    user-select: none;
+}
+.qualiflow-acc-header:hover { background: var(--qf-surface-tint); }
+.qualiflow-acc-title { flex: 1; min-width: 0; font-size: var(--qf-text-md); font-weight: var(--qf-weight-medium); overflow-wrap: anywhere; }
+.qualiflow-caret { font-size: var(--qf-text-sm); color: var(--qf-text-muted); }
+.qualiflow-acc-body {
+    padding: var(--qf-space-4);
+    background-color: var(--qf-surface);
+    border-top: 1px solid var(--qf-border);
+}
+
+.qualiflow-select-all-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--qf-space-4);
+    padding: var(--qf-space-3);
+    background-color: var(--qf-surface);
+    border-bottom: 2px solid var(--qf-info);
+    border-radius: var(--qf-radius-sm);
+}
+.qualiflow-selection-count {
+    margin-left: auto;
+    padding: var(--qf-space-1) var(--qf-space-2);
+    border-radius: var(--qf-radius-pill);
+    background-color: var(--qf-bg);
+    color: var(--qf-info-text);
+    font-size: var(--qf-text-sm);
+}
+
+.qualiflow-view-title { margin: var(--qf-space-1) 0 var(--qf-space-3); font-size: var(--qf-text-md); color: var(--qf-text); }
+.qualiflow-view-bdd {
+    margin-bottom: var(--qf-space-4);
+    padding: var(--qf-space-3);
+    background: var(--qf-bg);
+    border-left: 3px solid var(--qf-accent);
+    border-radius: var(--qf-radius-xs);
+    color: var(--qf-text-muted);
+    font-size: var(--qf-text-md);
+    line-height: var(--qf-leading);
+    overflow-wrap: anywhere;
+}
+.qualiflow-modes-container { position: relative; width: 100%; }
+.qualiflow-edit-btn { position: absolute; top: 0; right: 0; }
+.qualiflow-save-edit-btn { width: auto; margin-bottom: var(--qf-space-4); }
+
+.qualiflow-cobertura-section {
+    margin-bottom: var(--qf-space-5);
+    padding: var(--qf-space-4);
+    background-color: var(--qf-bg);
+    border: 1px solid var(--qf-sky);
+    border-radius: var(--qf-radius-md);
+}
+.qualiflow-cobertura-text { margin-bottom: var(--qf-space-3); font-size: var(--qf-text-md); color: var(--qf-text-soft); }
+.qualiflow-actions-bottom { margin-top: var(--qf-space-5); }
+
+/* Tabelas RTM / passos: overflow contido na propria tabela */
+.qualiflow-rtm-table,
+.qualiflow-steps-table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin-top: var(--qf-space-2);
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: var(--qf-text-sm);
+}
+.qualiflow-rtm-table th,
+.qualiflow-steps-table th {
+    padding: var(--qf-space-2);
+    background-color: var(--qf-surface);
+    border: 1px solid var(--qf-border);
+    color: var(--qf-text-muted);
+    text-align: left;
+}
+.qualiflow-rtm-table td,
+.qualiflow-steps-table td { padding: var(--qf-space-2); border: 1px solid var(--qf-border); vertical-align: top; }
+
+/* Passos editaveis */
+.qualiflow-step-row { display: flex; align-items: flex-start; gap: var(--qf-space-2); margin-bottom: var(--qf-space-2); }
+.qualiflow-step-row.dragging { opacity: 0.4; border: 2px dashed var(--qf-accent); }
+.qualiflow-step-row.drag-over { border-top: 2px solid var(--qf-accent); }
+.qualiflow-evidence-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--qf-hit);
+    min-height: var(--qf-hit);
+    padding: var(--qf-space-2);
+    background: transparent;
+    border: 1px solid var(--qf-border-strong);
+    border-radius: var(--qf-radius-sm);
+    color: var(--qf-text-muted);
+    cursor: pointer;
+}
+.qualiflow-evidence-toggle:hover { color: var(--qf-text); background: var(--qf-surface-raised); }
+.qualiflow-evidence-toggle.active { background: var(--qf-success-soft); color: var(--qf-success-solid); border-color: var(--qf-success-solid); }

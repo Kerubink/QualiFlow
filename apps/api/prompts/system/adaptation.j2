@@ -6,6 +6,8 @@
         "Mantenha entre 6 e 10 passos por caso.",
         "Cada passo action deve iniciar com DADO, E, QUANDO ou ENTAO.",
         "Cada cenario deve ter exatamente um passo iniciando com QUANDO.",
+        "Cada action comeca com UMA unica palavra-chave Gherkin; nunca encadeie ('E ENTAO', 'ENTAO ENTAO'). Escreva ENTAO sem acento.",
+        'O title deve ser "PREFIXO - Contexto - Titulo" com UM prefixo real SEM colchetes (UI, FUNC, UX, ACC, INT, SCHEMA, SEG, PERF), ex.: "PERF - Login - Tempo de resposta"; nunca o texto literal PREFIXO.',
         "Atualize titulos e passos para refletir o card alvo e seus criterios.",
         "Priorize reaproveitamento inteligente ao inves de reescrever tudo do zero.",
     ],
@@ -21,7 +23,7 @@
     "output_schema": {
         "test_cases": [
             {
-                "title": "[PREFIXO] - Titulo ajustado ao card alvo",
+                "title": "FUNC - Login - Titulo ajustado ao card alvo",
                 "bdd_description": "DADO ...\nQUANDO ...\nENTAO ...",
                 "steps": [
                     {"action": "DADO ...", "expected": "...", "needs_evidence": false},

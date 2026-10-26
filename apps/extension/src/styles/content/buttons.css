@@ -1,0 +1,181 @@
+/* ==========================================================================
+   BUTTONS
+   Base:      .qualiflow-btn (bloco, largura total) | .qualiflow-btn-inline (compacto)
+   Variantes: -primary -secondary -success -danger -ghost
+   Extras:    .qualiflow-btn-icon (so icone, 40x40), .qualiflow-btn-sm, .qualiflow-btn-auto
+   ========================================================================== */
+
+.qualiflow-btn,
+.qualiflow-btn-inline,
+.qualiflow-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--qf-space-2);
+    min-height: var(--qf-hit);
+    padding: 0 var(--qf-space-4);
+    border: 1px solid transparent;
+    border-radius: var(--qf-radius-sm);
+    font-size: var(--qf-text-sm);
+    font-weight: var(--qf-weight-semibold);
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    user-select: none;
+    transition:
+        background-color var(--qf-duration-fast) var(--qf-ease),
+        border-color var(--qf-duration-fast) var(--qf-ease),
+        color var(--qf-duration-fast) var(--qf-ease),
+        box-shadow var(--qf-duration-fast) var(--qf-ease),
+        transform var(--qf-duration-fast) var(--qf-ease);
+}
+
+.qualiflow-btn {
+    width: 100%;
+    margin-bottom: var(--qf-space-3);
+    font-size: var(--qf-text-md);
+}
+
+.qualiflow-btn svg,
+.qualiflow-btn-inline svg,
+.qualiflow-btn-icon svg {
+    flex-shrink: 0;
+}
+
+.qualiflow-btn-inline.qualiflow-btn-sm,
+.qualiflow-btn.qualiflow-btn-sm,
+.qualiflow-btn-sm {
+    padding: 0 var(--qf-space-3);
+    font-size: var(--qf-text-xs);
+}
+
+.qualiflow-btn-auto { width: auto; }
+
+.qualiflow-btn-icon {
+    width: var(--qf-hit);
+    padding: 0;
+    background: transparent;
+    color: var(--qf-text-muted);
+}
+
+:is(.qualiflow-btn, .qualiflow-btn-inline, .qualiflow-btn-icon):active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+:is(.qualiflow-btn, .qualiflow-btn-inline, .qualiflow-btn-icon):disabled,
+:is(.qualiflow-btn, .qualiflow-btn-inline, .qualiflow-btn-icon)[aria-disabled='true'] {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* Variantes (funcionam combinadas ou sozinhas, como no markup legado) */
+.qualiflow-btn-primary {
+    background-color: var(--qf-info-strong-bg);
+    color: var(--qf-text-on-accent);
+}
+.qualiflow-btn-primary:hover:not(:disabled) { background-color: var(--qf-info-strong-bg-hover); }
+
+.qualiflow-btn-secondary {
+    background-color: var(--qf-border-strong);
+    color: var(--qf-text-on-accent);
+}
+.qualiflow-btn-secondary:hover:not(:disabled) { background-color: var(--qf-surface-hover); border-color: var(--qf-border-strong); }
+
+.qualiflow-btn-success {
+    background-color: var(--qf-success-strong);
+    color: var(--qf-text-on-accent);
+}
+.qualiflow-btn-success:hover:not(:disabled) { background-color: var(--qf-success-strong-hover); }
+
+.qualiflow-btn-danger {
+    background-color: var(--qf-danger-strong);
+    color: var(--qf-text-on-accent);
+}
+.qualiflow-btn-danger:hover:not(:disabled) { background-color: var(--qf-danger-strong-hover); }
+
+.qualiflow-btn-ghost {
+    background: transparent;
+    border-color: var(--qf-border-strong);
+    color: var(--qf-text-soft);
+}
+.qualiflow-btn-ghost:hover:not(:disabled) {
+    background: var(--qf-surface-raised);
+    color: var(--qf-text);
+}
+
+.qualiflow-btn-icon:hover:not(:disabled) {
+    background: var(--qf-surface-raised);
+    color: var(--qf-text);
+}
+
+/* Botao de fechar (modais, paineis) */
+.qualiflow-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--qf-hit);
+    height: var(--qf-hit);
+    padding: 0;
+    border: 0;
+    border-radius: var(--qf-radius-sm);
+    background: transparent;
+    color: var(--qf-text-muted);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color var(--qf-duration-fast) var(--qf-ease), background-color var(--qf-duration-fast) var(--qf-ease);
+}
+.qualiflow-close:hover { color: var(--qf-text); background: var(--qf-surface-raised); }
+
+/* Toggle switch (ex.: Modo Desenvolvedor) */
+.qualiflow-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: var(--qf-space-3);
+    margin-bottom: var(--qf-space-2);
+}
+.qualiflow-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+.qualiflow-toggle input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 1;
+}
+.qualiflow-toggle-slider {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    background: var(--qf-border-strong);
+    border-radius: var(--qf-radius-pill);
+    transition: background-color var(--qf-duration) var(--qf-ease);
+}
+.qualiflow-toggle-slider::before {
+    content: "";
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: var(--qf-text);
+    border-radius: 50%;
+    transition: transform var(--qf-duration) var(--qf-ease);
+}
+.qualiflow-toggle input:checked + .qualiflow-toggle-slider { background: var(--qf-accent); }
+.qualiflow-toggle input:checked + .qualiflow-toggle-slider::before { transform: translateX(20px); }
+.qualiflow-toggle input:focus-visible + .qualiflow-toggle-slider { box-shadow: var(--qf-focus-ring); }
+.qualiflow-toggle-label {
+    font-size: var(--qf-text-xs);
+    font-weight: var(--qf-weight-semibold);
+    color: var(--qf-text-muted);
+}

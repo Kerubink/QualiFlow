@@ -1,4 +1,4 @@
-# REVIEW — Skills próprias do QualiFlow
+ # REVIEW — Skills próprias do QualiFlow
 
 Três skills em `.claude/skills/`, cada uma cobrindo uma tarefa que se repete de verdade
 neste projeto (backend Flask/Python com prompts de IA versionados, testes offline, e um

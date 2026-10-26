@@ -1,0 +1,84 @@
+/* view-dashboard (deploy): classes extraidas dos estilos inline. Prefixo qualiflow-dep- */
+
+/* Paineis (resumo, regra, filtros, exportacao) */
+.qualiflow-dep-panel {
+    margin-bottom: var(--qf-space-4);
+    padding: var(--qf-space-3);
+    background: var(--qf-bg);
+    border: 1px solid var(--qf-border);
+    border-radius: var(--qf-radius-md);
+    color: var(--qf-text-softer);
+    font-size: var(--qf-text-sm);
+}
+.qualiflow-dep-panel-title { margin-bottom: var(--qf-space-1); font-weight: var(--qf-weight-semibold); color: var(--qf-text-soft); }
+.qualiflow-dep-panel-note { margin-top: var(--qf-space-1); color: var(--qf-text-muted); }
+.qualiflow-dep-summary { border-left: 3px solid var(--qf-warning); color: var(--qf-text-soft); }
+.qualiflow-dep-summary.is-ok { border-left-color: var(--qf-success); }
+.qualiflow-dep-summary-detail { margin-left: var(--qf-space-2); color: var(--qf-text-muted); }
+.qualiflow-dep-heading { margin: 0 0 var(--qf-space-4); }
+.qualiflow-dep-spaced { margin-bottom: var(--qf-space-4); }
+
+/* Filtros */
+.qualiflow-dep-filter-row { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--qf-space-3); }
+.qualiflow-dep-filter-grid {
+    flex: 1 1 320px;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+    gap: var(--qf-space-3);
+}
+.qualiflow-dep-filter-grid .qualiflow-select-input,
+.qualiflow-dep-filter-grid .qualiflow-input-edit,
+.qualiflow-dep-export-grid .qualiflow-select-input { width: 100%; }
+.qualiflow-dep-filter-info { margin-top: var(--qf-space-3); color: var(--qf-text-muted); font-size: var(--qf-text-xs); }
+.qualiflow-dep-bar-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--qf-space-3); }
+
+/* Graficos de resumo */
+.qualiflow-dep-chart { margin-bottom: var(--qf-space-3); }
+.qualiflow-dep-chart-head { display: flex; align-items: center; justify-content: space-between; gap: var(--qf-space-2); margin-bottom: var(--qf-space-2); }
+.qualiflow-dep-chart-title { font-weight: var(--qf-weight-semibold); color: var(--qf-text-soft); }
+.qualiflow-dep-chart-total { color: var(--qf-text-muted); font-size: var(--qf-text-xs); }
+.qualiflow-dep-chart-list { display: flex; flex-direction: column; gap: var(--qf-space-2); }
+.qualiflow-dep-chart-item-head { display: flex; justify-content: space-between; gap: var(--qf-space-2); margin-bottom: var(--qf-space-1); color: var(--qf-text-softer); font-size: var(--qf-text-xs); }
+.qualiflow-dep-bar-track { height: 10px; overflow: hidden; border-radius: var(--qf-radius-pill); background: var(--qf-surface-hover); }
+.qualiflow-dep-bar-fill { height: 100%; width: var(--pct, 0%); background: var(--c, var(--qf-info)); }
+
+/* Tabela de resultados */
+.qualiflow-dep-card-cell { padding-left: calc(var(--qf-space-3) + var(--depth, 0) * 18px) !important; }
+.qualiflow-dep-card-cell .qualiflow-deploy-title { display: inline-block; vertical-align: bottom; }
+.qualiflow-dep-muted-cell { color: var(--qf-text-muted) !important; }
+.qualiflow-dep-orig-state { color: var(--qf-text-muted); font-size: var(--qf-text-2xs); }
+.qualiflow-dep-link { text-decoration: none; }
+
+/* Estados */
+.qualiflow-dep-status { margin-top: var(--qf-space-2); color: var(--qf-text-muted); font-size: var(--qf-text-xs); }
+.qualiflow-dep-loading { text-align: center; font-style: normal; }
+
+/* Modal de exportacao */
+.qualiflow-dep-export-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+    gap: var(--qf-space-3);
+    margin-bottom: var(--qf-space-3);
+}
+.qualiflow-dep-export-cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(110px, 100%), 1fr));
+    gap: var(--qf-space-2);
+    margin-bottom: var(--qf-space-3);
+}
+.qualiflow-dep-col-label { display: flex; align-items: center; gap: var(--qf-space-2); min-height: var(--qf-hit); color: var(--qf-text-softer); font-size: var(--qf-text-sm); }
+.qualiflow-dep-export-actions { display: flex; flex-wrap: wrap; gap: var(--qf-space-2); margin-bottom: var(--qf-space-3); }
+.qualiflow-dep-export-previews { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--qf-space-3); }
+.qualiflow-dep-preview-label { margin-bottom: var(--qf-space-1); color: var(--qf-text-muted); font-size: var(--qf-text-sm); }
+.qualiflow-dep-export-output { width: 100%; min-height: 220px; font-family: monospace; font-size: var(--qf-text-xs); line-height: 1.4; }
+/* Previa do HTML colado no Teams: fundo claro intencional (o HTML exportado usa cores escuras inline) */
+.qualiflow-dep-export-preview {
+    max-height: 340px;
+    overflow: auto;
+    padding: var(--qf-space-3);
+    background: white;
+    border: 1px solid var(--qf-text-softer);
+    border-radius: var(--qf-radius-sm);
+}
+.qualiflow-dep-export-feedback { margin-top: var(--qf-space-2); color: var(--qf-text-muted); font-size: var(--qf-text-xs); }

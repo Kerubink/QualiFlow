@@ -1,0 +1,56 @@
+/* ==========================================================================
+   TABS - barra de abas (dashboard) e navegacao lateral (configuracoes)
+   Markup: <div role="tablist" class="qualiflow-tabs"> <button role="tab" aria-selected class="qualiflow-tab-btn [qualiflow-tab-active]">
+   ========================================================================== */
+
+.qualiflow-tabs {
+    display: flex;
+    gap: var(--qf-space-2);
+    margin-bottom: var(--qf-space-5);
+    border-bottom: 1px solid var(--qf-border);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.qualiflow-tabs::-webkit-scrollbar { display: none; }
+
+.qualiflow-tab-btn {
+    flex-shrink: 0;
+    min-height: var(--qf-hit);
+    padding: 0 var(--qf-space-4);
+    border: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    background: none;
+    color: var(--qf-text-muted);
+    font-size: var(--qf-text-sm);
+    font-weight: var(--qf-weight-semibold);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color var(--qf-duration-fast) var(--qf-ease), border-color var(--qf-duration-fast) var(--qf-ease), background-color var(--qf-duration-fast) var(--qf-ease);
+}
+.qualiflow-tab-btn:hover { color: var(--qf-text); background: var(--qf-surface-tint); }
+.qualiflow-tab-btn.qualiflow-tab-active,
+.qualiflow-tab-btn[aria-selected='true'] {
+    color: var(--qf-text-soft);
+    border-bottom-color: var(--qf-info);
+}
+
+/* Navegacao de configuracoes */
+.qualiflow-settings-nav { list-style: none; margin: 0; padding: 0; }
+.qualiflow-settings-nav-item {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: var(--qf-space-2) var(--qf-space-5);
+    border-left: 3px solid transparent;
+    color: var(--qf-text-muted);
+    font-weight: var(--qf-weight-medium);
+    cursor: pointer;
+    transition: color var(--qf-duration-fast) var(--qf-ease), background-color var(--qf-duration-fast) var(--qf-ease);
+}
+.qualiflow-settings-nav-item:hover { color: var(--qf-text); background: var(--qf-surface-tint); }
+.qualiflow-settings-nav-item.qualiflow-tab-active {
+    color: var(--qf-text);
+    background: var(--qf-accent-soft);
+    border-left-color: var(--qf-accent);
+}

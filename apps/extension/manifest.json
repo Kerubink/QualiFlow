@@ -17,7 +17,7 @@
         "<all_urls>"
     ],
     "background": {
-        "service_worker": "src/services/background.js",
+        "service_worker": "src/entrypoints/background/index.js",
         "type": "module"
     },
     "content_scripts": [
@@ -31,14 +31,7 @@
                 "src/styles/content.css"
             ],
             "js": [
-                "src/content/bridge.js",
-                "src/content/state.js",
-                "src/content/utils.js",
-                "src/content/ui.js",
-                "src/content/analyticsCharts.js",
-                "src/content/dashboard.js",
-                "src/content/scenarios.js",
-                "src/content/main.js"
+                "src/presentation/content/main.js"
             ]
         },
         {
@@ -49,14 +42,13 @@
                 "src/styles/content.css"
             ],
             "js": [
-                "src/content/bridge.js",
-                "src/content/runner.js"
+                "src/presentation/content/runner/main.js"
             ]
         }
     ],
-    "options_page": "src/pages/options/options.html",
+    "options_page": "src/presentation/options/options.html",
     "action": {
         "default_title": "QualiFlow Configurações",
-        "default_popup": "src/pages/options/options.html"
+        "default_popup": "src/presentation/options/options.html"
     }
 }

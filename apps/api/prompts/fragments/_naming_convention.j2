@@ -1,4 +1,4 @@
-Convencao de nomenclatura dos titulos: "[PREFIXO] - [Contexto/Componente]".
+Convencao de nomenclatura dos titulos: "PREFIXO - Contexto/Componente" (prefixo SEM colchetes).
 {% if track == "Frontend" %}
 Prefixos disponiveis (Frontend): UI, FUNC, UX, ACC, INT.
 {% elif track == "Backend" %}
@@ -7,3 +7,6 @@ Prefixos disponiveis (Backend): SCHEMA, FUNC, SEG, PERF, INT.
 Prefixos disponiveis (Frontend): UI, FUNC, UX, ACC, INT.
 Prefixos disponiveis (Backend): SCHEMA, FUNC, SEG, PERF, INT.
 {% endif %}
+
+O titulo DEVE comecar SEMPRE com UM prefixo escolhido da lista acima, seguido de " - ", SEM colchetes.
+Exemplo valido: "FUNC - Login - Rejeita senha invalida". Nunca escreva o texto literal "PREFIXO", nunca use colchetes e nunca use dois prefixos.

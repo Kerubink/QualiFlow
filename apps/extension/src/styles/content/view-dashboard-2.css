@@ -1,0 +1,99 @@
+/* view-dashboard-2: analytics, suporte, cards do board e modal de casos de teste (prefixo qualiflow-dsh-) */
+
+/* Cabecalhos e textos */
+.qualiflow-dsh-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--qf-space-3);
+    margin-bottom: var(--qf-space-4);
+}
+.qualiflow-dsh-head-center { align-items: center; margin-bottom: var(--qf-space-2); }
+.qualiflow-dsh-title { margin: 0; color: var(--qf-text); }
+.qualiflow-dsh-subtitle { margin-top: var(--qf-space-1); color: var(--qf-text-muted); font-size: var(--qf-text-sm); }
+.qualiflow-dsh-meta { margin-top: var(--qf-space-1); color: var(--qf-sky); font-size: var(--qf-text-xs); }
+.qualiflow-dsh-section { margin-bottom: var(--qf-space-4); }
+.qualiflow-dsh-section-lg { margin-bottom: var(--qf-space-5); }
+.qualiflow-dsh-sprint-filter { max-width: min(300px, 100%); }
+.qualiflow-dsh-note { margin-bottom: var(--qf-space-2); color: var(--qf-text-muted); font-size: var(--qf-text-sm); }
+.qualiflow-dsh-note:empty { display: none; }
+.qualiflow-dsh-empty-text { color: var(--qf-text-muted); }
+.qualiflow-dsh-empty { min-height: 120px; }
+
+/* Feedback textual (suporte) */
+.qualiflow-dsh-feedback { font-size: var(--qf-text-sm); color: var(--qf-text-muted); }
+.qualiflow-dsh-feedback.is-error { color: var(--qf-danger); }
+.qualiflow-dsh-feedback.is-warning { color: var(--qf-warning); }
+.qualiflow-dsh-feedback.is-success { color: var(--qf-success-solid); }
+
+/* Grids de cards */
+.qualiflow-dsh-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+    gap: var(--qf-space-3);
+}
+.qualiflow-dsh-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+    gap: var(--qf-space-3);
+    margin-bottom: var(--qf-space-3);
+}
+.qualiflow-dsh-summary { display: flex; flex-wrap: wrap; gap: var(--qf-space-2); margin-bottom: var(--qf-space-5); }
+.qualiflow-dsh-summary:empty { display: none; }
+.qualiflow-dsh-summary .qualiflow-badge { padding: var(--qf-space-1) var(--qf-space-3); font-size: var(--qf-text-sm); border-radius: var(--qf-radius-sm); }
+
+/* Card de work item */
+.qualiflow-dsh-item { display: flex; flex-direction: column; justify-content: space-between; gap: var(--qf-space-3); background: var(--qf-surface-raised); }
+.qualiflow-dsh-item-title { margin-bottom: var(--qf-space-2); color: var(--qf-text-soft); font-weight: var(--qf-weight-semibold); line-height: 1.4; overflow-wrap: anywhere; }
+.qualiflow-dsh-item-meta { display: flex; flex-direction: column; gap: var(--qf-space-2); color: var(--qf-text-muted); font-size: var(--qf-text-sm); }
+.qualiflow-dsh-item-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--qf-space-2); }
+.qualiflow-dsh-item-actions { display: flex; gap: var(--qf-space-2); }
+.qualiflow-dsh-item-actions > .qualiflow-btn-inline { flex: 1; }
+.qualiflow-dsh-warn { padding-left: var(--qf-space-2); cursor: help; }
+
+/* KPI */
+.qualiflow-dsh-kpi { padding: var(--qf-space-3); }
+.qualiflow-dsh-kpi-label { color: var(--qf-text-muted); font-size: var(--qf-text-xs); }
+.qualiflow-dsh-kpi-value { color: var(--qf-text); font-size: var(--qf-text-xl); font-weight: var(--qf-weight-bold); line-height: 1.2; }
+.qualiflow-dsh-kpi-value.is-success { color: var(--qf-success-solid); }
+.qualiflow-dsh-kpi-value.is-sky { color: var(--qf-sky); }
+
+/* Graficos / barras */
+.qualiflow-dsh-chart-title { margin-bottom: var(--qf-space-2); color: var(--qf-text-soft); font-weight: var(--qf-weight-bold); }
+.qualiflow-dsh-bars { display: flex; flex-direction: column; gap: var(--qf-space-2); }
+.qualiflow-dsh-bar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--qf-space-2);
+    margin-bottom: var(--qf-space-1);
+    color: var(--qf-text-softer);
+    font-size: var(--qf-text-xs);
+}
+.qualiflow-dsh-bar-track { height: 10px; overflow: hidden; background: var(--qf-bg); border: 1px solid var(--qf-border); border-radius: var(--qf-radius-pill); }
+.qualiflow-dsh-bar-fill { height: 100%; width: var(--pct, 0%); background: var(--c, var(--qf-info)); }
+.qualiflow-dsh-gauge-text { color: var(--qf-text-softer); font-weight: var(--qf-weight-bold); }
+
+/* Tabela de ranking */
+.qualiflow-dsh-table-card { margin-top: var(--qf-space-4); background: var(--qf-bg); border: 1px solid var(--qf-border); border-radius: var(--qf-radius-md); overflow: hidden; }
+.qualiflow-dsh-table-title { padding: var(--qf-space-2) var(--qf-space-3); border-bottom: 1px solid var(--qf-border); color: var(--qf-text-soft); font-weight: var(--qf-weight-bold); }
+.qualiflow-dsh-table-scroll { max-height: 320px; overflow: auto; }
+.qualiflow-dsh-table-scroll .qualiflow-table-wrap { border: 0; border-radius: 0; }
+.qualiflow-dsh-num { color: var(--qf-text-soft); font-weight: var(--qf-weight-bold); }
+.qualiflow-dsh-num.is-success { color: var(--qf-success-solid); }
+.qualiflow-dsh-num.is-sky { color: var(--qf-sky); }
+
+/* Modal de casos de teste */
+.qualiflow-dsh-tests-controls { margin-bottom: var(--qf-space-5); padding: var(--qf-space-3); background: var(--qf-bg); border: 1px solid var(--qf-border); border-radius: var(--qf-radius-sm); }
+.qualiflow-dsh-tests-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--qf-space-2); margin-bottom: var(--qf-space-3); }
+.qualiflow-dsh-tests-check { display: flex; align-items: center; gap: var(--qf-space-2); }
+.qualiflow-dsh-tests-check label { font-weight: var(--qf-weight-semibold); cursor: pointer; }
+.qualiflow-dsh-tests-count { color: var(--qf-text-muted); font-size: var(--qf-text-sm); }
+.qualiflow-dsh-tests-update { display: flex; flex-wrap: wrap; gap: var(--qf-space-2); }
+.qualiflow-dsh-tests-update .qualiflow-select-input { flex: 1; min-width: min(160px, 100%); }
+.qualiflow-dsh-tests-feedback { margin: var(--qf-space-2) 0 0; font-size: var(--qf-text-sm); }
+.qualiflow-dsh-test-item { display: flex; align-items: center; gap: var(--qf-space-3); margin-bottom: var(--qf-space-2); background: var(--qf-surface-raised); }
+.qualiflow-dsh-test-body { flex: 1; min-width: 0; }
+.qualiflow-dsh-test-title { margin-bottom: var(--qf-space-2); color: var(--qf-text-soft); font-weight: var(--qf-weight-semibold); overflow-wrap: anywhere; }
+.qualiflow-dsh-test-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--qf-space-2); }
