@@ -4,6 +4,22 @@ Backend Python (Flask) migrado a partir da versao original em Node.js/Express.
 
 Render Free -> Backend Python -> GitHub OAuth (QA) -> Chamada HTTP direta ao GitHub Copilot -> resposta JSON.
 
+## Copilot via GitHub Copilot CLI (modo padrao)
+
+Por padrao (`COPILOT_MODE=cli`) o backend executa o **GitHub Copilot CLI** (`providers/copilot_cli.py`) para
+gerar os casos de teste. Requisitos:
+
+1. `npm install -g @github/copilot` (ou `COPILOT_CLI_PATH` apontando para o executavel; no Windows o `copilot.cmd`).
+2. Login no GitHub pela extensao: o token da sessao OAuth e repassado ao CLI apenas via variavel de ambiente
+   `COPILOT_GITHUB_TOKEN` do processo filho (nunca em argumentos, logs ou disco). Se o CLI rejeitar esse token,
+   ele pode usar o login proprio da maquina (`copilot login`).
+3. A conta precisa ter o Copilot habilitado.
+
+O CLI roda em modo nao interativo (prompt por stdin), em diretorio temporario vazio, sem MCPs nem ferramentas.
+`COPILOT_MODEL` e opcional (vazio = modelo padrao do CLI); se um modelo nao estiver disponivel na conta, o proximo
+da lista e tentado. `GET /health` mostra `copilot.mode` e `copilot.cliAvailable`. Para voltar ao modo HTTP
+direto descrito abaixo, use `COPILOT_MODE=http`.
+
 ## Aviso importante sobre a integracao com o Copilot
 
 Esta versao **nao usa** o pacote `@github/copilot-sdk` (que e Node.js only e spawna o

@@ -131,6 +131,7 @@ def _exchange_github_token_for_copilot_token(github_token):
         )
 
         if response.status_code in (401, 403, 404):
+            print(f"[copilot] token exchange HTTP {response.status_code}: {response.text[:300]}")
             raise CopilotAuthError(
                 f"Falha ao obter token do Copilot (HTTP {response.status_code}). Confirme que a conta GitHub "
                 "logada tem uma assinatura ativa do Copilot e refaca o login."
