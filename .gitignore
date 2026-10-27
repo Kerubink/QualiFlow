@@ -4,4 +4,7 @@
 .venv
 __pycache__
 *.zip
-.claude/
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/checklist-pre-commit/
