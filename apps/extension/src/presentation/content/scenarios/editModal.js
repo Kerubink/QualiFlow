@@ -104,6 +104,7 @@ export function openEditModal(idx) {
         const has = selectedTags.some((t) => t.toLowerCase() === tag.toLowerCase());
         selectedTags = has ? selectedTags.filter((t) => t.toLowerCase() !== tag.toLowerCase()) : normalizeTagList([...selectedTags, tag]);
         renderTags();
+        if (tagInput) tagInput.focus();
     };
     const renderTags = () => {
         renderTrigger();
@@ -163,9 +164,13 @@ export function openEditModal(idx) {
                 if (typed) { tagInput.value = ''; if (!selectedTags.some((t) => t.toLowerCase() === typed.toLowerCase())) toggleTag(typed); else renderTags(); }
             }
         });
-        document.getElementById('edit-modal-tags').addEventListener('focusout', (e) => {
-            if (!e.relatedTarget || !e.currentTarget.contains(e.relatedTarget)) setOpen(false);
-        });
+        // Fecha so ao clicar fora (focusout fecharia a cada marcacao, pois a lista e redesenhada).
+        const tagsRoot = document.getElementById('edit-modal-tags');
+        const closeOnOutside = (e) => {
+            if (!tagsRoot.isConnected) return document.removeEventListener('mousedown', closeOnOutside, true);
+            if (!tagsRoot.contains(e.target)) setOpen(false);
+        };
+        document.addEventListener('mousedown', closeOnOutside, true);
         const loadTags = () => {
             boardTagsLoading = true;
             boardTagsError = null;
