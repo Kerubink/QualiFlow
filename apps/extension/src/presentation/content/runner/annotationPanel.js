@@ -497,6 +497,7 @@ export function openAnnotationPanel(srcDataUrl, onSave, options = {}) {
         record();
         updateButtons();
         redraw();
+        selectAfterPlace(obj.id);
     }
 
     function placeMarker(p) {
@@ -504,6 +505,17 @@ export function openAnnotationPanel(srcDataUrl, onSave, options = {}) {
         objects.push(obj);
         selectedId = obj.id;
         record();
+        updateButtons();
+        redraw();
+    }
+
+    // Depois de colocar uma forma/texto, volta para "Selecionar" com ela marcada: da para arrastar e
+    // redimensionar na hora. Caneta e marcador continuam ativos (varios tracos/numeros em sequencia).
+    function selectAfterPlace(id) {
+        if (tool === 'pen' || tool === 'marker' || tool === 'select' || tool === 'crop') return;
+        tool = 'select';
+        selectedId = id;
+        canvas.style.cursor = 'default';
         updateButtons();
         redraw();
     }
@@ -540,8 +552,11 @@ export function openAnnotationPanel(srcDataUrl, onSave, options = {}) {
             return;
         }
         if (tool === 'text') {
+            // Sem isso o navegador move o foco para o canvas apos o clique e o editor fecha vazio (blur).
+            e.preventDefault();
             const hit = pickTopmost(objects.filter((o) => o.type === 'text'), p.x, p.y, tol());
             if (hit) { selectedId = hit.id; beginTextEdit(hit); return; }
+            // Clique em area vazia cria texto novo.
             const obj = { id: newId(), type: 'text', x: p.x, y: p.y, w: 0, h: 0, text: '', color, size, fs: fontSizeFor(size) };
             beginTextEdit(obj, true);
             return;
@@ -633,8 +648,12 @@ export function openAnnotationPanel(srcDataUrl, onSave, options = {}) {
         stage.appendChild(textEditor);
         positionTextEditor();
         redraw();
-        textEditor.focus();
-        textEditor.select();
+        const editor = textEditor;
+        const focusEditor = () => { if (textEditor === editor) { editor.focus(); editor.select(); } };
+        focusEditor();
+        // Reforca o foco apos o fim do clique (mouseup/click do canvas) para o blur nao encerrar a edicao.
+        requestAnimationFrame(focusEditor);
+        setTimeout(focusEditor, 60);
         textEditor.addEventListener('input', () => {
             const o = objects.find((x) => x.id === editingId);
             if (o) { o.text = textEditor.value; }
@@ -682,6 +701,7 @@ export function openAnnotationPanel(srcDataUrl, onSave, options = {}) {
         } else {
             o.text = text;
             record();
+            selectAfterPlace(id);
         }
         updateButtons();
         redraw();

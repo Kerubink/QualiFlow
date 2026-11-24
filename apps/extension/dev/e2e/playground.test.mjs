@@ -251,6 +251,46 @@ test('evidencia: recorte, marca d\'agua, upload e retry automatico', { skip }, a
     assert.deepEqual(b.errors, []);
 });
 
+test('evidencia: ferramenta de texto aceita digitacao apos o clique real do mouse', { skip }, async () => {
+    await b.fresh();
+    await b.startRun();
+    await b.click('.step-evidence-btn[data-idx="0"]');
+    await b.click('#qe-screenshot');
+    await b.waitFor("!!document.getElementById('qualiflow-annotation-panel') && document.getElementById('qa-canvas').width > 0");
+    await b.click('[data-tool="text"]');
+    // Clique real (mousePressed/mouseReleased): dispara o foco padrao do navegador que fechava o editor.
+    const pt = await b.ev(`(() => { const r = document.getElementById('qa-canvas').getBoundingClientRect(); return { x: r.left + r.width / 3, y: r.top + r.height / 3 }; })()`);
+    await b.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: pt.x, y: pt.y, button: 'left', clickCount: 1 });
+    await b.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: pt.x, y: pt.y, button: 'left', clickCount: 1 });
+    await sleep(300);
+    assert.ok(await b.exists('.qualiflow-run-annot-textedit'), 'editor de texto continua aberto apos o clique');
+    assert.ok(await b.ev("document.activeElement === document.querySelector('.qualiflow-run-annot-textedit')"), 'editor com foco');
+    await b.send('Input.insertText', { text: 'Erro aqui' });
+    assert.equal(await b.ev("document.querySelector('.qualiflow-run-annot-textedit').value"), 'Erro aqui');
+    assert.deepEqual(b.errors, []);
+});
+
+test('evidencia: forma colocada fica selecionada e pode ser arrastada logo depois', { skip }, async () => {
+    await b.fresh();
+    await b.startRun();
+    await b.click('.step-evidence-btn[data-idx="0"]');
+    await b.click('#qe-screenshot');
+    await b.waitFor("!!document.getElementById('qualiflow-annotation-panel') && document.getElementById('qa-canvas').width > 0");
+    const ptr = (t, x, y) => b.ev(`(() => { const c = document.getElementById('qa-canvas'); const r = c.getBoundingClientRect(); const sx = r.width / c.width; c.dispatchEvent(new PointerEvent(${JSON.stringify(t)}, { bubbles: true, pointerId: 1, button: 0, clientX: r.left + ${x} * sx, clientY: r.top + ${y} * sx })); })()`);
+    // vermelho no ponto (x, y) em +-4 px: procura a borda da forma
+    const hasRed = (x, y) => b.ev(`(() => { const c = document.getElementById('qa-canvas'); const d = c.getContext('2d').getImageData(${x} - 4, ${y} - 4, 9, 9).data; for (let i = 0; i < d.length; i += 4) if (d[i] > 200 && d[i + 1] < 120 && d[i + 2] < 120) return true; return false; })()`);
+
+    await ptr('pointerdown', 100, 100); await ptr('pointermove', 300, 200); await ptr('pointerup', 300, 200);
+    assert.ok(await hasRed(100, 150), 'retangulo desenhado');
+    assert.equal(await b.ev("document.querySelector('[data-tool=\"select\"]').classList.contains('is-active')"), true, 'volta para Selecionar');
+
+    // arrasta pela borda (retangulo sem preenchimento): +300 em x, +200 em y
+    await ptr('pointerdown', 100, 150); await ptr('pointermove', 250, 250); await ptr('pointermove', 400, 350); await ptr('pointerup', 400, 350);
+    assert.equal(await hasRed(100, 150), false, 'saiu do lugar antigo');
+    assert.ok(await hasRed(400, 350), 'foi para o lugar novo');
+    assert.deepEqual(b.errors, []);
+});
+
 test('persistencia: recarregar a pagina oferece retomar a execucao', { skip }, async () => {
     await b.fresh();
     await b.startRun();
