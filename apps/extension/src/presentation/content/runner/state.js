@@ -6,5 +6,9 @@ export const S = {
     mediaRecorder: null,
     recordingChunks: [],
     recordingTimer: null,
-    recordingSeconds: 0
+    recordingSeconds: 0,
+    hubNotes: '',
+    probeEvents: [],
+    probeEnabled: true,
+    alertsEnabled: true
 };

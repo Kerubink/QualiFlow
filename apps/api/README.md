@@ -89,11 +89,16 @@ Fluxo de login (mesmo padrao do Copilot): `POST /auth/board/session/start`
 ate `status: "completed"` com um `sessionToken`.
 
 Endpoints de board (todos exigem `Authorization: Bearer <sessionToken>` do provedor
-correspondente): `/api/board/azure/*` (work-item, dashboard, test-case-analytics,
+correspondente): `/api/board/azure/*` (work-item, tags, dashboard, test-case-analytics,
 support-cards, project-iterations, deploy-validation, test-runner-cards,
 test-cases-for-work-item, test-points, test-run, run-results, adhoc-results,
-test-result, complete-run, bug, work-items-state, attachment, test-case) e
-`/api/board/jira/*` (issue, test-case). `org_url`/`project` (Azure) continuam sendo
+test-result (aceita `durationMs` opcional, total e por passo), complete-run, bug, work-items-state, attachment, test-case) e
+`/api/board/jira/*` (issue, test-case).
+
+`POST /api/board/azure/bug` aceita, alem de `title`/`comment`/`testCaseId`/`workItemId`, `severity` (`critical|high|medium|low`;
+ignorada se invalida; se o processo do projeto nao tiver o campo, o bug e criado sem ela) e `attachments`
+(`[{fileName, base64Content}]`, ate 10 arquivos, 15 MB cada e 40 MB no total; nome sanitizado). Resposta:
+`{success, bugId, attachmentErrors}`; falha em um anexo nao impede o bug. Anexo invalido responde 400 (`INVALID_BUG_PAYLOAD`). `org_url`/`project` (Azure) continuam sendo
 enviados pelo cliente a cada chamada (nao sao segredo); o `cloud_id` do Jira fica
 fixo na sessao, escolhido no momento do login.
 

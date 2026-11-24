@@ -16,6 +16,9 @@ class AzureBoardService:
     def list_projects(self, access_token, org_url):
         return self._gateway.list_projects(access_token, org_url)
 
+    def list_tags(self, access_token, org_url, project):
+        return self._gateway.list_tags(access_token, org_url, project)
+
     def get_work_item(self, access_token, org_url, project, work_item_id):
         return self._gateway.get_work_item(access_token, org_url, project, work_item_id)
 
@@ -59,20 +62,22 @@ class AzureBoardService:
         return self._gateway.add_adhoc_test_results(access_token, org_url, project, run_id, test_case_ids)
 
     def update_test_result(
-        self, access_token, org_url, project, run_id, result_id, outcome, comment=None, step_results=None
+        self, access_token, org_url, project, run_id, result_id, outcome, comment=None, step_results=None,
+        duration_ms=None
     ):
         return self._gateway.update_test_result(
-            access_token, org_url, project, run_id, result_id, outcome, comment, step_results
+            access_token, org_url, project, run_id, result_id, outcome, comment, step_results, duration_ms
         )
 
     def complete_run(self, access_token, org_url, project, run_id, state):
         return self._gateway.complete_test_run(access_token, org_url, project, run_id, state)
 
     def create_bug(
-        self, access_token, org_url, project, title, comment, test_case_id=None, linked_work_item_id=None
+        self, access_token, org_url, project, title, comment, test_case_id=None, linked_work_item_id=None,
+        severity=None, attachments=None
     ):
         return self._gateway.create_bug_from_failure(
-            access_token, org_url, project, title, comment, test_case_id, linked_work_item_id
+            access_token, org_url, project, title, comment, test_case_id, linked_work_item_id, severity, attachments
         )
 
     def update_work_items_state(self, access_token, org_url, project, ids, new_state):

@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QualiFlow Playground</title>
+<link rel="stylesheet" href="../src/styles/content.css">
+<style>
+  /* Estilos SOMENTE da pagina de demonstracao (simula o sistema sob teste, em tema claro). */
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 system-ui, sans-serif; background: #eef1f6; color: #1b2433; }
+  header.pg { background: #1f3a5f; color: #fff; padding: 14px 24px; }
+  header.pg h1 { margin: 0; font-size: 18px; }
+  header.pg p { margin: 2px 0 0; font-size: 12px; opacity: .8; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 20px; padding: 20px 24px 120px; align-items: start; }
+  @media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
+  .card { background: #fff; border: 1px solid #d5dbe5; border-radius: 8px; padding: 18px; margin-bottom: 16px; }
+  .card h2 { margin: 0 0 4px; font-size: 15px; }
+  .card .hint { margin: 0 0 14px; color: #5b6578; font-size: 12px; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 3px; }
+  .field small { display: block; color: #7a8497; font-size: 11px; margin-top: 2px; }
+  .field input { width: 100%; padding: 8px 10px; border: 1px solid #b9c2d1; border-radius: 6px; font: inherit; background: #fff; }
+  .field input:disabled, .field input[readonly] { background: #f0f2f6; color: #8b94a6; }
+  .field.ok input { border-color: #2e9e5b; }
+  .pg-btn { padding: 8px 14px; border: 1px solid #1f3a5f; border-radius: 6px; background: #1f3a5f; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+  .pg-btn.secondary { background: #fff; color: #1f3a5f; }
+  .pg-btn.danger { background: #fff; color: #b3261e; border-color: #b3261e; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; font-size: 12px; }
+  .opts label { display: flex; flex-direction: column; gap: 2px; font-weight: 600; }
+  .opts select, .opts input[type=number] { padding: 6px; border: 1px solid #b9c2d1; border-radius: 6px; font: inherit; }
+  .opts .check { flex-direction: row; align-items: center; gap: 6px; font-weight: 500; }
+  .aside { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; }
+  ol.todo { margin: 0; padding-left: 18px; font-size: 12px; color: #34405a; }
+  ol.todo li { margin-bottom: 4px; }
+  #log { font: 11px/1.4 ui-monospace, monospace; max-height: 320px; overflow: auto; }
+  #log details { border-bottom: 1px solid #e3e7ef; padding: 4px 0; }
+  #log summary { cursor: pointer; }
+  #log .act { font-weight: 700; color: #1f3a5f; }
+  #log .err { color: #b3261e; }
+  #log .dur { background: #fff3c4; padding: 0 3px; border-radius: 3px; }
+  #log pre { margin: 4px 0; white-space: pre-wrap; word-break: break-all; color: #34405a; }
+  .badge { font-size: 11px; padding: 1px 6px; border-radius: 10px; background: #e3e7ef; color: #34405a; }
+</style>
+</head>
+<body>
+<header class="pg">
+  <h1>QualiFlow Playground</h1>
+  <p>Sistema fictício para testar o runner sem Azure. O código do runner é o real (<code>src/</code>); só o backend é simulado.</p>
+</header>
+
+<div class="layout">
+  <main>
+    <section class="card">
+      <h2>Autopreenchimento: campos que devem ter ícone</h2>
+      <p class="hint">Cada campo usa uma forma diferente de identificação. Clique no ícone dentro do campo.</p>
+      <div class="grid">
+        <div class="field"><label for="f-cpf">CPF</label><input id="f-cpf" name="campo1" autocomplete="off"><small>rótulo com <code>for</code></small></div>
+        <div class="field"><label>CPF (só números)</label><input name="doc" maxlength="11" placeholder="Somente números"><small>maxlength=11, sem máscara</small></div>
+        <div class="field"><label>Documento</label><input name="numeroDocumentoCpf"><small>nome camelCase: numeroDocumentoCpf</small></div>
+        <div class="field"><label>CNPJ</label><input id="txtCnpj" placeholder="00.000.000/0000-00"><small>placeholder com máscara</small></div>
+        <div class="field"><label>CPF/CNPJ</label><input name="cpfCnpj" maxlength="18"><small>maxlength=18 vira CNPJ</small></div>
+        <div class="field"><label>CPF/CNPJ (curto)</label><input name="cpfCnpjCurto" maxlength="14"><small>maxlength=14 vira CPF</small></div>
+        <div class="field"><label>Carteira de Identidade</label><input name="identidade"><small>RG pelo rótulo</small></div>
+        <div class="field"><label for="f-rg">RG</label><input id="f-rg"></div>
+        <div class="field"><label>CEP</label><input name="zipCode"><small>CEP real (ViaCEP responde)</small></div>
+        <div class="field"><label>Código postal</label><input autocomplete="postal-code"><small>autocomplete=postal-code</small></div>
+        <div class="field"><label>E-mail</label><input type="email" name="contato"><small>type=email</small></div>
+        <div class="field"><label>Contato</label><input placeholder="Seu e-mail corporativo"><small>placeholder cita e-mail</small></div>
+        <div class="field"><label>Telefone</label><input type="tel"><small>type=tel</small></div>
+        <div class="field"><label>WhatsApp</label><input name="zap"><small>pelo rótulo/nome</small></div>
+        <div class="field"><label>Nome completo</label><input name="nomeCompleto" maxlength="40"><small>nome por rótulo; maxlength=40 habilita "tamanho máximo"</small></div>
+        <div class="field"><label>Data de nascimento</label><input name="dtNascimento" placeholder="DD/MM/AAAA"><small>texto dd/mm/aaaa</small></div>
+        <div class="field"><label>Nascimento (campo de data)</label><input type="date" name="nascimento"><small>type=date</small></div>
+        <div class="field"><label>Número do cartão</label><input name="cartao"><small>cartão de teste (Luhn)</small></div>
+        <div class="field"><label>CNH</label><input name="cnh"></div>
+        <div class="field"><label>PIS/NIS</label><input name="pis"></div>
+        <div class="field"><label>Nova senha</label><input type="password" name="novaSenha" autocomplete="new-password"><small>senha forte (só em "nova senha")</small></div>
+        <div class="field"><label>Confirmar senha</label><input type="password" name="confirmaSenha"></div>
+        <div class="field"><label>CPF com máscara em JS</label><input id="f-masked" name="cpfMask"><small>máscara reformata no evento <code>input</code></small></div>
+        <div class="field"><label>Valor interno</label><input id="f-masked-out" readonly placeholder="só dígitos (lido do campo ao lado)"></div>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="pg-btn secondary" id="add-dynamic" type="button">Adicionar campo CPF dinâmico</button>
+        <span class="badge">testa detecção de campos criados depois do carregamento</span>
+      </div>
+      <div id="dynamic-area" class="grid" style="margin-top:8px"></div>
+    </section>
+
+    <section class="card">
+      <h2>Gerar erros para o bug</h2>
+      <p class="hint">Dispare erros enquanto um passo está em andamento; depois reprove o passo e abra "Criar bug" para ver "Erros de console e rede".</p>
+      <div class="row">
+        <button class="pg-btn secondary" id="gen-console" type="button">Erro de console</button>
+        <button class="pg-btn secondary" id="gen-warn" type="button">Aviso de console</button>
+        <button class="pg-btn secondary" id="gen-throw" type="button">Exceção não tratada</button>
+        <button class="pg-btn secondary" id="gen-404" type="button">Requisição 404</button>
+        <button class="pg-btn secondary" id="gen-net" type="button">Falha de rede</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Autopreenchimento: campos que NÃO devem ter ícone</h2>
+      <p class="hint">Se algum deles ganhar ícone, é falso positivo.</p>
+      <div class="grid">
+        <div class="field"><label>Nome</label><input name="nome"><small>"nome" genérico não ganha ícone</small></div>
+        <div class="field"><label>Buscar</label><input type="search" placeholder="Buscar"></div>
+        <div class="field"><label>Senha de login</label><input type="password" name="cpf" autocomplete="current-password"><small>senha de login nunca ganha ícone</small></div>
+        <div class="field"><label>CPF somente leitura</label><input name="cpfRo" readonly value="000.000.000-00"></div>
+        <div class="field"><label>CPF desabilitado</label><input name="cpfDis" disabled></div>
+        <div class="field"><label>Hotel</label><input name="hotel"></div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="aside">
+    <section class="card">
+      <h2>Runner simulado</h2>
+      <p class="hint">Sessão fictícia: PBI #12345. Os CTs, o Test Run e os anexos são simulados.</p>
+      <div class="row">
+        <button class="pg-btn" id="open-runner" type="button">Abrir runner</button>
+        <button class="pg-btn danger" id="reset" type="button" title="Limpa o estado salvo e recarrega a página">Reiniciar tudo</button>
+      </div>
+      <div class="opts">
+        <label>CTs na run <input type="number" id="o-tc" min="1" max="12"></label>
+        <label>Latência (ms) <input type="number" id="o-lat" min="0" step="100"></label>
+        <label>Upload de anexo
+          <select id="o-att"><option value="success">Sucesso</option><option value="error">Erro</option><option value="slow">Lento (4 s)</option></select>
+        </label>
+        <div>
+          <label class="check"><input type="checkbox" id="o-save"> Falhar ao salvar resultado</label>
+          <label class="check"><input type="checkbox" id="o-bug"> Falhar ao criar bug</label>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>O que testar</h2>
+      <ol class="todo">
+        <li>Abra o runner e clique em <b>Iniciar execução</b>.</li>
+        <li>Veja os timers; pause o do CT; marque passos e confira o tempo em cada um.</li>
+        <li>Em <b>Evidências</b>: <b>Tela ou janela</b> (captura real de outro aplicativo), <b>Aba atual</b> (print falso com dados sensíveis), <b>Colar imagem</b> (Ctrl+V) e <b>Anexar arquivo</b>.</li>
+        <li>No editor: use <b>Ocultar</b> no CPF/cartão, marcadores 1-2-3, texto, selecionar/mover, Ctrl+Z.</li>
+        <li>Alterne o upload para <b>Erro</b> e use <b>Reenviar</b> no painel de evidências.</li>
+        <li>No cabeçalho do runner: cronômetro do CT com <b>pausar</b>, <b>HUB</b> (painel flutuante com tempos, estimativa, resultados, ambiente e atividade) e <b>engrenagem</b> (Autopreencher, Depurador CSS, Zerar cronômetro, Encerrar sessão).</li>
+        <li>Ative o <b>Depurador CSS</b>: contorno vermelho nos elementos desta página; passe o mouse para ver tamanho/padding/fonte e use Alt+clique para copiar o seletor.</li>
+        <li>Clique em <b>Pausar</b>: o runner e a página ficam bloqueados, os timers param e o autopreenchimento some. Minimize pausado (ícone de pausa) e rodando (tempo correndo na bolinha). Retome pela camada da página.</li>
+        <li>Aperte <b>F5</b> com uma run em andamento e reabra o runner: ele oferece <b>Retomar execução</b> (o estado vem do armazenamento).</li>
+        <li>Use os atalhos (menu da engrenagem lista todos): <b>Alt+1</b> aprova, <b>Alt+2</b> reprova, <b>Alt+Shift+S</b> captura rápida.</li>
+        <li>Abra o <b>Console</b> (ícone <code>&gt;_</code> no cabeçalho, ou Alt+J): veja os erros capturados, filtre, busque, expanda e copie.</li>
+        <li>Reprove um passo e use <b>Criar bug</b>: severidade, ambiente, erros de console/rede e imagens do passo.</li>
+        <li>No HUB: <b>Régua</b>, <b>Conta-gotas</b>, <b>Overlay de design</b>, <b>Acessibilidade</b> e <b>Desempenho</b>.</li>
+        <li>Ancore o runner à direita: o <b>Elemento fixo do site</b> (canto direito da página) deve sair da frente do runner e voltar ao desancorar.</li>
+        <li>Na barra de ferramentas: <b>Responsivo</b> (presets de janela), <b>Fontes e cores</b> e, em <b>Desempenho</b>, o histórico a cada carregamento (F5 e rode de novo).</li>
+        <li>Salve um CT e confira <code>durationMs</code> no log abaixo.</li>
+        <li>No cabeçalho do runner, desligue e ligue <b>Autopreencher</b>.</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>Mensagens ao background <span class="badge" id="log-count">0</span></h2>
+      <p class="hint">Tudo que o runner enviaria ao Azure. Anexos mostram só o tamanho do base64.</p>
+      <div id="log"></div>
+    </section>
+  </aside>
+</div>
+
+<script type="module" src="./playground.js"></script>
+<div id="fixed-demo" style="position:fixed;right:0;top:220px;z-index:50;padding:8px 12px;background:#1f3a5f;color:#fff;font:13px sans-serif;border-radius:6px 0 0 6px">Elemento fixo do site</div>
+</body>
+</html>

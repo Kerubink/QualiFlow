@@ -185,7 +185,7 @@
 .qualiflow-chk:checked { background-color: var(--qf-accent); border-color: var(--qf-accent); }
 
 /* ---------- Abas e configuracoes ---------- */
-.qualiflow-tabs { gap: var(--qf-space-1); padding: var(--qf-space-1); background: var(--qf-surface); border: 1px solid var(--qf-border); border-radius: 12px; width: fit-content; max-width: 100%; }
+.qualiflow-tabs { flex: 0 0 auto; gap: var(--qf-space-1); padding: var(--qf-space-1); background: var(--qf-surface); border: 1px solid var(--qf-border); border-radius: 12px; width: fit-content; max-width: 100%; }
 .qualiflow-tab-btn { margin: 0; border: 0; border-radius: 9px; min-height: 36px; }
 .qualiflow-tab-btn.qualiflow-tab-active,
 .qualiflow-tab-btn[aria-selected='true'] { background: var(--qf-accent-soft); color: var(--qf-accent-text); }

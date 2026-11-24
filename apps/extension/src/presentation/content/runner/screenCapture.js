@@ -1,14 +1,25 @@
-
+import { setCssDebugSuspended } from './cssDebug.js';
 const QUALIFLOW_UI_HIDE_IDS = [
     'qualiflow-evidence-overlay',
     'qualiflow-runner-window',
     'qualiflow-runner-bubble',
     'qualiflow-fab-container',
     'qualiflow-rec-floating',
+    'qualiflow-pause-guard',
+    'qualiflow-hub',
+    'qualiflow-console',
+    'qualiflow-css-debug-box',
+    'qualiflow-css-debug-label',
+    'qualiflow-toasts',
+    'qualiflow-ruler',
+    'qualiflow-design-overlay',
+    'qualiflow-design-controls',
+    'qualiflow-hl-box',
 ];
 
 /** Hide runner chrome so capture/recording does not include our overlays. */
 export function hideQualiFlowUiForCapture(exceptIds = []) {
+    setCssDebugSuspended(true);
     const skip = new Set(exceptIds);
     QUALIFLOW_UI_HIDE_IDS.forEach((id) => {
         if (skip.has(id)) return;
@@ -21,6 +32,7 @@ export function hideQualiFlowUiForCapture(exceptIds = []) {
 }
 
 export function showQualiFlowUiAfterCapture() {
+    setCssDebugSuspended(false);
     QUALIFLOW_UI_HIDE_IDS.forEach((id) => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -54,8 +66,8 @@ export function showRecordingFloatingBar(onStop) {
     bar.setAttribute('role', 'region');
     bar.setAttribute('aria-label', 'Gravação de tela em andamento');
     bar.innerHTML = `
-        <span id="qualiflow-rec-floating-timer" class="qualiflow-run-recbar-timer" role="timer" aria-live="off">⏺ 0s</span>
-        <button type="button" id="qualiflow-rec-floating-stop" class="qualiflow-btn-inline qualiflow-btn-danger qualiflow-btn-sm" aria-label="Parar gravação">⏹ Parar</button>
+        <span id="qualiflow-rec-floating-timer" class="qualiflow-run-recbar-timer" role="timer" aria-live="off">REC 00:00</span>
+        <button type="button" id="qualiflow-rec-floating-stop" class="qualiflow-btn-inline qualiflow-btn-danger qualiflow-btn-sm" aria-label="Parar gravação">Parar</button>
     `;
     document.body.appendChild(bar);
     bar.querySelector('#qualiflow-rec-floating-stop').onclick = () => onStop();

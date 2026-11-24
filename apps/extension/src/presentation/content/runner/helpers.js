@@ -14,6 +14,7 @@ export function sanitize(str) {
 export function setupDrag(w, header, hooks = {}) {
     let isDragging = false, startX, startY, initialLeft, initialTop;
     header.addEventListener('mousedown', (e) => {
+        if (typeof hooks.canStart === 'function' && !hooks.canStart()) return;
         isDragging = true; startX = e.clientX; startY = e.clientY;
         initialLeft = w.getBoundingClientRect().left; initialTop = w.getBoundingClientRect().top;
         document.body.style.userSelect = 'none';

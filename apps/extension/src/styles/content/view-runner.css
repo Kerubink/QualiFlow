@@ -80,10 +80,7 @@
     font-size: var(--qf-text-xs);
     font-weight: 400;
 }
-.qualiflow-run-status-icon { margin-bottom: var(--qf-space-2); font-size: var(--qf-text-xl); }
 
-.qualiflow-run-done { padding: var(--qf-space-5) var(--qf-space-4); text-align: center; }
-.qualiflow-run-done-icon { margin-bottom: var(--qf-space-4); font-size: var(--qf-text-2xl); }
 .qualiflow-run-done-title { margin-bottom: var(--qf-space-2); color: var(--qf-text); font-size: var(--qf-text-lg); font-weight: var(--qf-weight-bold); }
 .qualiflow-run-done-text { margin-bottom: var(--qf-space-5); color: var(--qf-text-muted); font-size: var(--qf-text-xs); }
 
@@ -104,9 +101,6 @@
 .qualiflow-btn-icon.qualiflow-run-del-btn:hover:not(:disabled) { background: var(--qf-danger-soft); color: var(--qf-danger-text); }
 
 /* ---------- Cards (sessao, CTs, projetos) ---------- */
-.qualiflow-run-session { margin-bottom: var(--qf-space-3); border-color: var(--qf-accent); }
-.qualiflow-run-session-title { margin-bottom: var(--qf-space-1); color: var(--qf-text); font-size: var(--qf-text-md); font-weight: var(--qf-weight-semibold); overflow-wrap: anywhere; }
-.qualiflow-run-session-actions { display: flex; flex-wrap: wrap; gap: var(--qf-space-2); margin-top: var(--qf-space-2); }
 
 .qualiflow-run-tc-card { margin-bottom: var(--qf-space-2); padding: var(--qf-space-3); }
 .qualiflow-run-id { margin-bottom: 2px; color: var(--qf-text-muted); font-size: var(--qf-text-2xs); font-weight: var(--qf-weight-semibold); }
@@ -143,8 +137,6 @@
 .qualiflow-run-proj-url { color: var(--qf-text-muted); font-size: var(--qf-text-xs); overflow-wrap: anywhere; }
 
 /* ---------- Execucao do CT ---------- */
-.qualiflow-run-topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--qf-space-2); margin-bottom: var(--qf-space-3); }
-.qualiflow-run-topbar-label { color: var(--qf-sky); font-size: var(--qf-text-xs); font-weight: var(--qf-weight-semibold); }
 
 .qualiflow-run-ct-card { position: relative; margin-bottom: var(--qf-space-3); padding: var(--qf-space-3); overflow: hidden; border-color: var(--qf-accent); background: var(--qf-surface); }
 .qualiflow-run-ct-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--qf-accent); }
@@ -187,14 +179,7 @@
 .qualiflow-run-comment { margin-bottom: var(--qf-space-4); }
 .qualiflow-run-comment textarea { min-height: 64px; resize: vertical; border-color: color-mix(in srgb, var(--qf-accent) 40%, transparent); }
 
-.qualiflow-run-step { margin-bottom: var(--qf-space-2); padding: var(--qf-space-3); background: var(--qf-surface); border: 1px solid var(--qf-border); border-radius: var(--qf-radius-sm); }
-.qualiflow-run-step-row { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--qf-space-3); }
-.qualiflow-run-step-num { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--qf-border); color: var(--qf-text-muted); font-size: var(--qf-text-2xs); font-weight: var(--qf-weight-bold); }
-.qualiflow-run-step-main { flex: 1 1 160px; min-width: 0; }
-.qualiflow-run-step-action { margin-bottom: var(--qf-space-1); color: var(--qf-text-soft); font-size: var(--qf-text-sm); overflow-wrap: anywhere; }
-.qualiflow-run-expected { padding: var(--qf-space-1) var(--qf-space-2); background: color-mix(in srgb, var(--qf-accent) 8%, transparent); border-left: 2px solid var(--qf-accent); color: var(--qf-accent-text); font-size: var(--qf-text-xs); overflow-wrap: anywhere; }
 .qualiflow-run-step-strip { margin-top: var(--qf-space-2); }
-.qualiflow-run-step-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--qf-space-1); }
 
 .qualiflow-btn-inline.qualiflow-run-step-btn { background: var(--qf-surface); border-color: var(--qf-border-strong); color: var(--qf-text-softer); }
 .qualiflow-btn-inline.qualiflow-run-step-btn.pass-btn.is-active { background: var(--qf-success-solid); border-color: var(--qf-success-solid); color: var(--qf-text-on-accent); }
@@ -238,13 +223,10 @@
 .qualiflow-run-ev-chip.is-uploaded { --ev-c: var(--qf-success-solid); }
 .qualiflow-run-ev-chip.is-error { --ev-c: var(--qf-danger); }
 .qualiflow-run-ev-chip-name { max-width: 9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.qualiflow-run-ev-chip-idx { color: var(--qf-text-subtle); }
 
 /* ---------- Painel de evidencias (dialog) ---------- */
 .qualiflow-dialog-overlay.qualiflow-run-overlay { z-index: var(--qf-z-floating); }
 .qualiflow-run-note { padding: var(--qf-space-2) var(--qf-space-4); border-bottom: 1px solid var(--qf-surface); color: var(--qf-text-muted); font-size: var(--qf-text-2xs); flex-shrink: 0; }
-.qualiflow-run-ev-actions { display: flex; flex-wrap: wrap; gap: var(--qf-space-2); padding: var(--qf-space-3) var(--qf-space-4); border-bottom: 1px solid var(--qf-surface); flex-shrink: 0; }
-.qualiflow-run-ev-actions .qualiflow-btn-inline { flex: 1 1 140px; }
 .qualiflow-run-rec-status { flex-shrink: 0; padding: var(--qf-space-2) var(--qf-space-4); background: var(--qf-danger-soft); border-bottom: 1px solid color-mix(in srgb, var(--qf-danger) 25%, transparent); color: var(--qf-danger-text); font-size: var(--qf-text-xs); font-weight: var(--qf-weight-semibold); }
 .qualiflow-run-ev-list { display: flex; flex: 1; flex-direction: column; gap: var(--qf-space-2); min-height: 0; padding: var(--qf-space-3) var(--qf-space-4); overflow-y: auto; }
 .qualiflow-run-ev-item { overflow: hidden; background: var(--qf-surface); border: 1px solid var(--qf-border); border-radius: var(--qf-radius-md); }
@@ -263,13 +245,7 @@
 .qualiflow-run-annot { position: fixed; inset: 0; z-index: var(--qf-z-dialog); display: flex; flex-direction: column; background: var(--qf-surface-sunken); color: var(--qf-text); }
 .qualiflow-run-annot-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--qf-space-2); flex-shrink: 0; padding: var(--qf-space-2) var(--qf-space-3); background: var(--qf-bg); border-bottom: 1px solid var(--qf-surface); }
 .qualiflow-run-annot-title { color: var(--qf-text); font-size: var(--qf-text-sm); font-weight: var(--qf-weight-bold); }
-.qualiflow-run-annot-tools { display: flex; flex-wrap: wrap; gap: var(--qf-space-1); }
-.qualiflow-btn-inline.qualiflow-run-annot-tool { background: var(--qf-surface); border-color: var(--qf-border-strong); color: var(--qf-text-softer); }
-.qualiflow-btn-inline.qualiflow-run-annot-tool.is-active { background: var(--qf-accent); border-color: var(--qf-accent); color: var(--qf-text-on-accent); }
 .qualiflow-run-annot-color { width: var(--qf-hit); height: var(--qf-hit); padding: 2px; border: 0; border-radius: var(--qf-radius-xs); background: transparent; cursor: pointer; }
-.qualiflow-run-annot-size { width: min(90px, 25vw); accent-color: var(--qf-accent); }
-.qualiflow-run-annot-stage { position: relative; display: flex; flex: 1; align-items: center; justify-content: center; min-height: 0; overflow: hidden; }
-.qualiflow-run-annot-canvas { max-width: 100%; max-height: 100%; object-fit: contain; cursor: crosshair; touch-action: none; }
 
 /* ---------- Barra de gravacao flutuante ---------- */
 .qualiflow-run-recbar {
@@ -291,3 +267,407 @@
     font-size: var(--qf-text-xs);
 }
 .qualiflow-run-recbar-timer { min-width: 70px; color: var(--qf-danger); font-weight: var(--qf-weight-bold); }
+
+/* ==========================================================================
+   Execucao (resumo, timers, passos), evidencias e editor de anotacoes
+   ========================================================================== */
+.qualiflow-run-mono { font-family: var(--qf-font-mono); font-variant-numeric: tabular-nums; }
+    min-height: 28px;
+    padding: 0 var(--qf-space-3);
+    border: 1px solid var(--qf-border-strong);
+    border-radius: var(--qf-radius-pill);
+    background: transparent;
+    color: var(--qf-text-muted);
+    font: inherit;
+    font-size: var(--qf-text-2xs);
+    font-weight: var(--qf-weight-semibold);
+    cursor: pointer;
+}
+
+/* ---------- Resumo da execucao ---------- */
+.qualiflow-run-summary { margin-bottom: var(--qf-space-3); padding: var(--qf-space-3); background: var(--qf-surface); border: 1px solid var(--qf-border); border-radius: var(--qf-radius-md); }
+.qualiflow-run-stats { display: flex; flex-wrap: wrap; align-items: center; gap: var(--qf-space-4); margin-bottom: var(--qf-space-3); }
+.qualiflow-run-stat { display: flex; flex-direction: column; gap: 2px; }
+.qualiflow-run-stat-label { color: var(--qf-text-muted); font-size: var(--qf-text-2xs); font-weight: var(--qf-weight-semibold); letter-spacing: 0.04em; text-transform: uppercase; }
+.qualiflow-run-stat-value { color: var(--qf-text); font-size: var(--qf-text-lg); font-weight: var(--qf-weight-bold); line-height: 1.1; }
+.qualiflow-run-stat-value.is-pass { color: var(--qf-success-text); }
+.qualiflow-run-stat-value.is-fail { color: var(--qf-danger-text); }
+.qualiflow-run-counters { display: flex; gap: var(--qf-space-2); margin-left: auto; }
+.qualiflow-run-counter { display: flex; flex-direction: column; align-items: center; min-width: 46px; padding: var(--qf-space-1) var(--qf-space-2); border: 1px solid var(--qf-border); border-radius: var(--qf-radius-sm); background: var(--qf-bg); color: var(--qf-text-soft); font-size: var(--qf-text-md); font-weight: var(--qf-weight-bold); line-height: 1.2; }
+.qualiflow-run-counter small { color: var(--qf-text-muted); font-size: var(--qf-text-2xs); font-weight: var(--qf-weight-medium); }
+.qualiflow-run-counter.is-pass { color: var(--qf-success-text); border-color: color-mix(in srgb, var(--qf-success-solid) 40%, transparent); }
+.qualiflow-run-counter.is-fail { color: var(--qf-danger-text); border-color: color-mix(in srgb, var(--qf-danger) 40%, transparent); }
+.qualiflow-run-counter.is-other { color: var(--qf-warning-text); border-color: color-mix(in srgb, var(--qf-warning) 40%, transparent); }
+
+.qualiflow-run-progress { height: 6px; overflow: hidden; border-radius: var(--qf-radius-pill); background: var(--qf-border); }
+.qualiflow-run-progress > span { display: block; height: 100%; border-radius: inherit; background: var(--qf-accent); transition: width var(--qf-duration) var(--qf-ease); }
+
+.qualiflow-run-stepper { display: flex; flex-wrap: wrap; gap: var(--qf-space-1); margin-top: var(--qf-space-3); }
+.qualiflow-run-chip { min-width: 28px; height: 28px; padding: 0 var(--qf-space-2); border: 1px solid var(--qf-border-strong); border-radius: var(--qf-radius-sm); background: var(--qf-bg); color: var(--qf-text-muted); font: inherit; font-size: var(--qf-text-xs); font-weight: var(--qf-weight-semibold); cursor: pointer; }
+.qualiflow-run-chip:hover { border-color: var(--qf-accent); }
+.qualiflow-run-chip:focus-visible { outline: none; box-shadow: var(--qf-focus-ring); }
+.qualiflow-run-chip.is-pass { border-color: var(--qf-success-solid); background: color-mix(in srgb, var(--qf-success-solid) 18%, transparent); color: var(--qf-success-text); }
+.qualiflow-run-chip.is-fail { border-color: var(--qf-danger); background: var(--qf-danger-soft); color: var(--qf-danger-text); }
+.qualiflow-run-chip.is-other { border-color: var(--qf-warning); background: var(--qf-warning-soft); color: var(--qf-warning-text); }
+.qualiflow-run-chip.is-current { box-shadow: 0 0 0 2px var(--qf-accent); color: var(--qf-text); }
+
+/* ---------- Cartao do CT e cronometro ---------- */
+
+/* ---------- Passos ---------- */
+.qualiflow-run-steps-head { display: flex; align-items: center; gap: var(--qf-space-2); margin: var(--qf-space-4) 0 var(--qf-space-2); }
+.qualiflow-run-steps-title { color: var(--qf-text); font-size: var(--qf-text-sm); font-weight: var(--qf-weight-bold); }
+.qualiflow-run-steps-count { color: var(--qf-text-muted); font-size: var(--qf-text-xs); }
+
+.qualiflow-run-step { margin-bottom: var(--qf-space-2); background: var(--qf-surface); border: 1px solid var(--qf-border); border-left: 3px solid var(--qf-border-strong); border-radius: var(--qf-radius-sm); }
+.qualiflow-run-step.is-pass { border-left-color: var(--qf-success-solid); }
+.qualiflow-run-step.is-fail { border-left-color: var(--qf-danger); }
+.qualiflow-run-step.is-current { border-color: var(--qf-accent); border-left-color: var(--qf-accent); box-shadow: 0 0 0 1px var(--qf-accent-soft); }
+.qualiflow-run-step-head { display: flex; align-items: center; gap: var(--qf-space-2); padding: var(--qf-space-2) var(--qf-space-3); border-bottom: 1px solid var(--qf-border-faint, var(--qf-border)); }
+.qualiflow-run-step-num { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 22px; height: 22px; border-radius: var(--qf-radius-xs); background: var(--qf-border); color: var(--qf-text-soft); font-size: var(--qf-text-2xs); font-weight: var(--qf-weight-bold); }
+.qualiflow-run-step-title { color: var(--qf-text); font-size: var(--qf-text-xs); font-weight: var(--qf-weight-semibold); }
+.qualiflow-run-step-badge { padding: 1px var(--qf-space-2); border-radius: var(--qf-radius-pill); background: var(--qf-neutral-soft, var(--qf-border)); color: var(--qf-text-muted); font-size: var(--qf-text-2xs); font-weight: var(--qf-weight-semibold); }
+.qualiflow-run-step-badge.is-pass { background: color-mix(in srgb, var(--qf-success-solid) 18%, transparent); color: var(--qf-success-text); }
+.qualiflow-run-step-badge.is-fail { background: var(--qf-danger-soft); color: var(--qf-danger-text); }
+.qualiflow-run-step-now { padding: 1px var(--qf-space-2); border-radius: var(--qf-radius-pill); background: var(--qf-accent-soft); color: var(--qf-accent-text); font-size: var(--qf-text-2xs); font-weight: var(--qf-weight-semibold); }
+.qualiflow-run-step-time { color: var(--qf-text-muted); font-size: var(--qf-text-2xs); }
+.qualiflow-run-step-body { display: flex; flex-direction: column; gap: var(--qf-space-2); padding: var(--qf-space-3); }
+.qualiflow-run-field-label { margin-bottom: 2px; color: var(--qf-text-muted); font-size: var(--qf-text-2xs); font-weight: var(--qf-weight-bold); letter-spacing: 0.04em; text-transform: uppercase; }
+.qualiflow-run-field-text { color: var(--qf-text); font-size: var(--qf-text-sm); line-height: 1.5; overflow-wrap: anywhere; }
+.qualiflow-run-field-empty { color: var(--qf-text-subtle); font-style: italic; }
+.qualiflow-run-field-expected { padding: var(--qf-space-2) var(--qf-space-3); border-left: 2px solid var(--qf-accent); border-radius: 0 var(--qf-radius-xs) var(--qf-radius-xs) 0; background: color-mix(in srgb, var(--qf-accent) 8%, transparent); }
+.qualiflow-run-field-expected .qualiflow-run-field-label { color: var(--qf-accent-text); }
+.qualiflow-run-step-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--qf-space-1); padding: 0 var(--qf-space-3) var(--qf-space-3); }
+.qualiflow-run-step-fail { margin: 0 var(--qf-space-3) var(--qf-space-3); }
+.qualiflow-run-step .qualiflow-run-step-strip { margin-top: 0; }
+
+.qualiflow-run-footer { position: sticky; bottom: calc(var(--qf-space-4) * -1); z-index: var(--qf-z-raised); display: flex; align-items: center; gap: var(--qf-space-2); margin: var(--qf-space-4) calc(var(--qf-space-4) * -1) calc(var(--qf-space-4) * -1); padding: var(--qf-space-3) var(--qf-space-4); border-top: 1px solid var(--qf-border); background: var(--qf-bg); }
+
+.qualiflow-run-done { padding: var(--qf-space-5) var(--qf-space-4); text-align: center; }
+.qualiflow-run-done-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--qf-space-5); margin-bottom: var(--qf-space-5); }
+.qualiflow-run-done-stats .qualiflow-run-stat { align-items: center; }
+.qualiflow-run-done-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--qf-space-2); }
+
+/* ---------- Painel de evidencias ---------- */
+.qualiflow-run-ev-group { padding: var(--qf-space-3) var(--qf-space-4) 0; flex-shrink: 0; }
+.qualiflow-run-ev-group-title { margin-bottom: var(--qf-space-1); color: var(--qf-text-muted); font-size: var(--qf-text-2xs); font-weight: var(--qf-weight-bold); letter-spacing: 0.04em; text-transform: uppercase; }
+.qualiflow-run-ev-actions { display: flex; flex-wrap: wrap; gap: var(--qf-space-2); }
+.qualiflow-run-ev-actions .qualiflow-btn-inline { flex: 1 1 140px; }
+.qualiflow-run-ev-msg { flex-shrink: 0; padding: 0 var(--qf-space-4); color: var(--qf-text-muted); font-size: var(--qf-text-xs); }
+.qualiflow-run-ev-msg:not(:empty) { padding-top: var(--qf-space-2); }
+.qualiflow-run-ev-msg.is-error { color: var(--qf-danger-text); }
+.qualiflow-run-ev-chip-kind { color: var(--qf-text-muted); }
+.qualiflow-run-ev-chip-state { color: var(--ev-c); font-weight: var(--qf-weight-semibold); }
+
+/* ---------- Editor de anotacoes ---------- */
+.qualiflow-run-annot-group { display: flex; flex-wrap: wrap; align-items: center; gap: var(--qf-space-1); padding-right: var(--qf-space-2); border-right: 1px solid var(--qf-border); }
+.qualiflow-run-annot-group:last-of-type { border-right: 0; }
+.qualiflow-run-annot-tool,
+.qualiflow-run-annot-action {
+    min-height: 30px;
+    padding: 0 var(--qf-space-3);
+    border: 1px solid var(--qf-border-strong);
+    border-radius: var(--qf-radius-sm);
+    background: var(--qf-surface);
+    color: var(--qf-text-softer);
+    font: inherit;
+    font-size: var(--qf-text-xs);
+    font-weight: var(--qf-weight-medium);
+    cursor: pointer;
+}
+.qualiflow-run-annot-tool:hover:not(:disabled),
+.qualiflow-run-annot-action:hover:not(:disabled) { background: var(--qf-surface-hover); }
+.qualiflow-run-annot-tool.is-active { border-color: var(--qf-accent); background: var(--qf-accent); color: var(--qf-text-on-accent); }
+.qualiflow-run-annot-action:disabled { opacity: 0.4; cursor: not-allowed; }
+.qualiflow-run-annot-tool:focus-visible,
+.qualiflow-run-annot-action:focus-visible,
+.qualiflow-run-annot-swatch:focus-visible { outline: none; box-shadow: var(--qf-focus-ring); }
+.qualiflow-run-annot-zoomval { min-width: 56px; font-family: var(--qf-font-mono); }
+.qualiflow-run-annot-swatch { width: 22px; height: 22px; padding: 0; border: 2px solid var(--qf-border-strong); border-radius: 50%; background: var(--sw); cursor: pointer; }
+.qualiflow-run-annot-swatch.is-active { border-color: var(--qf-text); box-shadow: 0 0 0 2px var(--qf-accent); }
+.qualiflow-run-annot-field { display: inline-flex; align-items: center; gap: var(--qf-space-1); color: var(--qf-text-muted); font-size: var(--qf-text-xs); }
+.qualiflow-run-annot-field input[type="range"] { width: min(90px, 20vw); accent-color: var(--qf-accent); }
+.qualiflow-run-annot-stage { position: relative; display: flex; flex: 1; min-height: 0; overflow: auto; padding: var(--qf-space-4); background: repeating-conic-gradient(var(--qf-surface-sunken) 0% 25%, var(--qf-bg) 0% 50%) 0 0 / 20px 20px; }
+.qualiflow-run-annot-canvas { flex-shrink: 0; margin: auto; box-shadow: var(--qf-shadow-lg); cursor: crosshair; touch-action: none; }
+.qualiflow-run-annot-textedit { position: absolute; z-index: var(--qf-z-raised); min-width: 120px; margin: 0; border: 1px dashed var(--qf-accent); border-radius: var(--qf-radius-xs); background: rgba(255, 255, 255, 0.85); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-weight: 600; line-height: 1.25; resize: none; overflow: hidden; outline: none; }
+.qualiflow-run-annot-status { flex-shrink: 0; padding: var(--qf-space-1) var(--qf-space-4); border-top: 1px solid var(--qf-border); background: var(--qf-bg); color: var(--qf-text-muted); font-size: var(--qf-text-2xs); }
+
+/* ---------- Autopreenchimento de campos ---------- */
+.qualiflow-autofill-layer { position: fixed; inset: 0; z-index: var(--qf-z-fab); pointer-events: none; }
+.qualiflow-autofill-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid var(--qf-accent);
+    border-radius: 50%;
+    background: var(--qf-surface);
+    color: var(--qf-accent-text);
+    box-shadow: var(--qf-shadow-sm);
+    cursor: pointer;
+    pointer-events: auto;
+    opacity: 0.85;
+    transition: background-color var(--qf-duration-fast) var(--qf-ease), color var(--qf-duration-fast) var(--qf-ease), opacity var(--qf-duration-fast) var(--qf-ease);
+}
+.qualiflow-autofill-icon:hover,
+.qualiflow-autofill-icon:focus-visible { opacity: 1; background: var(--qf-accent); color: var(--qf-text-on-accent); outline: none; }
+.qualiflow-autofill-icon.is-done { border-color: var(--qf-success-solid); background: var(--qf-success-solid); color: var(--qf-text-on-accent); }
+
+/* ---------- Pausa do teste ---------- */
+.qualiflow-run-bubble-time { font-size: var(--qf-text-sm); font-weight: var(--qf-weight-bold); white-space: nowrap; }
+.qualiflow-run-paused-banner { margin-bottom: var(--qf-space-3); padding: var(--qf-space-2) var(--qf-space-3); border: 1px solid color-mix(in srgb, var(--qf-warning) 55%, transparent); border-left-width: 3px; border-radius: var(--qf-radius-sm); background: var(--qf-warning-soft); color: var(--qf-warning-text); font-size: var(--qf-text-xs); font-weight: var(--qf-weight-semibold); }
+.is-locked { opacity: 0.4; pointer-events: none; user-select: none; }
+
+/* Camada sobre o sistema testado: abaixo do runner e da bolinha, que seguem clicaveis */
+.qualiflow-pause-guard { position: fixed; inset: 0; z-index: calc(var(--qf-z-fab) - 10); display: flex; align-items: center; justify-content: center; padding: var(--qf-space-4); background: rgba(4, 5, 10, 0.55); backdrop-filter: blur(2px); cursor: not-allowed; }
+.qualiflow-pause-guard-card { display: flex; flex-direction: column; align-items: center; gap: var(--qf-space-2); max-width: 360px; padding: var(--qf-space-5) var(--qf-space-6); border: 1px solid var(--qf-warning); border-radius: var(--qf-radius-lg); background: var(--qf-surface); box-shadow: var(--qf-shadow-lg); color: var(--qf-warning-text); text-align: center; cursor: default; }
+.qualiflow-pause-guard-title { color: var(--qf-text); font-size: var(--qf-text-lg); font-weight: var(--qf-weight-bold); }
+.qualiflow-pause-guard-text { margin-bottom: var(--qf-space-2); color: var(--qf-text-muted); font-size: var(--qf-text-sm); }
+
+/* ==========================================================================
+   Layout reorganizado: cabecalho com cronometro/HUB/configuracoes, resumo compacto,
+   menu de configuracoes, HUB flutuante e depurador CSS
+   ========================================================================== */
+
+/* ---------- Cabecalho ---------- */
+.qualiflow-run-header-actions { gap: 2px; }
+.qualiflow-run-timerbar { display: flex; align-items: center; gap: var(--qf-space-1); margin-right: var(--qf-space-2); padding: 2px 3px 2px var(--qf-space-3); border: 1px solid var(--qf-border-strong); border-radius: var(--qf-radius-pill); background: var(--qf-bg); }
+.qualiflow-run-timerbar[hidden] { display: none; }
+.qualiflow-run-timerbar[data-mode="paused"] { border-color: var(--qf-warning); background: var(--qf-warning-soft); }
+.qualiflow-run-hdr-time { color: var(--qf-text); font-size: var(--qf-text-sm); font-weight: var(--qf-weight-bold); }
+.qualiflow-run-hdr-pause { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%; background: var(--qf-surface-raised); color: var(--qf-text-soft); cursor: pointer; }
+.qualiflow-run-hdr-pause:hover { background: var(--qf-border-strong); }
+.qualiflow-run-hdr-pause:focus-visible { outline: none; box-shadow: var(--qf-focus-ring); }
+.qualiflow-run-timerbar[data-mode="paused"] .qualiflow-run-hdr-pause { background: var(--qf-warning); color: #1a1200; }
+.qualiflow-run-hdr-icon[aria-pressed="true"],
+.qualiflow-run-hdr-icon[aria-expanded="true"] { background: var(--qf-accent-soft); color: var(--qf-accent-text); }
+
+/* ---------- Menu de configuracoes ---------- */
+.qualiflow-run-menu { position: absolute; top: 46px; right: var(--qf-space-2); z-index: var(--qf-z-dropdown); min-width: 280px; padding: var(--qf-space-1); border: 1px solid var(--qf-border-strong); border-radius: var(--qf-radius-md); background: var(--qf-surface-raised); box-shadow: var(--qf-shadow-lg); }
+.qualiflow-run-menu[hidden] { display: none; }
+.qualiflow-run-menu-item { display: flex; align-items: center; justify-content: space-between; gap: var(--qf-space-3); width: 100%; padding: var(--qf-space-2) var(--qf-space-3); border: 0; border-radius: var(--qf-radius-sm); background: transparent; color: var(--qf-text); font: inherit; font-size: var(--qf-text-sm); text-align: left; cursor: pointer; }
+.qualiflow-run-menu-item:hover:not(:disabled) { background: var(--qf-surface-hover); }
+.qualiflow-run-menu-item:focus-visible { outline: none; box-shadow: var(--qf-focus-ring); }
+.qualiflow-run-menu-item:disabled { opacity: 0.4; cursor: not-allowed; }
+.qualiflow-run-menu-item.is-danger { color: var(--qf-danger-text); }
+.qualiflow-run-menu-text { display: flex; flex-direction: column; gap: 2px; }
+.qualiflow-run-menu-text small { color: var(--qf-text-muted); font-size: var(--qf-text-2xs); }
+.qualiflow-run-menu-sep { height: 1px; margin: var(--qf-space-1) var(--qf-space-2); background: var(--qf-border); }
+.qualiflow-run-switch { position: relative; flex-shrink: 0; width: 30px; height: 16px; border-radius: var(--qf-radius-pill); background: var(--qf-border-strong); transition: background-color var(--qf-duration-fast) var(--qf-ease); }
+.qualiflow-run-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; transition: transform var(--qf-duration-fast) var(--qf-ease); }
+.qualiflow-run-switch.is-on { background: var(--qf-accent); }
+.qualiflow-run-switch.is-on::after { transform: translateX(14px); }
+
+/* ---------- Linha da sessao e resumo compacto ---------- */
+.qualiflow-run-session-line { display: flex; align-items: baseline; gap: var(--qf-space-2); min-width: 0; margin-bottom: var(--qf-space-2); }
+.qualiflow-run-session-line .qualiflow-run-eyebrow { flex-shrink: 0; margin: 0; }
+.qualiflow-run-session-name { overflow: hidden; color: var(--qf-text-muted); font-size: var(--qf-text-xs); text-overflow: ellipsis; white-space: nowrap; }
+
+.qualiflow-run-summary { margin-bottom: var(--qf-space-2); padding: var(--qf-space-2) var(--qf-space-3); }
+.qualiflow-run-summary-row { display: flex; align-items: center; gap: var(--qf-space-3); margin-bottom: var(--qf-space-2); color: var(--qf-text-muted); font-size: var(--qf-text-xs); }
+.qualiflow-run-summary-pos b,
+.qualiflow-run-summary-total .qualiflow-run-mono { color: var(--qf-text); font-weight: var(--qf-weight-bold); }
+.qualiflow-run-summary .qualiflow-run-counters { gap: var(--qf-space-1); }
+.qualiflow-run-summary .qualiflow-run-counter { flex-direction: row; align-items: baseline; gap: 3px; min-width: 0; padding: 1px var(--qf-space-2); font-size: var(--qf-text-xs); }
+.qualiflow-run-summary .qualiflow-run-counter small { font-size: var(--qf-text-2xs); }
+.qualiflow-run-summary .qualiflow-run-stepper { margin-top: var(--qf-space-2); }
+.qualiflow-run-summary .qualiflow-run-chip { min-width: 24px; height: 24px; }
+
+.qualiflow-run-ct-card { margin-bottom: var(--qf-space-2); padding: var(--qf-space-2) var(--qf-space-3) var(--qf-space-2) var(--qf-space-4); }
+.qualiflow-run-ct-card .qualiflow-run-ct-title { font-size: var(--qf-text-sm); }
+.qualiflow-run-steps-head { margin-top: var(--qf-space-3); }
+.qualiflow-run-actions { margin-top: var(--qf-space-3); }
+
+/* ---------- HUB ---------- */
+.qualiflow-hub { position: fixed; z-index: var(--qf-z-floating); display: flex; flex-direction: column; width: 340px; max-width: calc(100vw - 16px); max-height: min(78vh, 680px); border: 1px solid var(--qf-border-strong); border-radius: var(--qf-radius-md); background: var(--qf-bg); box-shadow: var(--qf-shadow-lg); color: var(--qf-text-muted); font-size: var(--qf-text-xs); overflow: hidden; }
+.qualiflow-hub-head { display: flex; align-items: center; justify-content: space-between; padding: 2px var(--qf-space-2) 2px var(--qf-space-3); border-bottom: 1px solid var(--qf-border); background: var(--qf-surface); cursor: move; user-select: none; }
+.qualiflow-hub-title { color: var(--qf-text); font-size: var(--qf-text-sm); font-weight: var(--qf-weight-semibold); }
+.qualiflow-hub-body { flex: 1; min-height: 0; padding: 0 var(--qf-space-3) var(--qf-space-3); overflow-y: auto; }
+.qualiflow-hub-section { padding: var(--qf-space-3) 0; border-bottom: 1px solid var(--qf-border); }
+.qualiflow-hub-section:last-child { border-bottom: 0; }
+.qualiflow-hub-section h3 { margin: 0 0 var(--qf-space-2); color: var(--qf-text-soft); font-size: var(--qf-text-2xs); font-weight: var(--qf-weight-bold); letter-spacing: 0.05em; text-transform: uppercase; }
+.qualiflow-hub-section-head { display: flex; align-items: center; justify-content: space-between; }
+.qualiflow-hub-section-head h3 { margin-bottom: var(--qf-space-2); }
+.qualiflow-hub-grid { display: grid; gap: 3px; margin: 0; }
+.qualiflow-hub-kv { display: flex; align-items: baseline; justify-content: space-between; gap: var(--qf-space-3); }
+.qualiflow-hub-kv dt { flex-shrink: 0; color: var(--qf-text-muted); }
+.qualiflow-hub-kv dd { margin: 0; color: var(--qf-text); text-align: right; overflow-wrap: anywhere; }
+.qualiflow-hub-kv .is-bad { color: var(--qf-danger-text); font-weight: var(--qf-weight-bold); }
+.qualiflow-hub-link { padding: 0; border: 0; background: none; color: var(--qf-accent-text); font: inherit; font-size: var(--qf-text-2xs); cursor: pointer; }
+.qualiflow-hub-link:hover { text-decoration: underline; }
+.qualiflow-hub-bugs { display: flex; flex-wrap: wrap; gap: var(--qf-space-1); margin-top: var(--qf-space-2); }
+.qualiflow-hub-pill { padding: 1px var(--qf-space-2); border: 1px solid color-mix(in srgb, var(--qf-danger) 45%, transparent); border-radius: var(--qf-radius-pill); color: var(--qf-danger-text); font-size: var(--qf-text-2xs); }
+.qualiflow-hub-muted { color: var(--qf-text-subtle); }
+.qualiflow-hub-events { display: flex; flex-direction: column; gap: 3px; margin: 0; padding: 0; list-style: none; }
+.qualiflow-hub-events li { display: flex; gap: var(--qf-space-2); }
+.qualiflow-hub-events time { flex-shrink: 0; color: var(--qf-text-subtle); }
+.qualiflow-hub-events span { color: var(--qf-text-soft); overflow-wrap: anywhere; }
+
+/* ---------- Depurador CSS ---------- */
+.qualiflow-cssdbg-box { position: fixed; z-index: calc(var(--qf-z-fab) - 20); display: none; box-sizing: border-box; border: 2px solid #ff2d2d; background: rgba(255, 45, 45, 0.1); pointer-events: none; }
+.qualiflow-cssdbg-label { position: fixed; z-index: calc(var(--qf-z-fab) - 19); display: none; max-width: min(460px, 92vw); padding: 6px 8px; border: 1px solid #ff2d2d; border-radius: 6px; background: #1a0b0b; color: #ffd6d6; font: 11px/1.5 var(--qf-font-mono); word-break: break-word; pointer-events: none; }
+.qualiflow-cssdbg-title { color: #fff; font-weight: 700; }
+.qualiflow-cssdbg-hint { margin-top: 2px; color: #ff9a9a; }
+
+/* ==========================================================================
+   Avisos, bug, selecao de CTs, ancoragem, ferramentas de UI e menu do autofill
+   ========================================================================== */
+
+/* ---------- Avisos (toasts) ---------- */
+.qualiflow-toasts { position: fixed; top: var(--qf-space-4); right: var(--qf-space-4); z-index: var(--qf-z-floating); display: flex; flex-direction: column; gap: var(--qf-space-2); width: min(360px, calc(100vw - 32px)); pointer-events: none; }
+.qualiflow-toast { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--qf-space-3); padding: var(--qf-space-3) var(--qf-space-3) var(--qf-space-3) var(--qf-space-4); border: 1px solid var(--qf-border-strong); border-left-width: 3px; border-radius: var(--qf-radius-sm); background: var(--qf-surface-raised); box-shadow: var(--qf-shadow-md); color: var(--qf-text); font-size: var(--qf-text-sm); pointer-events: auto; }
+.qualiflow-toast.is-success { border-left-color: var(--qf-success-solid); }
+.qualiflow-toast.is-warn { border-left-color: var(--qf-warning); }
+.qualiflow-toast.is-error { border-left-color: var(--qf-danger); }
+.qualiflow-toast.is-info { border-left-color: var(--qf-accent); }
+.qualiflow-toast-close { flex-shrink: 0; padding: 0 var(--qf-space-1); border: 0; background: none; color: var(--qf-text-muted); font-size: var(--qf-text-lg); line-height: 1; cursor: pointer; }
+.qualiflow-toast-close:hover { color: var(--qf-text); }
+#qualiflow-runner-bubble.is-alert { animation: qualiflow-bubble-alert 1s ease-in-out infinite; border-color: var(--qf-warning); }
+@keyframes qualiflow-bubble-alert { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--qf-warning) 35%, transparent); } }
+@media (prefers-reduced-motion: reduce) { #qualiflow-runner-bubble.is-alert { animation: none; box-shadow: 0 0 0 4px var(--qf-warning); } }
+
+/* ---------- Dialogo de bug ---------- */
+.qualiflow-run-bug-form { display: flex; flex-direction: column; gap: var(--qf-space-3); padding: var(--qf-space-3) var(--qf-space-4) var(--qf-space-4); overflow-y: auto; }
+.qualiflow-run-bug-field { display: flex; flex-direction: column; gap: var(--qf-space-1); color: var(--qf-text-muted); font-size: var(--qf-text-xs); font-weight: var(--qf-weight-semibold); }
+.qualiflow-run-bug-field input, .qualiflow-run-bug-field select, .qualiflow-run-bug-field textarea { width: 100%; font-weight: 400; }
+.qualiflow-run-bug-include { display: flex; flex-direction: column; gap: var(--qf-space-2); margin: 0; padding: var(--qf-space-2) var(--qf-space-3); border: 1px solid var(--qf-border); border-radius: var(--qf-radius-sm); color: var(--qf-text-soft); font-size: var(--qf-text-xs); }
+.qualiflow-run-bug-include legend { padding: 0 var(--qf-space-1); color: var(--qf-text-muted); font-weight: var(--qf-weight-semibold); }
+.qualiflow-run-bug-include label { display: flex; align-items: center; gap: var(--qf-space-2); }
+.qualiflow-run-bug-include input:disabled + * { opacity: 0.5; }
+.qualiflow-run-bug-actions { display: flex; justify-content: flex-end; gap: var(--qf-space-2); }
+.qualiflow-run-ev-nopreview { padding: var(--qf-space-4); background: var(--qf-bg); color: var(--qf-text-subtle); font-size: var(--qf-text-xs); text-align: center; }
+
+/* ---------- Selecao de CTs e retomada ---------- */
+.qualiflow-run-select-bar { display: flex; align-items: center; gap: var(--qf-space-3); margin-bottom: var(--qf-space-2); color: var(--qf-text-muted); font-size: var(--qf-text-xs); }
+.qualiflow-run-tc-card.is-selectable { display: flex; align-items: flex-start; gap: var(--qf-space-3); cursor: pointer; }
+.qualiflow-run-tc-card.is-selectable:not(.is-checked) { opacity: 0.55; }
+.qualiflow-run-tc-card.is-selectable input { margin-top: 2px; accent-color: var(--qf-accent); }
+.qualiflow-run-tc-info { display: flex; flex-direction: column; min-width: 0; }
+.qualiflow-run-restore { padding: var(--qf-space-4); text-align: center; }
+.qualiflow-run-restore-text { margin: var(--qf-space-2) 0 var(--qf-space-4); color: var(--qf-text-muted); font-size: var(--qf-text-xs); }
+.qualiflow-run-done-actions + .qualiflow-run-done-actions { margin-top: var(--qf-space-2); }
+
+/* ---------- Atalhos ---------- */
+.qualiflow-run-shortcuts { padding: var(--qf-space-3) var(--qf-space-4) var(--qf-space-4); overflow-y: auto; }
+.qualiflow-run-shortcuts dl { display: grid; gap: var(--qf-space-2); margin: var(--qf-space-3) 0; }
+.qualiflow-run-shortcuts dl > div { display: flex; align-items: center; justify-content: space-between; gap: var(--qf-space-4); font-size: var(--qf-text-sm); }
+.qualiflow-run-shortcuts dt { flex-shrink: 0; }
+.qualiflow-run-shortcuts dd { margin: 0; color: var(--qf-text-soft); text-align: right; }
+.qualiflow-run-shortcuts kbd { padding: 1px 6px; border: 1px solid var(--qf-border-strong); border-bottom-width: 2px; border-radius: var(--qf-radius-xs); background: var(--qf-surface-raised); color: var(--qf-text); font: var(--qf-text-xs) var(--qf-font-mono); }
+
+/* ---------- Janela ancorada ---------- */
+#qualiflow-runner-window.is-docked { top: 0 !important; right: 0 !important; bottom: 0 !important; left: auto !important; width: 420px !important; height: 100vh !important; height: 100dvh !important; max-height: none; border-radius: 0; border-width: 0 0 0 1px; resize: none; }
+#qualiflow-runner-window.is-docked .qualiflow-run-header { cursor: default; }
+
+/* ---------- HUB: novas secoes ---------- */
+.qualiflow-hub-probe { display: flex; flex-wrap: wrap; gap: var(--qf-space-1) var(--qf-space-3); margin-top: var(--qf-space-2); font-size: var(--qf-text-2xs); }
+.qualiflow-hub-probe-item { color: var(--qf-text-muted); }
+.qualiflow-hub-probe-item.is-bad { color: var(--qf-danger-text); font-weight: var(--qf-weight-bold); }
+.qualiflow-hub-actions-row { display: flex; flex-wrap: wrap; gap: var(--qf-space-1); }
+.qualiflow-hub-btn { padding: var(--qf-space-1) var(--qf-space-3); border: 1px solid var(--qf-border-strong); border-radius: var(--qf-radius-sm); background: var(--qf-surface); color: var(--qf-text-softer); font: inherit; font-size: var(--qf-text-2xs); font-weight: var(--qf-weight-semibold); cursor: pointer; }
+.qualiflow-hub-btn:hover { background: var(--qf-surface-hover); }
+.qualiflow-hub-btn:focus-visible { outline: none; box-shadow: var(--qf-focus-ring); }
+.qualiflow-hub-btn[aria-pressed="true"] { border-color: var(--qf-accent); background: var(--qf-accent-soft); color: var(--qf-accent-text); }
+.qualiflow-hub-subhead { margin-top: var(--qf-space-3); color: var(--qf-text-soft); font-weight: var(--qf-weight-semibold); }
+.qualiflow-hub-counts { margin: var(--qf-space-1) 0; padding-left: var(--qf-space-4); }
+.qualiflow-hub-issues { display: flex; flex-direction: column; gap: var(--qf-space-1); margin: var(--qf-space-1) 0 0; padding: 0; list-style: none; }
+.qualiflow-hub-issues li { display: flex; flex-direction: column; }
+.qualiflow-hub-issues code { color: var(--qf-text-subtle); font: 10px var(--qf-font-mono); overflow-wrap: anywhere; }
+.qualiflow-hub-color { display: flex; align-items: center; gap: var(--qf-space-2); margin-top: var(--qf-space-2); }
+.qualiflow-hub-swatch { width: 18px; height: 18px; border: 1px solid var(--qf-border-strong); border-radius: var(--qf-radius-xs); }
+.qualiflow-hub-rate.is-good { color: var(--qf-success-text); }
+.qualiflow-hub-rate.is-needs-improvement { color: var(--qf-warning-text); }
+.qualiflow-hub-rate.is-poor { color: var(--qf-danger-text); font-weight: var(--qf-weight-bold); }
+
+/* ---------- Regua, overlay de design e destaque ---------- */
+.qualiflow-ruler { position: fixed; inset: 0; z-index: calc(var(--qf-z-fab) - 8); cursor: crosshair; background: rgba(0, 0, 0, 0.04); }
+.qualiflow-ruler-hint { position: absolute; top: var(--qf-space-3); left: 50%; transform: translateX(-50%); padding: var(--qf-space-1) var(--qf-space-3); border-radius: var(--qf-radius-pill); background: var(--qf-surface); color: var(--qf-text); font-size: var(--qf-text-xs); pointer-events: none; }
+.qualiflow-ruler-rect { position: absolute; box-sizing: border-box; border: 1px dashed #00b4ff; background: rgba(0, 180, 255, 0.15); pointer-events: none; }
+.qualiflow-ruler-rect[hidden], .qualiflow-ruler-label[hidden] { display: none; }
+.qualiflow-ruler-label { position: absolute; padding: 2px 8px; border-radius: var(--qf-radius-xs); background: #00506e; color: #fff; font: 11px var(--qf-font-mono); white-space: nowrap; pointer-events: none; }
+.qualiflow-design-img { position: fixed; top: 0; left: 0; z-index: calc(var(--qf-z-fab) - 15); max-width: none; pointer-events: none; }
+.qualiflow-design-img.is-movable { pointer-events: auto; cursor: move; }
+.qualiflow-design-panel { position: fixed; bottom: var(--qf-space-4); left: var(--qf-space-4); z-index: calc(var(--qf-z-fab) - 14); display: flex; flex-wrap: wrap; align-items: center; gap: var(--qf-space-3); max-width: calc(100vw - 32px); padding: var(--qf-space-2) var(--qf-space-3); border: 1px solid var(--qf-border-strong); border-radius: var(--qf-radius-md); background: var(--qf-surface); box-shadow: var(--qf-shadow-md); color: var(--qf-text-soft); font-size: var(--qf-text-xs); }
+.qualiflow-design-panel label { display: flex; align-items: center; gap: var(--qf-space-1); }
+.qualiflow-hl-box { position: fixed; z-index: calc(var(--qf-z-fab) - 12); display: none; box-sizing: border-box; border: 3px solid #ffb300; border-radius: 3px; background: rgba(255, 179, 0, 0.18); pointer-events: none; }
+
+/* ---------- Menu do icone de autopreenchimento ---------- */
+.qualiflow-autofill-menu { position: fixed; display: flex; flex-direction: column; min-width: 220px; padding: var(--qf-space-1); border: 1px solid var(--qf-border-strong); border-radius: var(--qf-radius-md); background: var(--qf-surface-raised); box-shadow: var(--qf-shadow-lg); pointer-events: auto; }
+.qualiflow-autofill-menu button { padding: var(--qf-space-2) var(--qf-space-3); border: 0; border-radius: var(--qf-radius-sm); background: transparent; color: var(--qf-text); font: inherit; font-size: var(--qf-text-sm); text-align: left; cursor: pointer; }
+.qualiflow-autofill-menu button:hover, .qualiflow-autofill-menu button:focus-visible { background: var(--qf-surface-hover); outline: none; }
+
+/* ---------- Editor: botao de destaque ---------- */
+.qualiflow-run-annot-action.is-primary { border-color: var(--qf-accent); background: var(--qf-accent); color: var(--qf-text-on-accent); }
+.qualiflow-run-annot-action[hidden] { display: none; }
+
+/* ---------- Console integrado ---------- */
+.qualiflow-run-hdr-icon { position: relative; }
+.qualiflow-run-hdr-badge { position: absolute; top: 1px; right: 1px; min-width: 15px; padding: 0 4px; border-radius: var(--qf-radius-pill); background: var(--qf-danger); color: #fff; font-size: 9px; font-weight: var(--qf-weight-bold); line-height: 15px; text-align: center; pointer-events: none; }
+.qualiflow-run-hdr-badge[hidden] { display: none; }
+.qualiflow-console { position: fixed; z-index: var(--qf-z-floating); display: flex; flex-direction: column; width: 560px; height: 340px; min-width: 320px; min-height: 180px; max-width: calc(100vw - 16px); max-height: 80vh; border: 1px solid var(--qf-border-strong); border-radius: var(--qf-radius-md); background: var(--qf-bg); box-shadow: var(--qf-shadow-lg); color: var(--qf-text-muted); font-size: var(--qf-text-xs); overflow: hidden; resize: both; }
+.qualiflow-console-head { display: flex; align-items: center; gap: var(--qf-space-2); padding: 2px var(--qf-space-2) 2px var(--qf-space-3); border-bottom: 1px solid var(--qf-border); background: var(--qf-surface); cursor: move; user-select: none; }
+.qualiflow-console-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--qf-space-2); padding: var(--qf-space-2) var(--qf-space-3); border-bottom: 1px solid var(--qf-border); }
+.qualiflow-console-filters { display: flex; gap: var(--qf-space-1); }
+.qualiflow-console-chip { padding: 2px var(--qf-space-3); border: 1px solid var(--qf-border-strong); border-radius: var(--qf-radius-pill); background: transparent; color: var(--qf-text-muted); font: inherit; font-size: var(--qf-text-2xs); font-weight: var(--qf-weight-semibold); cursor: pointer; }
+.qualiflow-console-chip[aria-pressed="true"] { border-color: var(--qf-accent); background: var(--qf-accent-soft); color: var(--qf-accent-text); }
+.qualiflow-console-chip:focus-visible { outline: none; box-shadow: var(--qf-focus-ring); }
+.qualiflow-console-search { flex: 1 1 120px; min-width: 0; padding: 3px var(--qf-space-2); border: 1px solid var(--qf-border-strong); border-radius: var(--qf-radius-sm); background: var(--qf-surface-sunken); color: var(--qf-text); font: inherit; }
+.qualiflow-console-note { padding: var(--qf-space-2) var(--qf-space-3); border-bottom: 1px solid var(--qf-border); background: var(--qf-warning-soft); color: var(--qf-warning-text); }
+.qualiflow-console-note[hidden] { display: none; }
+.qualiflow-console-list { flex: 1; min-height: 0; margin: 0; padding: 0; overflow-y: auto; list-style: none; font-family: var(--qf-font-mono); }
+.qualiflow-console-row { border-bottom: 1px solid var(--qf-border); border-left: 3px solid transparent; }
+.qualiflow-console-row.is-error { border-left-color: var(--qf-danger); background: color-mix(in srgb, var(--qf-danger) 7%, transparent); }
+.qualiflow-console-row.is-warning { border-left-color: var(--qf-warning); background: color-mix(in srgb, var(--qf-warning) 7%, transparent); }
+.qualiflow-console-row.is-network { border-left-color: var(--qf-sky); }
+.qualiflow-console-main { display: flex; align-items: baseline; gap: var(--qf-space-2); width: 100%; padding: 3px var(--qf-space-3) 3px var(--qf-space-2); border: 0; background: transparent; color: var(--qf-text); font: inherit; font-size: 11px; text-align: left; cursor: pointer; }
+.qualiflow-console-main:hover { background: var(--qf-surface-hover); }
+.qualiflow-console-main:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--qf-accent); }
+.qualiflow-console-main time { flex-shrink: 0; color: var(--qf-text-subtle); }
+.qualiflow-console-tag { flex-shrink: 0; min-width: 56px; font-weight: var(--qf-weight-bold); font-size: 10px; }
+.qualiflow-console-row.is-error .qualiflow-console-tag { color: var(--qf-danger-text); }
+.qualiflow-console-row.is-warning .qualiflow-console-tag { color: var(--qf-warning-text); }
+.qualiflow-console-row.is-network .qualiflow-console-tag { color: var(--qf-sky); }
+.qualiflow-console-msg { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qualiflow-console-row.is-open .qualiflow-console-msg { white-space: normal; overflow-wrap: anywhere; }
+.qualiflow-console-detail { margin: 0; padding: var(--qf-space-2) var(--qf-space-3) var(--qf-space-2) var(--qf-space-5); background: var(--qf-surface-sunken); color: var(--qf-text-soft); font: 11px/1.5 var(--qf-font-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.qualiflow-console-empty { padding: var(--qf-space-5); color: var(--qf-text-subtle); font-family: var(--qf-font); text-align: center; }
+.qualiflow-console-foot { display: flex; align-items: center; gap: var(--qf-space-3); padding: var(--qf-space-1) var(--qf-space-3); border-top: 1px solid var(--qf-border); background: var(--qf-surface); font-size: var(--qf-text-2xs); }
+.qualiflow-console-foot label { display: flex; align-items: center; gap: var(--qf-space-1); cursor: pointer; }
+
+/* Painel de criterios de aceite do card pai (reaproveita o contêiner do HUB) */
+.qualiflow-criteria { width: 420px; resize: both; }
+.qualiflow-criteria-title { color: var(--qf-text); font-size: var(--qf-text-sm); font-weight: var(--qf-weight-semibold); overflow-wrap: anywhere; }
+.qualiflow-criteria-rich { color: var(--qf-text); font-size: var(--qf-text-sm); line-height: 1.5; overflow-wrap: anywhere; user-select: text; }
+.qualiflow-criteria-rich ul, .qualiflow-criteria-rich ol { margin: var(--qf-space-1) 0; padding-left: 1.4em; }
+.qualiflow-criteria-rich p, .qualiflow-criteria-rich div { margin: 0 0 var(--qf-space-1); }
+.qualiflow-criteria-rich table { border-collapse: collapse; }
+.qualiflow-criteria-rich td, .qualiflow-criteria-rich th { padding: 2px 6px; border: 1px solid var(--qf-border); }
+.qualiflow-criteria-rich pre, .qualiflow-criteria-rich code { white-space: pre-wrap; }
+
+/* Barra de ferramentas de UI/UX (janela propria, reaproveita o contêiner do HUB) */
+.qualiflow-uitoolbar { width: 380px; }
+.qualiflow-uitoolbar-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--qf-space-1); padding: var(--qf-space-2) var(--qf-space-3); border-bottom: 1px solid var(--qf-border); }
+.qualiflow-uitool { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: var(--qf-space-2) var(--qf-space-1); border: 1px solid var(--qf-border-strong); border-radius: var(--qf-radius-sm); background: var(--qf-surface); color: var(--qf-text); font: inherit; font-size: var(--qf-text-2xs); cursor: pointer; }
+.qualiflow-uitool:hover { background: var(--qf-surface-hover); }
+.qualiflow-uitool:focus-visible { outline: none; box-shadow: var(--qf-focus-ring); }
+.qualiflow-uitool[aria-pressed="true"] { border-color: var(--qf-accent); background: var(--qf-accent-soft); color: var(--qf-accent-text); }
+.qualiflow-uitoolbar .qualiflow-hub-body { padding-top: var(--qf-space-2); }
+.qualiflow-uifold { border: 1px solid var(--qf-border); border-radius: var(--qf-radius-sm); margin-bottom: var(--qf-space-2); }
+.qualiflow-uifold-head { display: flex; align-items: center; gap: var(--qf-space-2); width: 100%; padding: var(--qf-space-2) var(--qf-space-3); border: 0; background: var(--qf-surface); color: var(--qf-text); font: inherit; font-size: var(--qf-text-xs); font-weight: var(--qf-weight-semibold); text-align: left; cursor: pointer; }
+.qualiflow-uifold-head:focus-visible { outline: none; box-shadow: var(--qf-focus-ring); }
+.qualiflow-uifold-sum { margin-left: auto; color: var(--qf-text-muted); font-weight: normal; }
+.qualiflow-uifold-chevron { width: 6px; height: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform .12s; }
+.qualiflow-uifold-head[aria-expanded="true"] .qualiflow-uifold-chevron { transform: rotate(45deg); }
+.qualiflow-uifold-body { padding: var(--qf-space-2) var(--qf-space-3); }
+.qualiflow-uifold-body[hidden] { display: none; }
+.qualiflow-uistyle-list { display: flex; flex-direction: column; gap: 2px; margin: 0 0 var(--qf-space-2); padding: 0; list-style: none; }
+.qualiflow-uistyle-list li { display: flex; align-items: center; gap: var(--qf-space-2); }
+.qualiflow-uistyle-list li .qualiflow-hub-muted { margin-left: auto; }
+.qualiflow-uistyle-check { display: flex; align-items: center; gap: var(--qf-space-2); margin: var(--qf-space-2) 0; color: var(--qf-text); cursor: pointer; }
+.qualiflow-uistyle-table { width: 100%; border-collapse: collapse; font-size: var(--qf-text-2xs); }
+.qualiflow-uistyle-table th, .qualiflow-uistyle-table td { padding: 2px 4px; border-bottom: 1px solid var(--qf-border); text-align: left; }
+.qualiflow-uitoolbar { width: 420px; }

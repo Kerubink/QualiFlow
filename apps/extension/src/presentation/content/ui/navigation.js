@@ -9,6 +9,7 @@ import { showStatus, hideStatus } from './status.js';
 import { injectModal } from './modal.js';
 import { loadSettingsToUI } from './settings.js';
 import { loadRunnerCards } from './runnerCards.js';
+import { preloadBoardTags } from '../scenarios/editModal.js';
 import { RuntimeActions } from '../../../contracts/runtimeActions.js';
 
 function hideSection(id) {
@@ -221,6 +222,8 @@ export function openModal(page = 'generator') {
         if (metaEl) metaEl.textContent = `Tipo: ${state.currentWorkItemData.type} | Tags: ${state.currentWorkItemData.tags || 'Nenhuma'} `;
 
         showSection('qualiflow-context-area');
+        // Aquece a lista de tags do board (o Azure e lento) para o editor de cenarios.
+        preloadBoardTags();
 
         // Prefill editable acceptance criteria in the UI (sanitized from HTML)
         const acEl = document.getElementById('qualiflow-acceptance-criteria');

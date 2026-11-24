@@ -1,5 +1,8 @@
 """Auto-discovery no Azure DevOps: perfil, organizacoes, projetos e iteracoes (sprints).
 """
+import hashlib
+import time
+
 import requests
 
 from ...domain.iterations import build_iteration_options
@@ -76,3 +79,31 @@ def get_project_iterations(access_token, org_url, project):
             return iterations
 
     raise RuntimeError('Nao foi possivel carregar iteracoes. Verifique a configuracao do projeto.')
+
+
+_TAGS_TTL_SECONDS = 600
+_tags_cache = {}
+
+
+def list_tags(access_token, org_url, project):
+    """Lista as tags ja usadas no projeto (para o QA escolher em vez de digitar).
+
+    O endpoint do Azure e lento em projetos grandes: timeout maior e cache curto em memoria
+    (por org/projeto/sessao) para nao repetir a consulta a cada cenario editado.
+    """
+    key = (org_url, project, hashlib.sha256(str(access_token).encode()).hexdigest())
+    cached = _tags_cache.get(key)
+    if cached and time.monotonic() - cached[0] < _TAGS_TTL_SECONDS:
+        return list(cached[1])
+
+    headers = read_headers(access_token)
+    url = f'{org_url}/{project}/_apis/wit/tags?api-version=7.1-preview.1'
+
+    response = requests.get(url, headers=headers, timeout=60)
+    if not response.ok:
+        raise RuntimeError(f'Failed to fetch Azure DevOps tags: {response.status_code} {response.text[:100]}')
+
+    names = [tag.get('name') for tag in (response.json().get('value') or []) if tag.get('name')]
+    result = sorted(set(names), key=str.lower)
+    _tags_cache[key] = (time.monotonic(), result)
+    return list(result)

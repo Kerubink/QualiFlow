@@ -140,10 +140,19 @@ def get_run_results(access_token, org_url, project, run_id):
     return data.get('value', [])
 
 
-def update_test_result(access_token, org_url, project, run_id, result_id, outcome, comment=None, step_results=None):
-    """Atualiza resultado de um teste em um Test Run."""
-    headers = write_headers(access_token, 'application/json')
+def _duration_ms(value):
+    """Duracao em ms valida (inteiro >= 0) ou None. bool nao conta como numero."""
+    if isinstance(value, bool):
+        return None
+    try:
+        ms = int(value)
+    except (TypeError, ValueError):
+        return None
+    return ms if ms >= 0 else None
 
+
+def build_result_update_body(result_id, outcome, comment=None, step_results=None, duration_ms=None):
+    """Monta o corpo do PATCH de resultado de teste (funcao pura, testavel offline)."""
     iteration_details = None
     if step_results and len(step_results) > 0:
         action_results = []
@@ -165,29 +174,46 @@ def update_test_result(access_token, org_url, project, run_id, result_id, outcom
                         hex_parts.append(part)
                 action_path = ''.join(hex_parts)
 
-            action_results.append({
+            action = {
                 'stepIdentifier': step_id,
                 'actionPath': action_path,
                 'iterationId': 1,
                 'outcome': s.get('outcome', ''),
                 'errorMessage': s.get('comment', '')
-            })
+            }
+            step_duration = _duration_ms(s.get('durationMs'))
+            if step_duration is not None:
+                action['durationInMs'] = step_duration
+            action_results.append(action)
 
         iteration_details = [{
             'id': 1,
             'actionResults': action_results,
             'outcome': outcome
         }]
+        total = _duration_ms(duration_ms)
+        if total is not None:
+            iteration_details[0]['durationInMs'] = total
 
-    body = [{
+    entry = {
         'id': result_id,
         'outcome': outcome,
         'comment': comment or '',
         'state': 'Completed'
-    }]
-
+    }
+    total = _duration_ms(duration_ms)
+    if total is not None:
+        entry['durationInMs'] = total
     if iteration_details:
-        body[0]['iterationDetails'] = iteration_details
+        entry['iterationDetails'] = iteration_details
+    return [entry]
+
+
+def update_test_result(access_token, org_url, project, run_id, result_id, outcome, comment=None, step_results=None,
+                       duration_ms=None):
+    """Atualiza resultado de um teste em um Test Run (duration_ms opcional, em milissegundos)."""
+    headers = write_headers(access_token, 'application/json')
+    body = build_result_update_body(result_id, outcome, comment, step_results, duration_ms)
 
     url = f'{org_url}/{project}/_apis/test/runs/{run_id}/results?api-version=7.1'
     resp = requests.patch(url, headers=headers, json=body, timeout=30)

@@ -8,6 +8,8 @@
     "build": "vite build",
     "build:obf": "npm run build && node scripts/obfuscate-dist.mjs",
     "preview": "vite preview",
+    "dev:playground": "node dev/serve.mjs",
+    "test:e2e": "node --test --test-concurrency=1 --test-timeout=120000 dev/e2e/",
     "lint": "eslint .",
     "test": "node --test tests/"
   },

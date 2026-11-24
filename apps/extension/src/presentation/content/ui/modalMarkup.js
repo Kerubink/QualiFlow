@@ -120,15 +120,15 @@ export const MODAL_HTML = `    <nav class="qualiflow-rail" aria-label="NavegaÃ§Ã
             </div>
             <div id="qualiflow-dashboard-container" class="qualiflow-step-col qualiflow-hidden qualiflow-dashboard-resizable">
                 <div id="qualiflow-dashboard-tabs" class="qualiflow-tabs" role="tablist">
-                    <button id="qualiflow-tab-analytics" type="button" role="tab" aria-selected="true" class="qualiflow-tab-btn qualiflow-tab-active">Analytics Pro</button>
-                    <button id="qualiflow-tab-cards" type="button" role="tab" aria-selected="false" class="qualiflow-tab-btn">Meus Cards</button>
-                    <button id="qualiflow-tab-support" type="button" role="tab" aria-selected="false" class="qualiflow-tab-btn">Suportes</button>
-                    <button id="qualiflow-tab-deploy" type="button" role="tab" aria-selected="false" class="qualiflow-tab-btn">Validar Deploy</button>
+                    <button id="qualiflow-tab-analytics" type="button" role="tab" aria-controls="qualiflow-dashboard-analytics" aria-selected="true" class="qualiflow-tab-btn qualiflow-tab-active">Analytics Pro</button>
+                    <button id="qualiflow-tab-cards" type="button" role="tab" aria-controls="qualiflow-dashboard-cards" aria-selected="false" class="qualiflow-tab-btn">Meus Cards</button>
+                    <button id="qualiflow-tab-support" type="button" role="tab" aria-controls="qualiflow-dashboard-support" aria-selected="false" class="qualiflow-tab-btn">Suportes</button>
+                    <button id="qualiflow-tab-deploy" type="button" role="tab" aria-controls="qualiflow-dashboard-deploy" aria-selected="false" class="qualiflow-tab-btn">Validar Deploy</button>
                 </div>
-                <div id="qualiflow-dashboard-analytics" class="qualiflow-tab-content"></div>
-                <div id="qualiflow-dashboard-cards" class="qualiflow-tab-content qualiflow-hidden"></div>
-                <div id="qualiflow-dashboard-support" class="qualiflow-tab-content qualiflow-hidden"></div>
-                <div id="qualiflow-dashboard-deploy" class="qualiflow-tab-content qualiflow-hidden"></div>
+                <div id="qualiflow-dashboard-analytics" role="tabpanel" aria-labelledby="qualiflow-tab-analytics" class="qualiflow-tab-content"></div>
+                <div id="qualiflow-dashboard-cards" role="tabpanel" aria-labelledby="qualiflow-tab-cards" class="qualiflow-tab-content qualiflow-hidden"></div>
+                <div id="qualiflow-dashboard-support" role="tabpanel" aria-labelledby="qualiflow-tab-support" class="qualiflow-tab-content qualiflow-hidden"></div>
+                <div id="qualiflow-dashboard-deploy" role="tabpanel" aria-labelledby="qualiflow-tab-deploy" class="qualiflow-tab-content qualiflow-hidden"></div>
             </div>
         </div>
 

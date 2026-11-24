@@ -11,6 +11,8 @@ import { sendSupportStatusWebhook } from '../../infrastructure/backend/supportWe
 import { keepServiceWorkerAlive, sendMessageToTab } from '../../infrastructure/browser/runtimeMessaging.js';
 import { getLocalStorage, setLocalStorage } from '../../infrastructure/browser/storage.js';
 import { captureActiveTab, openTab } from '../../infrastructure/browser/tabs.js';
+import { emulateViewport } from '../../infrastructure/browser/emulation.js';
+import { injectPageProbe } from '../../infrastructure/browser/pageProbe.js';
 import { getSettings, saveSettings } from '../../infrastructure/persistence/settingsRepository.js';
 import { createSupportMonitor } from '../../application/supportMonitor.js';
 
@@ -27,6 +29,8 @@ export function createContainer() {
         authClient,
         openTab,
         captureActiveTab,
+        emulateViewport,
+        injectPageProbe,
         sendMessageToTab,
         keepServiceWorkerAlive
     };

@@ -10,6 +10,13 @@
     border-bottom: 1px solid var(--qf-border);
     overflow-x: auto;
     scrollbar-width: none;
+    /* A barra vive num container flex em coluna com rolagem: sem isto ela encolhia a ~0 quando o conteudo da aba
+       carregava (overflow torna o min-height automatico 0) e as abas sumiam. Fica fixa no topo ao rolar. */
+    flex: 0 0 auto;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    box-shadow: 0 calc(-1 * var(--qf-space-5)) 0 var(--qf-surface); /* cobre o padding acima da barra */
 }
 .qualiflow-tabs::-webkit-scrollbar { display: none; }
 

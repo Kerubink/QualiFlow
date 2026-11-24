@@ -24,3 +24,10 @@ export async function getCardData({ workId, provider }, { getSettings, azure, ji
     }
     return azure.azureGetWorkItem(workId, settings);
 }
+
+// Tags ja existentes no projeto Azure, para o editor de tags dos cenarios (Jira nao tem lista equivalente).
+export async function getBoardTags({ getSettings, azure }) {
+    const settings = await getSettings();
+    if (!hasAzureConfig(settings)) return [];
+    return azure.azureListTags(settings);
+}

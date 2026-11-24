@@ -1,4 +1,5 @@
 import { isValidAzureAssignee } from "./board.js";
+import { normalizeTagList } from './tags.js';
 
 // Normalizacao pura de cenarios de teste e parametros @campo.
 
@@ -53,8 +54,8 @@ export function scenarioTitleLabel(sc) {
     return sc.title + (sc.id_original ? ` [ID ${sc.id_original}]` : ' [Novo]');
 }
 
-// Prepara uma copia do cenario para salvar no board: assignee valido do Azure, sem tags
-// proprias (usa so as do work item pai) e parametros com valor padrao.
+// Prepara uma copia do cenario para salvar no board: assignee valido do Azure, tags escolhidas
+// pelo QA (sem tags no cenario = herda as do work item pai) e parametros com valor padrao.
 export function prepareScenarioForSave(scenario) {
     const copy = { ...scenario };
     const assignee = copy.assignedTo?.trim();
@@ -63,7 +64,8 @@ export function prepareScenarioForSave(scenario) {
     } else {
         copy.assignedTo = assignee;
     }
-    delete copy.tags;
+    if (Array.isArray(copy.tags)) copy.tags = normalizeTagList(copy.tags);
+    else delete copy.tags;
     ensureScenarioParamsDefault(copy);
     return copy;
 }

@@ -192,6 +192,8 @@ npm test
 npm run build:obf
 ```
 
+`npm run test:e2e` (opcional, exige Chrome) roda o playground em um navegador real e cobre os fluxos do runner (`dev/e2e/`).
+
 `npm run build:obf` primeiro cria o build normal e depois ofusca os arquivos JavaScript em `dist/`. A ofuscacao nao e uma fronteira de seguranca e nao deve ser tratada como protecao de segredo.
 
 `npm run lint` roda o ESLint (flat config em `eslint.config.js`, inclui as regras de dependencia entre camadas) e `npm test` roda os testes offline de `domain/` com o runner nativo `node --test`, sem dependencias extras.

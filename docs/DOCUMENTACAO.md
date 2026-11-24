@@ -136,7 +136,7 @@ Uso:
 1. QA marca cenarios desejados.
 2. UI chama SAVE_SCENARIOS.
 3. background cria Test Cases no board.
-4. tags do card pai sao herdadas.
+4. tags: cada cenario parte das tags do card pai; no modal de edicao (Azure) o QA remove chips, adiciona tags existentes no projeto (lista de `GET_BOARD_TAGS` -> `POST /api/board/azure/tags`) ou cria novas. Cenario sem tags escolhidas herda as do pai; lista vazia grava sem tags.
 5. sessao local do work item e removida em sucesso total.
 6. em sucesso parcial, UI mostra detalhe de falhas por cenario.
 
@@ -187,6 +187,81 @@ Content scripts configurados:
 - Matches: <all_urls>
 - JS: src/presentation/content/runner/
 - CSS: src/styles/content.css
+
+Recursos do runner (execucao de testes):
+- Cabecalho da janela: cronometro compacto do CT com botao de pausar/retomar, criterios de aceite, HUB, engrenagem (configuracoes), minimizar e
+  fechar. A engrenagem concentra: Autopreencher campos, Depurador CSS, Zerar cronometro do CT e Encerrar sessao.
+- Ordem do corpo: resumo compacto, titulo do CT, PASSOS (foco principal), resultado geral/observacao/evidencias do CT e rodape
+  fixo (Anterior, Pular, Salvar e avancar).
+- Criterios de aceite (painel flutuante, arrastavel e redimensionavel): mostra os criterios de aceite e a descricao do card pai (PBI da sessao) via `GET_WORK_ITEM_CRITERIA`, com HTML sanitizado e botao Atualizar.
+- HUB (painel flutuante, abre/fecha e pode ser arrastado): tempos (total, CT, media por CT, estimativa de tempo restante),
+  pausas, resultados e taxa de aprovacao, passos do CT atual, evidencias (enviadas/enviando/com erro), bugs criados,
+  ambiente copiavel para bugs (URL, navegador, sistema, janela, tela, idioma, fuso), atividade recente e notas da sessao
+  (so em memoria, nao vao ao Azure).
+- Depurador CSS (liga/desliga na engrenagem; preferencia `runnerCssDebug`): contorno vermelho em todos os elementos da pagina
+  testada, etiqueta ao passar o mouse (tag/classes, tamanho, padding, margin, fonte, cor, fundo) e Alt+clique copia o seletor
+  CSS. Nao afeta a UI do QualiFlow e e suspenso durante capturas e gravacoes.
+- Persistencia: a run e salva em `chrome.storage` (a cada ~3 s e ao sair da pagina). Se a pagina testada recarregar ou o
+  runner for reaberto, ele oferece "Retomar execucao" (valida por 12 h e para o mesmo PBI). Ao retomar, os cronometros
+  continuam de onde pararam (o tempo fora da pagina nao conta). Imagens ainda nao enviadas sao guardadas para reenvio;
+  videos nao. A run salva e descartada ao concluir ou encerrar a sessao.
+- Selecao de CTs: antes de iniciar, marque quais CTs executar. Na tela final, "Re-executar reprovados" encerra a run atual
+  e cria uma nova so com os CTs reprovados.
+- Atalhos (Alt + tecla fisica; lista na engrenagem): Alt+1 aprova e Alt+2 reprova o passo atual, Alt+P pausa/retoma,
+  Alt+E evidencias, Alt+H HUB, Alt+Shift+S captura rapida da aba anexada ao passo atual, Alt+Shift+D captura de tela/janela,
+  Alt+Shift+Enter salva o CT.
+- Bug completo: o dialogo "Criar bug" tem titulo, severidade (1 - Critica a 4 - Baixa), resultado obtido e opcoes para
+  incluir ambiente, erros de console/rede do passo e ate 8 imagens do passo (anexadas ao bug no Azure). A descricao traz
+  os passos executados ate a falha. Se o processo do projeto nao tiver o campo de severidade, o bug e criado sem ela.
+- Console integrado (botao `>_` no cabecalho ou Alt+J): painel flutuante, arrastavel e redimensionavel, com os eventos
+  capturados pela sonda: erros de console, excecoes, promises rejeitadas, avisos e requisicoes com falha. Filtros
+  (Todos/Erros/Avisos/Rede, com contagem), busca, detalhe expansivel (metodo, URL, status e duracao), "Copiar" (linhas
+  visiveis) e "Limpar" (so esconde da lista; os eventos seguem disponiveis para novos bugs). O botao mostra quantos erros e
+  falhas de rede chegaram desde a ultima abertura. Nao captura console.log/info (so erro e aviso). A captura comeca ao
+  iniciar uma run; o painel oferece "Ativar captura agora" fora dela. Escondido em capturas de tela.
+- Console e rede: ao iniciar a run, uma sonda e injetada sob demanda na pagina (chrome.scripting, sem novas permissoes)
+  e registra erros de console, excecoes e requisicoes com falha (status 0 ou >= 400). Valores sensiveis da query string
+  (token, senha, key...) sao mascarados. Liga/desliga na engrenagem (`runnerProbe`).
+- Autopreenchimento ampliado: alem de CPF/CNPJ/RG/CEP/e-mail/telefone, nome completo, data de nascimento (texto ou
+  type=date), senha forte (somente em campos de "nova senha"/"confirmar"), cartao de teste (Luhn), CNH e PIS/NIS.
+  Clique simples = valor valido; Shift+clique ou botao direito abre o menu: valido, invalido (teste negativo) e tamanho
+  maximo (texto livre com maxlength). Nao ha geracao de endereco, titulo de eleitor nem inscricao estadual.
+- Editor de capturas: recorte (C; Enter aplica), Copiar (area de transferencia) e marca d'agua opcional (CT, passo,
+  data/hora e URL).
+- Envio de evidencias: ate 3 tentativas automaticas (2 s e 5 s de espera) antes de marcar erro; "Reenviar" continua manual.
+- Relatorio final: Markdown (copiar) e HTML (baixar) com resumo, ambiente, CTs/passos com tempos, evidencias, bugs e notas;
+  disponivel na tela final e no HUB.
+- Ferramentas de UI/UX (barra flutuante propria, botao de chave inglesa no cabecalho, menu da engrenagem ou Alt+U; inclui tambem o depurador CSS): regua (arrastar para medir; Esc), conta-gotas (EyeDropper API), overlay de design (imagem com
+- Responsividade (emulacao de tela na aba via chrome.debugger, com restaurar), Fontes e cores da pagina e historico de desempenho por carregamento (opcional, ate 30 entradas, apenas metricas) ficam na barra de UI/UX. Ao ancorar, elementos `position: fixed` do site que invadiriam a faixa do runner sao deslocados e restaurados ao desancorar.
+  opacidade/escala/mover), acessibilidade rapida (html lang, alt, rotulos, nomes de botoes/links e contraste WCAG AA; nao
+  considera imagens/gradientes de fundo; clique no item destaca o elemento) e desempenho (TTFB, FCP, LCP, CLS e recursos
+  do carregamento inicial). Indicador de breakpoint no ambiente.
+- Alertas de tempo (engrenagem, `runnerAlerts`): aviso quando um passo passa de 2x a media dos passos (minimo 60 s) e quando o
+  teste fica pausado por mais de 5 min; a bolinha pisca se o runner estiver minimizado.
+- Ancoragem lateral (engrenagem): painel de 420 px que empurra a pagina (`margin-right`). Elementos `position: fixed` da pagina
+  nao acompanham o deslocamento. Posicao e tamanho da janela flutuante sao lembrados (`runnerWindowGeom`).
+- Resumo da execucao: tempo total, progresso, contadores (aprovados/reprovados/outros/pendentes) e seletor numerado de CTs
+  (permite voltar a um CT ja avaliado). "Pular" avanca sem gravar resultado.
+- Cronometros: tempo total da run e tempo por CT (pausar/retomar/zerar); cada passo registra o tempo desde a marcacao
+  anterior. A duracao do CT e dos passos e enviada ao Azure (`durationMs` em `/api/board/azure/test-result`, opcional).
+- Pausa real: "Pausar" congela o tempo total e o do CT e bloqueia a execucao (passos, resultado geral, observacao, evidencias,
+  salvar e navegacao entre CTs). O sistema testado fica coberto por uma camada com o botao "Retomar teste" e os icones de
+  autopreenchimento ficam suspensos. Nao e possivel pausar durante uma gravacao de tela. A camada bloqueia mouse/toque, mas
+  nao impede navegar por Tab na pagina.
+- Janela minimizada (bolinha): com o teste rodando mostra o tempo do CT em curso (tooltip com o total); pausado, mostra o
+  icone de pausa; sem run, o icone de play.
+- Passos exibem "Acao" e "Resultado esperado" em blocos separados; o passo atual e destacado; "Aprovar restantes" marca os pendentes.
+- Evidencias: captura de tela inteira ou JANELA DE OUTRO APLICATIVO (seletor nativo do navegador via getDisplayMedia),
+  aba atual, imagem colada (Ctrl+V ou botao), arquivo de imagem e gravacao de tela. Todas passam pelo editor de anotacoes e
+  sao anexadas ao mesmo CT/passo.
+- Editor de anotacoes (objetos editaveis): selecionar/mover/redimensionar/excluir, caneta, linha, seta, retangulo, elipse,
+  destaque, ocultar dados sensiveis (pixelizacao), texto com edicao inline, marcador numerado, cor/espessura/preenchimento,
+  desfazer/refazer, zoom. Atalhos: V P L A R E H B T N, Ctrl+Z / Ctrl+Y, Delete, Ctrl+Enter (salvar), Esc (cancelar).
+- Autopreenchimento: em paginas de projetos configurados, campos de CPF, CNPJ, RG, CEP, e-mail e telefone (detectados por
+  type, autocomplete, name, id, placeholder, aria-label e rotulo) recebem um icone; ao clicar, o campo e preenchido com um valor
+  valido, respeitando maxlength/placeholder (com ou sem mascara). CPF/CNPJ/RG usam digitos verificadores validos, CEP usa
+  CEPs reais, e-mail usa o dominio reservado example.com. Liga/desliga em "Autopreencher" no cabecalho do runner
+  (preferencia `runnerAutofill`). Nao ha iframes nem shadow DOM de terceiros.
 
 Observacao importante:
 - runner.js se auto-desativa quando detecta host do Azure DevOps.

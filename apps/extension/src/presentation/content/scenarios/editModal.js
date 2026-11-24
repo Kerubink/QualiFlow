@@ -1,6 +1,29 @@
 import { state } from '../state.js';
-import { getStorage } from '../shared/runtime.js';
+import { getStorage, sendRuntimeMessage } from '../shared/runtime.js';
+import { detectBoardProvider } from '../shared/pageContext.js';
+import { RuntimeActions } from '../../../contracts/runtimeActions.js';
+import { parseTags, normalizeTagList } from '../../../domain/tags.js';
 import { ensureScenarioParamsDefault, extractScenarioParams } from '../../../domain/scenario.js';
+
+// Lista de tags do board: uma consulta por vez e guardada por pagina (o Azure pode demorar).
+let boardTagsCache = null;
+let boardTagsPending = null;
+export function preloadBoardTags() {
+    if (boardTagsCache) return Promise.resolve({ list: boardTagsCache, error: null });
+    if (detectBoardProvider() !== 'azure') return Promise.resolve({ list: [], error: null });
+    if (!boardTagsPending) {
+        boardTagsPending = new Promise((resolve) => {
+            sendRuntimeMessage({ action: RuntimeActions.GET_BOARD_TAGS }, (response) => {
+                boardTagsPending = null;
+                const list = Array.isArray(response?.data) ? response.data : [];
+                const error = response?.error || (response ? null : 'sem resposta do serviço principal');
+                if (!error) boardTagsCache = list;
+                resolve({ list, error });
+            });
+        });
+    }
+    return boardTagsPending;
+}
 
 export function closeEditModal() {
     document.getElementById('qualiflow-edit-modal-overlay').classList.add('qualiflow-hidden');
@@ -11,7 +34,9 @@ export function openEditModal(idx) {
     const body = document.getElementById('qualiflow-edit-body');
     const esc = (text) => (text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-    const scTags = state.currentWorkItemData.tags || "";
+    const tagsEditable = detectBoardProvider() === 'azure';
+    // Tags do cenario: as escolhidas pelo QA; sem escolha, partem das do card pai.
+    let selectedTags = Array.isArray(sc.tags) ? normalizeTagList(sc.tags) : parseTags(state.currentWorkItemData.tags);
     const scAssignee = sc.assignedTo?.trim() || "";
 
     body.innerHTML = `
@@ -19,14 +44,18 @@ export function openEditModal(idx) {
             <label>Título:</label>
             <input type="text" id="edit-modal-title" value="${esc(sc.title)}" class="qualiflow-input-edit" />
         </div>
-        <div class="qualiflow-step-row">
-            <div class="qualiflow-form-group qualiflow-sc-grow-field">
-                <label>Tags do PBI (herdadas automaticamente):</label>
-                <input type="text" id="edit-modal-tags" value="${esc(scTags)}" class="qualiflow-input-edit" placeholder="Tags herdadas do PBI" readonly />
-            </div>
-            <div class="qualiflow-form-group qualiflow-sc-grow-field">
-                <label>Responsável (opcional):</label>
-                <input type="text" id="edit-modal-assignee" value="${esc(scAssignee)}" class="qualiflow-input-edit" placeholder="nome@empresa.com ou DOMÍNIO\\usuario" />
+        <div class="qualiflow-form-group">
+            <label>Responsável (opcional):</label>
+            <input type="text" id="edit-modal-assignee" value="${esc(scAssignee)}" class="qualiflow-input-edit" placeholder="nome@empresa.com ou DOMÍNIO\\usuario" />
+        </div>
+        <div class="qualiflow-form-group">
+            <label id="edit-modal-tags-label">Tags (começam com as do PBI):</label>
+            <div class="qualiflow-tags-select" id="edit-modal-tags">
+                <button type="button" class="qualiflow-input-edit qualiflow-tags-trigger" id="edit-modal-tags-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="edit-modal-tags-label"></button>
+                <div class="qualiflow-tags-panel qualiflow-hidden" id="edit-modal-tags-panel">
+                    ${tagsEditable ? '<input type="text" id="edit-modal-tag-input" class="qualiflow-input-edit" autocomplete="off" placeholder="Buscar ou criar tag (Enter)" />' : ''}
+                    <div class="qualiflow-tags-list" id="edit-modal-tag-options" role="listbox" aria-multiselectable="true" aria-labelledby="edit-modal-tags-label"></div>
+                </div>
             </div>
         </div>
         <div class="qualiflow-form-group">
@@ -48,6 +77,110 @@ export function openEditModal(idx) {
         `;
 
     const stepsContainer = document.getElementById('edit-modal-steps-container');
+
+    // Editor de tags: dropdown de multiselecao com as tags do board (e criacao de novas).
+    const trigger = document.getElementById('edit-modal-tags-trigger');
+    const panel = document.getElementById('edit-modal-tags-panel');
+    const tagInput = document.getElementById('edit-modal-tag-input');
+    const optionsEl = document.getElementById('edit-modal-tag-options');
+    let boardTags = [];
+    let boardTagsError = null;
+    let boardTagsLoading = false;
+    let retryTags = () => {};
+
+    const setOpen = (open) => {
+        panel.classList.toggle('qualiflow-hidden', !open);
+        trigger.setAttribute('aria-expanded', String(open));
+        if (open && tagInput) tagInput.focus();
+    };
+    const renderTrigger = () => {
+        trigger.textContent = selectedTags.length === 0
+            ? (tagsEditable ? 'Nenhuma tag — clique para escolher' : 'Nenhuma tag')
+            : `${selectedTags.length} tag(s): ${selectedTags.join(', ')}`;
+        trigger.title = selectedTags.join(', ');
+        trigger.disabled = !tagsEditable;
+    };
+    const toggleTag = (tag) => {
+        const has = selectedTags.some((t) => t.toLowerCase() === tag.toLowerCase());
+        selectedTags = has ? selectedTags.filter((t) => t.toLowerCase() !== tag.toLowerCase()) : normalizeTagList([...selectedTags, tag]);
+        renderTags();
+    };
+    const renderTags = () => {
+        renderTrigger();
+        if (!tagInput) return;
+        const query = tagInput.value.trim().toLowerCase();
+        // Selecionadas primeiro, depois as do board; todas marcaveis/desmarcaveis.
+        const all = normalizeTagList([...selectedTags, ...boardTags]);
+        const shown = all.filter((t) => !query || t.toLowerCase().includes(query));
+        optionsEl.innerHTML = '';
+        shown.forEach((tag) => {
+            const checked = selectedTags.some((t) => t.toLowerCase() === tag.toLowerCase());
+            const row = document.createElement('label');
+            row.className = 'qualiflow-tags-row';
+            const box = document.createElement('input');
+            box.type = 'checkbox';
+            box.checked = checked;
+            box.addEventListener('change', () => toggleTag(tag));
+            row.append(box, document.createTextNode(tag));
+            optionsEl.appendChild(row);
+        });
+        const typed = tagInput.value.trim();
+        if (typed && !all.some((t) => t.toLowerCase() === typed.toLowerCase())) {
+            const create = document.createElement('button');
+            create.type = 'button';
+            create.className = 'qualiflow-tags-create';
+            create.textContent = `Criar "${typed}"`;
+            create.addEventListener('click', () => { tagInput.value = ''; toggleTag(typed); tagInput.focus(); });
+            optionsEl.appendChild(create);
+        }
+        const status = document.createElement('div');
+        status.className = 'qualiflow-tags-empty';
+        if (boardTagsLoading) {
+            status.textContent = 'Carregando tags do board... (pode levar alguns segundos)';
+            optionsEl.appendChild(status);
+        } else if (boardTagsError) {
+            status.textContent = `Não foi possível listar as tags do board: ${boardTagsError} `;
+            const retry = document.createElement('button');
+            retry.type = 'button';
+            retry.className = 'qualiflow-tags-create';
+            retry.textContent = 'Tentar de novo';
+            retry.addEventListener('click', () => retryTags());
+            status.appendChild(retry);
+            optionsEl.appendChild(status);
+        } else if (!boardTags.length) {
+            status.textContent = 'O board não retornou tags para este projeto.';
+            optionsEl.appendChild(status);
+        }
+    };
+    if (tagsEditable) {
+        trigger.addEventListener('click', () => setOpen(panel.classList.contains('qualiflow-hidden')));
+        tagInput.addEventListener('input', renderTags);
+        tagInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') { e.stopPropagation(); setOpen(false); trigger.focus(); }
+            else if (e.key === 'Enter') {
+                e.preventDefault();
+                const typed = tagInput.value.trim();
+                if (typed) { tagInput.value = ''; if (!selectedTags.some((t) => t.toLowerCase() === typed.toLowerCase())) toggleTag(typed); else renderTags(); }
+            }
+        });
+        document.getElementById('edit-modal-tags').addEventListener('focusout', (e) => {
+            if (!e.relatedTarget || !e.currentTarget.contains(e.relatedTarget)) setOpen(false);
+        });
+        const loadTags = () => {
+            boardTagsLoading = true;
+            boardTagsError = null;
+            renderTags();
+            preloadBoardTags().then(({ list, error }) => {
+                boardTagsLoading = false;
+                boardTags = list;
+                boardTagsError = error;
+                renderTags();
+            });
+        };
+        retryTags = loadTags;
+        loadTags();
+    }
+    renderTags();
 
     // Prefill assignee from scenario or QA email config (async)
     getStorage(['qaEmail'], (stored) => {
@@ -153,6 +286,11 @@ export function openEditModal(idx) {
         sc.title = document.getElementById('edit-modal-title').value;
         const enteredAssignee = document.getElementById('edit-modal-assignee').value.trim();
         sc.bdd_description = document.getElementById('edit-modal-bdd').value;
+        if (tagsEditable) {
+            const pending = tagInput?.value.trim();
+            if (pending) selectedTags = normalizeTagList([...selectedTags, pending]);
+            sc.tags = selectedTags;
+        }
 
         const newSteps = [];
         stepsContainer.querySelectorAll('.qualiflow-step-row').forEach(row => {

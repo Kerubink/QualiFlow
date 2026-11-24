@@ -1,7 +1,10 @@
 """Work Items do Azure DevOps: leitura (com testes vinculados), listagens WIQL, estado em lote e criacao de Bug.
 """
+from urllib.parse import quote
+
 import requests
 
+from ...domain import bug_payload
 from ...domain.deploy_validation import is_deploy_relevant_type, is_excluded_deploy_type
 from .http import read_headers, write_headers
 
@@ -198,34 +201,49 @@ def get_support_cards(access_token, org_url, project):
     ]
 
 
-def create_bug_from_failure(access_token, org_url, project, title, comment, test_case_id=None, linked_work_item_id=None):
-    """Cria um Bug a partir de uma falha em teste."""
+def _upload_work_item_attachment(access_token, org_url, project, file_name, content):
+    """Envia um arquivo para o armazenamento de anexos de work items e devolve a URL gerada."""
+    headers = write_headers(access_token, 'application/octet-stream')
+    url = f'{org_url}/{project}/_apis/wit/attachments?fileName={quote(file_name)}&api-version=7.1'
+    resp = requests.post(url, headers=headers, data=content, timeout=60)
+    if not resp.ok:
+        raise RuntimeError(f'HTTP {resp.status_code}')
+    return resp.json()['url']
+
+
+def create_bug_from_failure(access_token, org_url, project, title, comment, test_case_id=None,
+                            linked_work_item_id=None, severity=None, attachments=None):
+    """Cria um Bug a partir de uma falha em teste.
+
+    severity: chave ('critical'|'high'|'medium'|'low'); ignorada se invalida. Se o processo do projeto nao tiver
+    o campo de severidade, o bug e criado sem ela.
+    attachments: [{fileName, base64Content}]; falha em um anexo NAO impede a criacao do bug.
+    Retorna {'id': int, 'attachmentErrors': [str]}. ValueError para anexos invalidos (antes de qualquer chamada).
+    """
+    files = bug_payload.decode_attachments(attachments)
+
+    uploaded = []
+    attachment_errors = []
+    for f in files:
+        try:
+            url = _upload_work_item_attachment(access_token, org_url, project, f['fileName'], f['content'])
+            uploaded.append({'url': url, 'comment': f['fileName']})
+        except Exception as err:  # um anexo ruim nao derruba o bug
+            attachment_errors.append(f"{f['fileName']}: {err}")
+
+    sev = bug_payload.severity_value(severity)
+    ops = bug_payload.build_bug_ops(title, comment, org_url, project, linked_work_item_id, sev, uploaded)
+
     headers = write_headers(access_token, 'application/json-patch+json')
-
-    ops = [
-        {'op': 'add', 'path': '/fields/System.Title', 'value': title},
-        {'op': 'add', 'path': '/fields/System.WorkItemType', 'value': 'Bug'},
-        {'op': 'add', 'path': '/fields/Microsoft.VSTS.TCM.ReproSteps', 'value': comment or ''}
-    ]
-
-    if linked_work_item_id:
-        ops.append({
-            'op': 'add',
-            'path': '/relations/-',
-            'value': {
-                'rel': 'Microsoft.VSTS.Common.TestedBy-Reverse',
-                'url': f'{org_url}/{project}/_apis/wit/workItems/{linked_work_item_id}'
-            }
-        })
-
     url = f'{org_url}/{project}/_apis/wit/workitems/$Bug?api-version=7.1'
     resp = requests.post(url, headers=headers, json=ops, timeout=30)
+    if not resp.ok and sev and bug_payload.mentions_severity_error(resp.text):
+        resp = requests.post(url, headers=headers, json=bug_payload.without_severity(ops), timeout=30)
 
     if not resp.ok:
         raise RuntimeError(f'Falha ao criar bug: {resp.text}')
 
-    data = resp.json()
-    return data.get('id')
+    return {'id': resp.json().get('id'), 'attachmentErrors': attachment_errors}
 
 
 def read_error_detail(response):

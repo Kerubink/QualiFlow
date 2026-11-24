@@ -14,6 +14,16 @@ export async function azureListProjects(orgUrl, settings) {
 	return body.data || [];
 }
 
+export async function azureListTags(settings) {
+	const body = await callBoardBackend(
+		"azure",
+		"/api/board/azure/tags",
+		{ orgUrl: settings.azureOrg, project: settings.azureProject },
+		settings
+	);
+	return body.data || [];
+}
+
 export async function azureGetWorkItem(id, settings) {
 	const body = await callBoardBackend(
 		"azure",
@@ -133,11 +143,11 @@ export async function azureGetRunResults(runId, settings) {
 	return body.data;
 }
 
-export async function azureUpdateTestResult(runId, resultId, outcome, comment, stepResults, settings) {
+export async function azureUpdateTestResult(runId, resultId, outcome, comment, stepResults, settings, durationMs) {
 	return callBoardBackend(
 		"azure",
 		"/api/board/azure/test-result",
-		{ orgUrl: settings.azureOrg, project: settings.azureProject, runId, resultId, outcome, comment, stepResults },
+		{ orgUrl: settings.azureOrg, project: settings.azureProject, runId, resultId, outcome, comment, stepResults, durationMs },
 		settings
 	);
 }
@@ -151,14 +161,14 @@ export async function azureCompleteTestRun(runId, state, settings) {
 	);
 }
 
-export async function azureCreateBugFromFailure(title, comment, testCaseId, linkedWorkItemId, settings) {
+export async function azureCreateBugFromFailure(title, comment, testCaseId, linkedWorkItemId, settings, severity, attachments) {
 	const body = await callBoardBackend(
 		"azure",
 		"/api/board/azure/bug",
-		{ orgUrl: settings.azureOrg, project: settings.azureProject, title, comment, testCaseId, workItemId: linkedWorkItemId },
+		{ orgUrl: settings.azureOrg, project: settings.azureProject, title, comment, testCaseId, workItemId: linkedWorkItemId, severity, attachments },
 		settings
 	);
-	return body.bugId;
+	return { bugId: body.bugId, attachmentErrors: body.attachmentErrors || [] };
 }
 
 export async function azureAddAttachment(runId, resultId, fileName, base64Content, comment, settings) {

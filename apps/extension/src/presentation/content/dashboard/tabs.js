@@ -22,6 +22,7 @@ export function initDashboardTabs() {
         tabs.forEach((tab) => {
             tab.classList.remove('qualiflow-tab-active');
             tab.setAttribute('aria-selected', 'false');
+            tab.tabIndex = -1;
         });
         contents.forEach((content) => {
             if (content) content.classList.add('qualiflow-hidden');
@@ -29,6 +30,8 @@ export function initDashboardTabs() {
 
         activeTab.classList.add('qualiflow-tab-active');
         activeTab.setAttribute('aria-selected', 'true');
+        activeTab.tabIndex = 0;
+        activeTab.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
         if (activeContent) activeContent.classList.remove('qualiflow-hidden');
     };
 
@@ -36,6 +39,19 @@ export function initDashboardTabs() {
         return;
     }
     tabCards.dataset.bound = '1';
+
+    // Teclado (padrao WAI-ARIA de abas): setas, Home e End movem e ativam a aba.
+    tabCards.parentElement?.addEventListener('keydown', (e) => {
+        const keys = { ArrowRight: 1, ArrowLeft: -1, Home: 'first', End: 'last' };
+        if (!(e.key in keys)) return;
+        const current = tabs.indexOf(document.activeElement);
+        if (current === -1) return;
+        const step = keys[e.key];
+        const next = step === 'first' ? 0 : step === 'last' ? tabs.length - 1 : (current + step + tabs.length) % tabs.length;
+        e.preventDefault();
+        tabs[next].focus();
+        tabs[next].click();
+    });
 
     tabCards.addEventListener('click', () => {
         activateTab(tabCards, contentCards);

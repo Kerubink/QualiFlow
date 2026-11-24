@@ -1,9 +1,9 @@
-import { sendRuntimeMessage } from '../shared/runtime.js';
 import { S } from './state.js';
-import { openAnnotationPanel } from './annotationPanel.js';
-import { addAndUploadEvidence, buildEvidenceFileName, getEvidenceKey, uploadEvidenceToAzure } from './evidenceUpload.js';
+import { annotateAndAttachEvidence } from './evidenceFlow.js';
+import { UPLOAD_MAX_ATTEMPTS, addAndUploadEvidence, buildEvidenceFileName, getEvidenceKey, uploadEvidenceToAzure } from './evidenceUpload.js';
 import { hideQualiFlowUiForCapture, removeRecordingFloatingBar, showQualiFlowUiAfterCapture, showRecordingFloatingBar, waitForUiHidden } from './screenCapture.js';
-import { RuntimeActions } from '../../../contracts/runtimeActions.js';
+import { captureBrowserTab, captureDisplay, imageFromPasteEvent, pickImageFile, readClipboardImage } from './captureSources.js';
+import { formatDuration } from '../../../domain/runTimer.js';
 
 export function openEvidencePanel(tc, stepIdx) {
     const key = getEvidenceKey(tc, stepIdx);
@@ -13,7 +13,6 @@ export function openEvidencePanel(tc, stepIdx) {
         ? `Passo ${tc.steps[stepIdx]?.order ?? (stepIdx + 1)}`
         : `CT #${tc.id}`;
 
-    // Build overlay
     const opener = document.activeElement;
     const overlay = document.createElement('div');
     overlay.id = 'qualiflow-evidence-overlay';
@@ -24,21 +23,39 @@ export function openEvidencePanel(tc, stepIdx) {
     overlay.innerHTML = `
       <div class="qualiflow-dialog qualiflow-dialog-sm qualiflow-dialog-surface">
         <div class="qualiflow-dialog-head">
-          <span id="qe-title" class="qualiflow-dialog-title">📎 Evidências — ${label}</span>
-          <button type="button" id="qe-close" class="qualiflow-close" aria-label="Fechar evidências">✕</button>
+          <span id="qe-title" class="qualiflow-dialog-title">Evidências &middot; ${label}</span>
+          <button type="button" id="qe-close" class="qualiflow-close" aria-label="Fechar evidências">&times;</button>
         </div>
 
         <div class="qualiflow-run-note">
-          Anexos da execução no Azure (Test Run). Não são salvos localmente.
+          Os anexos são enviados à execução no Azure (Test Run) e não são salvos localmente.
         </div>
 
-        <div class="qualiflow-run-ev-actions">
-          <button type="button" id="qe-screenshot" class="qualiflow-btn-inline qualiflow-btn-primary">📸 Capturar Tela</button>
-          <button type="button" id="qe-record" class="qualiflow-btn-inline qualiflow-btn-secondary" data-recording="false">🔴 Gravar Tela</button>
+        <div class="qualiflow-run-ev-group">
+          <div class="qualiflow-run-ev-group-title">Capturar</div>
+          <div class="qualiflow-run-ev-actions">
+            <button type="button" id="qe-screen" class="qualiflow-btn-inline qualiflow-btn-primary" title="Escolha uma tela inteira, a janela de outro aplicativo ou uma aba">Tela ou janela</button>
+            <button type="button" id="qe-screenshot" class="qualiflow-btn-inline qualiflow-btn-secondary" title="Captura somente o conteúdo visível desta aba">Aba atual</button>
+          </div>
         </div>
 
+        <div class="qualiflow-run-ev-group">
+          <div class="qualiflow-run-ev-group-title">Importar</div>
+          <div class="qualiflow-run-ev-actions">
+            <button type="button" id="qe-paste" class="qualiflow-btn-inline qualiflow-btn-secondary" title="Cola a imagem da área de transferência (ou use Ctrl+V)">Colar imagem</button>
+            <button type="button" id="qe-file" class="qualiflow-btn-inline qualiflow-btn-secondary">Anexar arquivo</button>
+          </div>
+        </div>
+
+        <div class="qualiflow-run-ev-group">
+          <div class="qualiflow-run-ev-group-title">Gravar</div>
+          <div class="qualiflow-run-ev-actions">
+            <button type="button" id="qe-record" class="qualiflow-btn-inline qualiflow-btn-secondary" data-recording="false">Gravar tela</button>
+          </div>
+        </div>
+
+        <div id="qe-msg" class="qualiflow-run-ev-msg" role="status" aria-live="polite"></div>
         <div id="qe-rec-status" class="qualiflow-run-rec-status" style="display:none;"></div>
-
         <div id="qe-list" class="qualiflow-run-ev-list" aria-live="polite"></div>
       </div>
     `;
@@ -46,68 +63,82 @@ export function openEvidencePanel(tc, stepIdx) {
     document.body.appendChild(overlay);
     renderEvidenceList(list, key);
 
+    const msgEl = overlay.querySelector('#qe-msg');
+    const showMsg = (text, isError = false) => {
+        msgEl.textContent = text || '';
+        msgEl.classList.toggle('is-error', !!isError);
+    };
     const isRecording = () => !!(S.mediaRecorder && S.mediaRecorder.state === 'recording');
+    const annotationOpen = () => !!document.getElementById('qualiflow-annotation-panel');
+
     const onKeydown = (e) => {
         if (e.key !== 'Escape') return;
-        if (document.getElementById('qualiflow-annotation-panel')) return; // annotation handles its own Esc
-        if (isRecording()) return;
+        if (annotationOpen() || isRecording()) return;
         closePanel();
+    };
+    const onPaste = async (e) => {
+        if (annotationOpen() || isRecording()) return;
+        const dataUrl = await imageFromPasteEvent(e);
+        if (!dataUrl) return;
+        e.preventDefault();
+        annotateAndAttach(dataUrl, 'print');
     };
     function closePanel() {
         document.removeEventListener('keydown', onKeydown);
+        document.removeEventListener('paste', onPaste);
         overlay.remove();
         if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus();
     }
     document.addEventListener('keydown', onKeydown);
+    document.addEventListener('paste', onPaste);
 
     overlay.querySelector('#qe-close').onclick = () => {
-        if (isRecording()) return; // keep open while recording
+        if (isRecording()) return;
         closePanel();
     };
     overlay.onclick = (e) => {
         if (e.target === overlay && !isRecording()) closePanel();
     };
-    overlay.querySelector('#qe-close').focus();
+    overlay.querySelector('#qe-screen').focus();
 
-    overlay.querySelector('#qe-screenshot').onclick = async () => {
-        const btn = overlay.querySelector('#qe-screenshot');
-        btn.disabled = true;
-        btn.textContent = '⏳ Capturando...';
+    function annotateAndAttach(dataUrl, kind) {
+        showMsg('');
+        annotateAndAttachEvidence(tc, stepIdx, dataUrl, kind);
+    }
 
-        // Hide evidence panel + runner so they do not appear in the screenshot
-        hideQualiFlowUiForCapture();
-        await waitForUiHidden();
+    // Executa uma captura bloqueando os botoes enquanto ela acontece.
+    async function runCapture(button, busyLabel, producer, kind) {
+        const idleLabel = button.textContent;
+        const buttons = overlay.querySelectorAll('.qualiflow-run-ev-actions button');
+        buttons.forEach((b) => { b.disabled = true; });
+        button.textContent = busyLabel;
+        showMsg('');
+        try {
+            const dataUrl = await producer();
+            if (dataUrl) annotateAndAttach(dataUrl, kind);
+        } catch (err) {
+            showQualiFlowUiAfterCapture();
+            if (!err?.cancelled) showMsg(err?.message || 'Falha na captura.', true);
+        } finally {
+            button.textContent = idleLabel;
+            buttons.forEach((b) => { b.disabled = false; });
+        }
+    }
 
-        sendRuntimeMessage({ action: RuntimeActions.CAPTURE_SCREENSHOT }, (res) => {
-            btn.disabled = false;
-            btn.innerHTML = '📸 Capturar Tela';
-
-            if (res?.error) {
-                showQualiFlowUiAfterCapture();
-                alert('Erro: ' + res.error);
-                return;
-            }
-
-            // Keep UI hidden while annotation opens (fullscreen). Restore after save/cancel.
-            openAnnotationPanel(res.dataUrl, async (annotated) => {
-                showQualiFlowUiAfterCapture();
-                if (!annotated) return;
-                const name = buildEvidenceFileName(tc, stepIdx, 'screenshot', 'png');
-                await addAndUploadEvidence(tc, stepIdx, list, key, {
-                    name,
-                    dataUrl: annotated,
-                    type: 'image/png',
-                    status: 'pending'
-                });
-            });
-        });
-    };
+    overlay.querySelector('#qe-screen').onclick = (e) =>
+        runCapture(e.currentTarget, 'Aguardando seleção...', captureDisplay, 'captura');
+    overlay.querySelector('#qe-screenshot').onclick = (e) =>
+        runCapture(e.currentTarget, 'Capturando...', captureBrowserTab, 'aba');
+    overlay.querySelector('#qe-paste').onclick = (e) =>
+        runCapture(e.currentTarget, 'Lendo...', readClipboardImage, 'print');
+    overlay.querySelector('#qe-file').onclick = (e) =>
+        runCapture(e.currentTarget, 'Selecionando...', pickImageFile, 'arquivo');
 
     const recBtn = overlay.querySelector('#qe-record');
     const recStatus = overlay.querySelector('#qe-rec-status');
 
     const resetRecordUi = () => {
-        recBtn.innerHTML = '🔴 Gravar Tela';
+        recBtn.textContent = 'Gravar tela';
         recBtn.classList.remove('qualiflow-btn-danger');
         recBtn.classList.add('qualiflow-btn-secondary');
         recStatus.style.display = 'none';
@@ -130,10 +161,9 @@ export function openEvidencePanel(tc, stepIdx) {
         }
 
         try {
-            // Browser picker first (UI still visible for the picker itself)
+            // Seletor do navegador primeiro (UI ainda visivel para o proprio seletor)
             const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
 
-            // Then hide runner chrome so the recording does not show our panels
             hideQualiFlowUiForCapture(['qualiflow-rec-floating']);
             await waitForUiHidden();
 
@@ -144,7 +174,7 @@ export function openEvidencePanel(tc, stepIdx) {
                 stream.getTracks().forEach(t => t.stop());
                 const blob = new Blob(S.recordingChunks, { type: 'video/webm' });
                 const url = URL.createObjectURL(blob);
-                const name = buildEvidenceFileName(tc, stepIdx, 'recording', 'webm');
+                const name = buildEvidenceFileName(tc, stepIdx, 'gravacao', 'webm');
                 await addAndUploadEvidence(tc, stepIdx, list, key, {
                     name,
                     dataUrl: url,
@@ -154,7 +184,7 @@ export function openEvidencePanel(tc, stepIdx) {
                 });
             };
 
-            // If user stops sharing via browser chrome
+            // Se o usuario parar o compartilhamento pela barra do navegador
             stream.getVideoTracks()[0]?.addEventListener('ended', () => {
                 if (S.mediaRecorder && S.mediaRecorder.state === 'recording') {
                     S.mediaRecorder.stop();
@@ -164,7 +194,7 @@ export function openEvidencePanel(tc, stepIdx) {
 
             S.mediaRecorder.start(100);
             S.recordingSeconds = 0;
-            recBtn.innerHTML = '⏹ Parar Gravação';
+            recBtn.textContent = 'Parar gravação';
             recBtn.classList.remove('qualiflow-btn-secondary');
             recBtn.classList.add('qualiflow-btn-danger');
 
@@ -172,26 +202,28 @@ export function openEvidencePanel(tc, stepIdx) {
             const timerEl = floating.querySelector('#qualiflow-rec-floating-timer');
             S.recordingTimer = setInterval(() => {
                 S.recordingSeconds++;
-                if (timerEl) timerEl.textContent = `⏺ ${S.recordingSeconds}s`;
+                const t = formatDuration(S.recordingSeconds * 1000);
+                if (timerEl) timerEl.textContent = `REC ${t}`;
                 recStatus.style.display = 'block';
-                recStatus.textContent = `⏺ Gravando... ${S.recordingSeconds}s`;
+                recStatus.textContent = `Gravando... ${t}`;
             }, 1000);
         } catch (e) {
             showQualiFlowUiAfterCapture();
-            alert('Não foi possível iniciar a gravação: ' + e.message);
+            if (e && e.name !== 'NotAllowedError') showMsg('Não foi possível iniciar a gravação: ' + e.message, true);
         }
     };
 }
 
 function evidenceStatusHtml(ev) {
     if (ev.status === 'uploading' || ev.status === 'pending') {
-        return '<span class="qualiflow-run-ev-state is-pending">⏳ Enviando ao Azure...</span>';
+        const tries = ev.attempt > 1 ? ` (tentativa ${ev.attempt} de ${UPLOAD_MAX_ATTEMPTS})` : '';
+        return `<span class="qualiflow-run-ev-state is-pending">Enviando ao Azure${tries}...</span>`;
     }
     if (ev.status === 'uploaded') {
-        return '<span class="qualiflow-run-ev-state is-uploaded">✅ Anexado à execução</span>';
+        return '<span class="qualiflow-run-ev-state is-uploaded">Anexado à execução</span>';
     }
     if (ev.status === 'error') {
-        return `<span class="qualiflow-run-ev-state is-error" title="${(ev.error || '').replace(/"/g, '&quot;')}">❌ Falha no envio</span>`;
+        return `<span class="qualiflow-run-ev-state is-error" title="${(ev.error || '').replace(/"/g, '&quot;')}">Falha no envio</span>`;
     }
     return '<span class="qualiflow-run-ev-state is-none">—</span>';
 }
@@ -205,9 +237,11 @@ export function renderEvidenceList(list, key) {
     }
     container.innerHTML = list.map((ev, i) => `
         <div class="qualiflow-run-ev-item">
-          ${ev.type === 'video/webm'
-            ? `<video src="${ev.dataUrl}" controls class="qualiflow-run-ev-media"></video>`
-            : `<img src="${ev.dataUrl}" alt="Evidência ${i + 1}" class="qualiflow-run-ev-media" />`
+          ${!ev.dataUrl
+            ? '<div class="qualiflow-run-ev-nopreview">Pré-visualização indisponível</div>'
+            : ev.type === 'video/webm'
+                ? `<video src="${ev.dataUrl}" controls class="qualiflow-run-ev-media"></video>`
+                : `<img src="${ev.dataUrl}" alt="Evidência ${i + 1}" class="qualiflow-run-ev-media" />`
         }
           <div class="qualiflow-run-ev-item-foot">
             <div class="qualiflow-run-ev-item-info">
@@ -215,7 +249,7 @@ export function renderEvidenceList(list, key) {
               <div class="qualiflow-u-mt-1">${evidenceStatusHtml(ev)}</div>
             </div>
             <div class="qualiflow-run-ev-item-btns">
-              ${ev.status === 'error' ? `<button type="button" class="qe-retry-btn qualiflow-btn-inline qualiflow-btn-sm qualiflow-run-btn-warn-outline" data-idx="${i}">Reenviar</button>` : ''}
+              ${ev.status === 'error' && (ev.dataUrl || ev.blob) ? `<button type="button" class="qe-retry-btn qualiflow-btn-inline qualiflow-btn-sm qualiflow-run-btn-warn-outline" data-idx="${i}">Reenviar</button>` : ''}
               <button type="button" class="qe-del-btn qualiflow-btn-inline qualiflow-btn-sm qualiflow-run-btn-danger-outline" data-idx="${i}">Remover</button>
             </div>
           </div>

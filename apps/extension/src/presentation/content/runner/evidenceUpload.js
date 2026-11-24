@@ -3,6 +3,7 @@ import { S } from './state.js';
 import { refreshEvidenceIndicators } from './evidenceIndicators.js';
 import { renderEvidenceList } from './evidencePanel.js';
 import { RuntimeActions } from '../../../contracts/runtimeActions.js';
+import { logEvent } from './runLog.js';
 
 export function getEvidenceKey(tc, stepIdx) {
     return stepIdx !== null && stepIdx !== undefined ? `${tc.id}_step_${stepIdx}` : String(tc.id);
@@ -42,10 +43,10 @@ function blobToBase64(blob) {
 export async function uploadEvidenceToAzure(tc, stepIdx, evidence) {
     const meta = getResultMetaForTc(tc);
     if (!meta?.resultId) {
-        return { error: `Não foi possível correlacionar o CT #${tc.id} com o resultado da execução no Azure.` };
+        return { error: `Não foi possível correlacionar o CT #${tc.id} com o resultado da execução no Azure.`, local: true };
     }
     if (!S.runnerState?.runId) {
-        return { error: 'Sessão sem Test Run ativo.' };
+        return { error: 'Sessão sem Test Run ativo.', local: true };
     }
 
     let base64Content;
@@ -56,10 +57,10 @@ export async function uploadEvidenceToAzure(tc, stepIdx, evidence) {
             base64Content = dataUrlToBase64(evidence.dataUrl);
         }
     } catch (err) {
-        return { error: 'Falha ao preparar arquivo: ' + (err.message || err) };
+        return { error: 'Falha ao preparar arquivo: ' + (err.message || err), local: true };
     }
 
-    if (!base64Content) return { error: 'Arquivo de evidência vazio.' };
+    if (!base64Content) return { error: 'Arquivo de evidência vazio.', local: true };
 
     const stepLabel = stepIdx !== null && stepIdx !== undefined
         ? `Passo ${tc.steps[stepIdx]?.order ?? (stepIdx + 1)}`
@@ -82,16 +83,33 @@ export async function uploadEvidenceToAzure(tc, stepIdx, evidence) {
     });
 }
 
+/** Esperas entre tentativas automaticas de envio (ms). Total de tentativas = 1 + length. */
+export const UPLOAD_RETRY_DELAYS_MS = [2000, 5000];
+export const UPLOAD_MAX_ATTEMPTS = 1 + UPLOAD_RETRY_DELAYS_MS.length;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export async function addAndUploadEvidence(tc, stepIdx, list, key, evidence) {
     evidence.status = 'uploading';
+    evidence.attempt = 1;
     list.push(evidence);
     renderEvidenceList(list, key);
     refreshEvidenceIndicators(tc);
 
-    const up = await uploadEvidenceToAzure(tc, stepIdx, evidence);
+    let up;
+    for (let attempt = 1; attempt <= UPLOAD_MAX_ATTEMPTS; attempt++) {
+        evidence.attempt = attempt;
+        evidence.status = 'uploading';
+        renderEvidenceList(list, key);
+        up = await uploadEvidenceToAzure(tc, stepIdx, evidence);
+        if (!up?.error || up.local) break; // sucesso ou erro local (retry nao ajuda)
+        if (attempt < UPLOAD_MAX_ATTEMPTS) await sleep(UPLOAD_RETRY_DELAYS_MS[attempt - 1]);
+    }
+
     if (up?.error) {
         evidence.status = 'error';
         evidence.error = up.error;
+        logEvent(`Falha ao anexar ${evidence.name}`);
         renderEvidenceList(list, key);
         refreshEvidenceIndicators(tc);
         return false;
@@ -100,6 +118,7 @@ export async function addAndUploadEvidence(tc, stepIdx, list, key, evidence) {
     evidence.azureId = up.result?.id;
     // Drop heavy local blob after successful upload to free memory
     if (evidence.blob) delete evidence.blob;
+    logEvent(`Evidência anexada: ${evidence.name}`);
     renderEvidenceList(list, key);
     refreshEvidenceIndicators(tc);
     return true;

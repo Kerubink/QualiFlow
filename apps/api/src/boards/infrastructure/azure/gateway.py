@@ -6,6 +6,7 @@ class AzureDevOpsGateway:
     list_organizations = staticmethod(discovery.list_organizations)
     list_projects = staticmethod(discovery.list_projects)
     get_project_iterations = staticmethod(discovery.get_project_iterations)
+    list_tags = staticmethod(discovery.list_tags)
 
     get_work_item = staticmethod(work_items.get_work_item)
     fetch_deploy_work_items = staticmethod(work_items.fetch_deploy_work_items)

@@ -2,6 +2,7 @@
 from flask import Blueprint, jsonify, request
 
 from ..container import azure_service
+from ...shared.interface.responses import error_response
 from .common import board_error_response, require_board_session
 
 azure_routes = Blueprint("azure_routes", __name__)
@@ -37,6 +38,20 @@ def azure_projects():
         )
     try:
         data = azure_service.list_projects(token_data["accessToken"], org_url)
+        return jsonify({"success": True, "data": data})
+    except Exception as error:
+        return board_error_response(error)
+
+
+@azure_routes.post("/api/board/azure/tags")
+def azure_tags():
+    """Tags ja existentes no projeto, para o editor de tags dos casos de teste."""
+    token_data, error = require_board_session("microsoft")
+    if error:
+        return error
+    body = request.get_json(silent=True) or {}
+    try:
+        data = azure_service.list_tags(token_data["accessToken"], body.get("orgUrl"), body.get("project"))
         return jsonify({"success": True, "data": data})
     except Exception as error:
         return board_error_response(error)
@@ -222,6 +237,7 @@ def azure_test_result_update():
             body.get("outcome"),
             body.get("comment"),
             body.get("stepResults"),
+            body.get("durationMs"),
         )
         return jsonify({"success": True})
     except Exception as error:
@@ -248,7 +264,7 @@ def azure_bug_create():
         return error
     body = request.get_json(silent=True) or {}
     try:
-        bug_id = azure_service.create_bug(
+        result = azure_service.create_bug(
             token_data["accessToken"],
             body.get("orgUrl"),
             body.get("project"),
@@ -256,8 +272,12 @@ def azure_bug_create():
             body.get("comment"),
             body.get("testCaseId"),
             body.get("workItemId"),
+            body.get("severity"),
+            body.get("attachments"),
         )
-        return jsonify({"success": True, "bugId": bug_id})
+        return jsonify({"success": True, "bugId": result["id"], "attachmentErrors": result["attachmentErrors"]})
+    except ValueError as error:
+        return error_response("INVALID_BUG_PAYLOAD", str(error), 400)
     except Exception as error:
         return board_error_response(error)
 

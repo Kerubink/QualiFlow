@@ -3,6 +3,7 @@
 import requests
 
 from ...domain.assignee import is_valid_assignee
+from ...domain.tags import resolve_tags
 from ...domain.test_case_xml import (
     format_local_data_source_xml,
     format_parameters_xml,
@@ -17,7 +18,7 @@ def create_test_case(access_token, org_url, project, item, parent_data=None):
     headers = write_headers(access_token, 'application/json-patch+json')
     url = f'{org_url}/{project}/_apis/wit/workitems/$Test Case?api-version=7.1'
 
-    tags = parent_data.get('tags', '') if parent_data else ''
+    tags = resolve_tags(item, parent_data)
 
     patch = [
         {'op': 'add', 'path': '/fields/System.Title', 'value': item.get('title', '')},
@@ -43,7 +44,7 @@ def create_test_case(access_token, org_url, project, item, parent_data=None):
     if parent_data and parent_data.get('iterationPath'):
         patch.append({'op': 'add', 'path': '/fields/System.IterationPath', 'value': parent_data['iterationPath']})
 
-    if tags:
+    if tags is not None:
         patch.append({'op': 'add', 'path': '/fields/System.Tags', 'value': tags})
 
     if is_valid_assignee(item.get('assignedTo')):
@@ -75,7 +76,7 @@ def update_test_case(access_token, org_url, project, item, parent_data=None):
     """Atualiza um Test Case existente no Azure."""
     headers = write_headers(access_token, 'application/json-patch+json')
     url = f'{org_url}/{project}/_apis/wit/workitems/{item.get("id_original")}?api-version=7.1'
-    tags = parent_data.get('tags', '') if parent_data else ''
+    tags = resolve_tags(item, parent_data)
 
     patch = [
         {'op': 'replace', 'path': '/fields/System.Title', 'value': item.get('title', '')},
@@ -95,7 +96,7 @@ def update_test_case(access_token, org_url, project, item, parent_data=None):
             'value': format_local_data_source_xml(item['parameters'])
         })
 
-    if tags:
+    if tags is not None:
         patch.append({'op': 'add', 'path': '/fields/System.Tags', 'value': tags})
 
     if is_valid_assignee(item.get('assignedTo')):

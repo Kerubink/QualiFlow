@@ -34,10 +34,10 @@ export function buildEvidenceButtonHtml(list, opts = {}) {
     const dataAttr = opts.dataIdx !== undefined && opts.dataIdx !== null ? `data-idx="${opts.dataIdx}"` : '';
     const title = opts.title || 'Evidências';
     const countLabel = hasAny ? String(sum.total) : '';
-    const mark = hasUploaded ? '✅' : hasError ? '❌' : hasAny ? '⏳' : '📸';
+    const caption = opts.caption || 'Evidências';
     const classNames = ['qualiflow-run-ev-btn', stateClass, opts.className].filter(Boolean).join(' ');
     return `<button type="button" ${idAttr} class="${classNames}" ${dataAttr} title="${title}" aria-label="${title}">
-        ${mark}${countLabel ? ` <span class="qualiflow-run-ev-count">${countLabel}</span>` : ''}
+        <span>${caption}</span>${countLabel ? ` <span class="qualiflow-run-ev-count">${countLabel}</span>` : ''}
     </button>`;
 }
 
@@ -45,12 +45,13 @@ export function buildEvidenceStripHtml(list, scopeLabel) {
     if (!list || list.length === 0) return '';
     const sum = summarizeEvidence(list);
     const chips = list.map((ev, i) => {
-        const icon = ev.type === 'video/webm' ? '🎬' : '🖼️';
-        const st = ev.status === 'uploaded' ? '✅' : ev.status === 'error' ? '❌' : '⏳';
+        const icon = ev.type === 'video/webm' ? 'Vídeo' : 'Imagem';
+        const st = ev.status === 'uploaded' ? 'Enviado' : ev.status === 'error' ? 'Erro' : 'Enviando';
         const stateClass = ev.status === 'uploaded' ? 'is-uploaded' : ev.status === 'error' ? 'is-error' : 'is-pending';
         const safeTitle = String(ev.name || '').replace(/"/g, '&quot;');
         return `<span title="${safeTitle}" class="qualiflow-run-ev-chip ${stateClass}">
-            <span>${icon}${st}</span>
+            <span class="qualiflow-run-ev-chip-kind">${icon}</span>
+            <span class="qualiflow-run-ev-chip-state">${st}</span>
             <span class="qualiflow-run-ev-chip-name">${shortEvidenceName(ev.name)}</span>
             <span class="qualiflow-run-ev-chip-idx">#${i + 1}</span>
         </span>`;
@@ -58,8 +59,8 @@ export function buildEvidenceStripHtml(list, scopeLabel) {
     return `
       <div class="qualiflow-run-ev-strip">
         <div class="qualiflow-run-ev-strip-head">
-          <span class="qualiflow-run-ev-strip-title">📎 Anexos · ${scopeLabel}</span>
-          <span class="qualiflow-run-ev-strip-sum">${sum.uploaded}/${sum.total} no Azure${sum.errors ? ` · ${sum.errors} erro(s)` : ''}${sum.pending ? ` · ${sum.pending} enviando` : ''}</span>
+          <span class="qualiflow-run-ev-strip-title">Anexos &middot; ${scopeLabel}</span>
+          <span class="qualiflow-run-ev-strip-sum">${sum.uploaded}/${sum.total} no Azure${sum.errors ? ` &middot; ${sum.errors} erro(s)` : ''}${sum.pending ? ` &middot; ${sum.pending} enviando` : ''}</span>
         </div>
         <div class="qualiflow-run-ev-chips">${chips}</div>
       </div>`;

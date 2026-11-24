@@ -3,9 +3,14 @@ import { S } from './state.js';
 import { escapeHtml } from '../dashboard/helpers.js';
 import { renderExecutionUI } from './executionView.js';
 import { RuntimeActions } from '../../../contracts/runtimeActions.js';
+import { createTimer, timerStart } from '../../../domain/runTimer.js';
+import { logEvent } from './runLog.js';
+import { selectAllIds, toggleId, filterSelected } from '../../../domain/runSelection.js';
+import { startProbe, clearProbe } from './probeClient.js';
+import { persistRunNow } from './runStore.js';
 
 export function fetchTestCasesAndRender(content) {
-    content.innerHTML = '<div class="qualiflow-loading">Buscando Casos de Teste...</div>';
+    content.innerHTML = '<div class="qualiflow-loading">Buscando casos de teste...</div>';
     sendRuntimeMessage({ action: RuntimeActions.GET_TEST_CASES_FOR_WORKITEM, workItemId: S.activeSession.workItemId }, (response) => {
         if (!response || response.error) {
             content.innerHTML = `<div class="qualiflow-error-box" role="alert">Erro ao buscar testes: ${escapeHtml(response?.error)}</div>`;
@@ -21,28 +26,53 @@ export function fetchTestCasesAndRender(content) {
 }
 
 function renderTestCaseList(tcs, content) {
-    let html = `<div class="qualiflow-run-heading">Encontrados ${tcs.length} CTs vinculados:</div>`;
-    html += tcs.map(tc => `
-        <div class="qualiflow-card qualiflow-card-raised qualiflow-run-tc-card">
-            <div class="qualiflow-run-id">#${tc.id}</div>
-            <div class="qualiflow-run-tc-title">${escapeHtml(tc.title)}</div>
-        </div>
-    `).join('');
+    let selected = selectAllIds(tcs);
 
-    html += `<button type="button" id="qualiflow-start-run-btn" class="qualiflow-btn qualiflow-btn-primary qualiflow-u-mt-3">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l14 9-14 9V3z"></path></svg>
-        Iniciar Execução Real (Test Run)
-    </button>`;
-
-    content.innerHTML = html;
-    document.getElementById('qualiflow-start-run-btn').addEventListener('click', () => initializeTestRun(tcs));
+    const paint = () => {
+        const count = selected.size;
+        content.innerHTML = `
+            <div class="qualiflow-run-heading">${tcs.length} caso(s) de teste vinculado(s)</div>
+            <div class="qualiflow-run-select-bar">
+                <span id="qualiflow-select-count" aria-live="polite">${count} de ${tcs.length} selecionado(s)</span>
+                <span class="qualiflow-u-grow"></span>
+                <button type="button" class="qualiflow-hub-link" data-sel="all">Todos</button>
+                <button type="button" class="qualiflow-hub-link" data-sel="none">Nenhum</button>
+            </div>
+            ${tcs.map((tc) => `
+                <label class="qualiflow-card qualiflow-card-raised qualiflow-run-tc-card is-selectable${selected.has(tc.id) ? ' is-checked' : ''}">
+                    <input type="checkbox" data-tc="${escapeHtml(tc.id)}"${selected.has(tc.id) ? ' checked' : ''} aria-label="Executar CT ${escapeHtml(tc.id)}">
+                    <span class="qualiflow-run-tc-info">
+                        <span class="qualiflow-run-id">#${escapeHtml(tc.id)}</span>
+                        <span class="qualiflow-run-tc-title">${escapeHtml(tc.title)}</span>
+                    </span>
+                </label>`).join('')}
+            <button type="button" id="qualiflow-start-run-btn" class="qualiflow-btn qualiflow-btn-primary qualiflow-u-mt-3"${count === 0 ? ' disabled' : ''}>
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l14 9-14 9V3z"></path></svg>
+                Iniciar execução (${count})
+            </button>`;
+        content.querySelectorAll('[data-tc]').forEach((box) => {
+            box.addEventListener('change', () => {
+                const tc = tcs.find((t) => String(t.id) === box.dataset.tc);
+                if (tc) selected = toggleId(selected, tc.id);
+                paint();
+            });
+        });
+        content.querySelectorAll('[data-sel]').forEach((b) => {
+            b.addEventListener('click', () => { selected = b.dataset.sel === 'all' ? selectAllIds(tcs) : new Set(); paint(); });
+        });
+        document.getElementById('qualiflow-start-run-btn').addEventListener('click', () => {
+            const chosen = filterSelected(tcs, selected);
+            if (chosen.length) initializeTestRun(chosen);
+        });
+    };
+    paint();
 }
 
 // ─── EXECUTION INIT ───────────────────────────────────────────────────────
 
-function initializeTestRun(tcs) {
+export function initializeTestRun(tcs) {
     const content = document.getElementById('qualiflow-runner-content');
-    content.innerHTML = '<div class="qualiflow-run-status qualiflow-run-status-info" role="status">Preparando Test Run no Azure DevOps...<span class="qualiflow-run-status-sub">Isso criará histórico real.</span></div>';
+    content.innerHTML = '<div class="qualiflow-run-status qualiflow-run-status-info" role="status">Preparando Test Run no Azure DevOps...<span class="qualiflow-run-status-sub">Isso cria um histórico real de execução.</span></div>';
 
     const tcIds = tcs.map(t => t.id);
     sendRuntimeMessage({ action: RuntimeActions.GET_TEST_POINTS_FOR_TEST_CASES, testCaseIds: tcIds }, (ptResp) => {
@@ -130,7 +160,22 @@ function finalizeRunInit(runId, tcs, resultsData) {
         overallOutcomes: {},
         comments: {},
         commentVisible: {},
-        evidences: {}   // key: `${tcId}` or `${tcId}_step_${stepIdx}`, value: [{name, dataUrl, type}]
+        evidences: {},  // key: `${tcId}` or `${tcId}_step_${stepIdx}`, value: [{name, dataUrl, type}]
+        finalOutcomes: {},                                 // tcId -> outcome ja gravado no Azure
+        runTimer: timerStart(createTimer(), Date.now()),   // cronometro total da execucao
+        ctTimers: {},                                      // tcId -> timer do caso de teste
+        ctMarks: {},                                       // tcId -> ms do CT na ultima marcacao de passo
+        ctDurations: {},                                   // tcId -> duracao (ms) gravada no Azure
+        events: [],                                        // atividade recente (HUB)
+        bugs: [],
+        paused: false,
+        pauseCount: 0,
+        pausedMs: 0,
+        startedAt: Date.now()
     };
+    logEvent(`Execução iniciada (${tcs.length} CT${tcs.length === 1 ? '' : 's'})`);
+    clearProbe();
+    if (S.probeEnabled) startProbe();
+    persistRunNow();
     renderExecutionUI();
 }

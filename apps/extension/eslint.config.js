@@ -63,7 +63,11 @@ export default [
         )
     },
     {
-        files: ['scripts/**/*.mjs', 'tests/**/*.js', 'eslint.config.js', 'vite.config.mjs'],
+        files: ['scripts/**/*.mjs', 'tests/**/*.js', 'eslint.config.js', 'vite.config.mjs', 'dev/serve.mjs', 'dev/e2e/*.mjs'],
         languageOptions: { globals: globals.node }
+    },
+    {
+        files: ['dev/**/*.js'],
+        languageOptions: { globals: { ...globals.browser, chrome: 'writable' } }
     }
 ];

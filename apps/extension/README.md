@@ -18,6 +18,8 @@ Execute dentro de `apps/extension/`.
 | `npm run dev` | Vite em modo dev |
 | `npm run build` | Build de producao (minificado) em `dist/` |
 | `npm run build:obf` | Build + ofuscacao dos `.js` de `dist/` (nao e fronteira de seguranca) |
+| `npm run test:e2e` | E2E no playground com Chrome headless real (exige Chrome/Chromium; `CHROME_BIN` para indicar o binario) |
+| `npm run dev:playground` | Playground em `http://127.0.0.1:5174/dev/` para testar o runner sem Azure (ver `dev/README.md`) |
 | `npm run lint` | ESLint (flat config em `eslint.config.js`), inclui regras de dependencia entre camadas |
 | `npm test` | Testes do dominio com o runner nativo `node --test` (offline, sem dependencias extras) |
 
@@ -53,6 +55,11 @@ src/
     savedSession.js / copiedScenario.js / rtm.js / saveResult.js  regras de sessoes locais, copia e RTM
     settingsRules.js      pre-requisitos de configuracao (Azure, Jira, IA, runner)
     supportNotification.js  regras do monitor de chamados de suporte
+    testData.js           CPF/CNPJ/RG/CEP/telefone/e-mail validos + deteccao do tipo de campo (autofill do runner)
+    annotationGeometry.js geometria do editor de capturas (hit-test, mover, redimensionar)
+    runTimer.js           timers (pausa/retomada), formatacao de duracao e resumo da execucao
+    runInsights.js        metricas do HUB (media, estimativa, taxa de aprovacao, ambiente)
+    cssDebug.js           rotulo e seletor CSS do depurador de CSS
     optionsSelection.js   regras da pagina de opcoes
   application/          casos de uso (recebem dependencias/portas injetadas)
     cardData.js  coverage.js  scenarioGeneration.js  scenarioSaving.js
@@ -127,3 +134,10 @@ requisicao para o backend. Somente o provedor Copilot exige sessao GitHub OAuth.
 - A ofuscacao so se aplica aos `.js` de `dist/` e nao protege segredos.
 - Mudancas que afetem o fluxo visual devem ser validadas manualmente no Chrome (Azure DevOps
   e Jira) apos `npm run build`.
+
+## Permissões do manifest
+
+- `debugger`: usada só pelo modo **Responsivo** do runner (barra de ferramentas de UI/UX) para emular a largura/altura de tela
+  na aba atual (`Emulation.setDeviceMetricsOverride`), sem depender do gerenciador de janelas. É anexada apenas ao clicar
+  em um preset e removida em **Restaurar**; enquanto ativa, o Chrome mostra a faixa "depurando este navegador".
+  Nenhum dado da página é lido por essa API. Implementação em `src/infrastructure/browser/emulation.js`.
